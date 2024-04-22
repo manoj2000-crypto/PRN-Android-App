@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity2">
+
+    <TextView
+        android:id="@+id/showUserNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="User name : PNA2525"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        tools:ignore="HardcodedText"
+        />
+
+    <TextView
+        android:id="@+id/vehicleNumberTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="39dp"
+        android:text="Vehicle No : "
+        tools:layout_editor_absoluteX="28dp"
+        tools:layout_editor_absoluteY="88dp"
+        tools:ignore="HardcodedText" />
+
+    <EditText
+        android:id="@+id/vehicleNumberEditText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="text"
+        android:text="Enter Vehicle Number"
+        tools:layout_editor_absoluteX="178dp"
+        tools:layout_editor_absoluteY="78dp"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/goDownTextView"
+        android:layout_width="115dp"
+        android:layout_height="34dp"
+        android:text="Select Godown :"
+        tools:layout_editor_absoluteX="29dp"
+        tools:layout_editor_absoluteY="149dp"
+        tools:ignore="HardcodedText" />
+
+    <Spinner
+        android:id="@+id/doDownSpinner"
+        android:layout_width="207dp"
+        android:layout_height="31dp"
+        tools:layout_editor_absoluteX="181dp"
+        tools:layout_editor_absoluteY="149dp" />
+
+    <TextView
+        android:id="@+id/lRNumber"
+        android:layout_width="90dp"
+        android:layout_height="41dp"
+        android:text="LR No :"
+        tools:layout_editor_absoluteX="29dp"
+        tools:layout_editor_absoluteY="202dp"
+        tools:ignore="HardcodedText" />
+
+    <EditText
+        android:id="@+id/lrEditText"
+        android:layout_width="144dp"
+        android:layout_height="43dp"
+        android:ems="10"
+        android:inputType="text"
+        android:text="Enter LR No"
+        tools:layout_editor_absoluteX="133dp"
+        tools:layout_editor_absoluteY="202dp"
+        tools:ignore="HardcodedText" />
+
+    <Button
+        android:id="@+id/addButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add"
+        tools:layout_editor_absoluteX="297dp"
+        tools:layout_editor_absoluteY="195dp"
+        tools:ignore="HardcodedText" />
+
+    <SurfaceView
+        android:id="@+id/showCameraSurfaceView"
+        android:layout_width="288dp"
+        android:layout_height="164dp"
+        tools:layout_editor_absoluteX="61dp"
+        tools:layout_editor_absoluteY="264dp" />
+
+    <TableLayout
+        android:id="@+id/tableDisplay"
+        android:orientation="vertical"
+        android:layout_width="376dp"
+        android:layout_height="152dp"
+        tools:layout_editor_absoluteX="19dp"
+        tools:layout_editor_absoluteY="438dp">
+
+        <TableRow
+            android:id="@+id/displayRow"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="50dp"
+            android:gravity="center_horizontal"
+            android:visibility="visible" />
+
+    </TableLayout>
+
+    <Button
+        android:id="@+id/submit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Submit"
+        tools:layout_editor_absoluteX="163dp"
+        tools:layout_editor_absoluteY="649dp"
+        tools:ignore="HardcodedText" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
