@@ -37,12 +37,12 @@
         android:layout_marginEnd="16dp"
         android:ems="10"
         android:inputType="text"
-        android:text="Enter Vehicle Number"
+        android:hint="Enter Vehicle Number"
         app:layout_constraintBottom_toBottomOf="@id/vehicleNumberTextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/vehicleNumberTextView"
         app:layout_constraintTop_toTopOf="@id/vehicleNumberTextView"
-        tools:ignore="HardcodedText" />
+        tools:ignore="HardcodedText,TextFields" />
 
     <TextView
         android:id="@+id/goDownTextView"
@@ -64,7 +64,9 @@
         app:layout_constraintBottom_toBottomOf="@id/goDownTextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/goDownTextView"
-        app:layout_constraintTop_toTopOf="@id/goDownTextView" />
+        app:layout_constraintTop_toTopOf="@id/goDownTextView"
+        android:entries="@array/godown_options"
+        />
 
     <TextView
         android:id="@+id/lRNumber"
@@ -85,7 +87,7 @@
         android:layout_marginEnd="8dp"
         android:ems="10"
         android:inputType="text"
-        android:text="Enter LR No"
+        android:hint="Enter LR No"
         app:layout_constraintBottom_toBottomOf="@id/lRNumber"
         app:layout_constraintEnd_toStartOf="@id/addButton"
         app:layout_constraintStart_toEndOf="@id/lRNumber"
@@ -98,7 +100,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="16dp"
-        android:text="Add"
+        android:text="+"
+        android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="@id/lrEditText"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/lrEditText"
@@ -140,7 +143,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center_horizontal"
-                android:visibility="visible" />
+                android:visibility="visible"
+                android:layout_marginStart="16dp" />
 
         </TableLayout>
     </ScrollView>
