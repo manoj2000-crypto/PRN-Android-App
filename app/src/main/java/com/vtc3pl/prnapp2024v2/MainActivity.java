@@ -1,5 +1,6 @@
 package com.vtc3pl.prnapp2024v2;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,12 +19,16 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import org.apache.http.conn.ConnectTimeoutException;
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -142,20 +147,31 @@ public class MainActivity extends AppCompatActivity {
         // Create the request
         Request request = new Request.Builder().url(loginUrl).post(formBody).build();
 
-        // Create OkHttpClient instance
-        OkHttpClient client = new OkHttpClient();
+        // Create OkHttpClient instance with a timeout
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .build();
 
         // Execute the request asynchronously
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(MainActivity.this, "Failed to connect to server", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                if (e instanceof SocketTimeoutException || e instanceof ConnectTimeoutException) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this, "Request timed out", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } else {
+                    e.printStackTrace();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this, "Failed to connect to server", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
             }
 
             @Override
@@ -167,6 +183,12 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
 
                         if (responseData.equals("Success")) {
+                            Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+                            intent.putExtra("username", username);
+                            intent.putExtra("depo", depo);
+                            intent.putExtra("year", year);
+                            startActivity(intent);
+                            finish();
                             Toast.makeText(MainActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
                         } else {
                             Toast.makeText(MainActivity.this, "Login failed: " + responseData, Toast.LENGTH_SHORT).show();
@@ -191,6 +213,11 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        if (e instanceof UnknownHostException) {
+                            Toast.makeText(MainActivity.this, "Unable to connect to server. Please check your internet connection.", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Failed to connect to server", Toast.LENGTH_SHORT).show();
+                        }
                         Toast.makeText(MainActivity.this, "Failed to fetch depot codes", Toast.LENGTH_SHORT).show();
                     }
                 });
