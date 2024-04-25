@@ -1,8 +1,10 @@
 <resources>
     <string name="app_name">PRN APP V2</string>
 
+    <string name="select_godown">Select Godown</string>
+
     <string-array name="godown_options">
-        <item>Please Select Godown line</item>
+        <item>Select Godown</item>
         <item>Line 1</item>
         <item>Line 2</item>
         <item>Line 3</item>

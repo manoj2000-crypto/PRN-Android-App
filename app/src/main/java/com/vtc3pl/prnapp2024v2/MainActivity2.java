@@ -50,9 +50,9 @@ public class MainActivity2 extends AppCompatActivity {
 
     private static final Pattern LR_NUMBER_PATTERN = Pattern.compile("[A-Z]{3,4}[0-9]{10}+");
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
+    private final Set<String> lrNumbersSet = new HashSet<>();
     private TableLayout tableLayout;
     private EditText lrEditText, vehicleNumberEditText;
-    private Set<String> lrNumbersSet = new HashSet<>();
     private SurfaceView cameraView;
     private BarcodeDetector barcodeDetector;
     private CameraSource cameraSource;
@@ -195,13 +195,13 @@ public class MainActivity2 extends AppCompatActivity {
                     String responseBody = response.body().string();
                     // Process the response here
                     if (responseBody.equals("0")) {
-                        // LR number not already generated, add it to the table layout
-                        runOnUiThread(() -> addLRNumberToTable(lrNumber));
+                        Toast.makeText(MainActivity2.this, "This LR Number not available for PRN", Toast.LENGTH_SHORT).show();
                     } else if (responseBody.equals("PRN already generated")) {
                         runOnUiThread(() -> {
                             Toast.makeText(MainActivity2.this, "PRN already generated", Toast.LENGTH_SHORT).show();
                         });
-                    } else {
+                    } else if (responseBody.equals(lrNumber)) {
+                        Log.d("LR NUMBER : ", String.valueOf(response));
                         runOnUiThread(() -> addLRNumberToTable(lrNumber));
                     }
                 } else {
@@ -241,9 +241,15 @@ public class MainActivity2 extends AppCompatActivity {
 
     private void submitDataToServer() {
         // Retrieve data from UI components
-        String userName = showUserNameTextView.getText().toString();
         String vehicleNo = vehicleNumberEditText.getText().toString();
         String goDown = goDownSpinner.getSelectedItem().toString();
+
+        if (goDown.equals(getString(R.string.select_godown))) {
+            // Show a message to the user
+            Toast.makeText(this, "Please select a Godown", Toast.LENGTH_SHORT).show();
+            return; // Exit the method
+        }
+
         List<String> lrNumbers = new ArrayList<>();
         for (String lrNumber : lrNumbersSet) {
             lrNumbers.add(lrNumber);
@@ -285,6 +291,11 @@ public class MainActivity2 extends AppCompatActivity {
                     // Process the response here
                     runOnUiThread(() -> {
                         Toast.makeText(MainActivity2.this, responseBody, Toast.LENGTH_SHORT).show();
+                        vehicleNumberEditText.setText("");
+                        lrEditText.setText("");
+                        tableLayout.removeAllViews();
+                        lrNumbersSet.clear();
+                        goDownSpinner.setSelection(0);
                     });
                 } else {
                     runOnUiThread(() -> {
@@ -308,8 +319,6 @@ public class MainActivity2 extends AppCompatActivity {
                 e.printStackTrace();
             }
         } else {
-            // Permission was denied
-            // You may inform the user or handle the situation appropriately
             Toast.makeText(this, "Camera permission was denied", Toast.LENGTH_SHORT).show();
         }
     }
