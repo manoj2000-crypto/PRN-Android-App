@@ -1,222 +1,359 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity2">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/showUserNameTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="HardcodedText" />
-
-    <TextView
-        android:id="@+id/vehicleNumberTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="Vehicle No : "
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/showUserNameTextView"
-        tools:ignore="HardcodedText" />
-
-    <EditText
-        android:id="@+id/vehicleNumberEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="16dp"
-        android:ems="10"
-        android:hint="Enter Vehicle Number"
-        android:inputType="text"
-        app:layout_constraintBottom_toBottomOf="@id/vehicleNumberTextView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/vehicleNumberTextView"
-        app:layout_constraintTop_toTopOf="@id/vehicleNumberTextView"
-        tools:ignore="HardcodedText,TextFields" />
-
-    <TextView
-        android:id="@+id/goDownTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="Select Godown :"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/vehicleNumberTextView"
-        tools:ignore="HardcodedText" />
-
-    <Spinner
-        android:id="@+id/goDownSpinner"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="16dp"
-        android:entries="@array/godown_options"
-        app:layout_constraintBottom_toBottomOf="@id/goDownTextView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/goDownTextView"
-        app:layout_constraintTop_toTopOf="@id/goDownTextView" />
-
-    <TextView
-        android:id="@+id/lRNumber"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="LR No :"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/goDownTextView"
-        tools:ignore="HardcodedText" />
-
-    <EditText
-        android:id="@+id/lrEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:ems="10"
-        android:hint="Enter LR No"
-        android:inputType="text"
-        app:layout_constraintBottom_toBottomOf="@id/lRNumber"
-        app:layout_constraintEnd_toStartOf="@id/addButton"
-        app:layout_constraintStart_toEndOf="@id/lRNumber"
-        app:layout_constraintTop_toTopOf="@id/lRNumber"
-        tools:ignore="HardcodedText" />
-
-    <Button
-        android:id="@+id/addButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="16dp"
-        android:text="+"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toBottomOf="@id/lrEditText"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/lrEditText"
-        app:layout_constraintTop_toTopOf="@id/lrEditText"
-        tools:ignore="HardcodedText" />
-
-    <SurfaceView
-        android:id="@+id/showCameraSurfaceView"
-        android:layout_width="0dp"
-        android:layout_height="164dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lRNumber" />
-
-    <ScrollView
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="32dp"
-        app:layout_constraintBottom_toBottomOf="@id/submit"
-        app:layout_constraintTop_toBottomOf="@id/showCameraSurfaceView"
-        app:layout_constraintVertical_bias="0.0"
-        tools:layout_editor_absoluteX="0dp">
+        android:layout_height="wrap_content"
+        tools:context=".MainActivity2">
 
-        <TableLayout
-            android:id="@+id/tableDisplay"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/showUserNameTextView"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            android:orientation="vertical"
+            android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText" />
 
-            <TableRow
-                android:id="@+id/displayRow"
+        <TextView
+            android:id="@+id/vehicleNumberTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="Vehicle No : "
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/showUserNameTextView"
+            tools:ignore="HardcodedText" />
+
+        <EditText
+            android:id="@+id/vehicleNumberEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:ems="10"
+            android:hint="Enter Vehicle Number"
+            android:inputType="text"
+            app:layout_constraintBottom_toBottomOf="@id/vehicleNumberTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/vehicleNumberTextView"
+            app:layout_constraintTop_toTopOf="@id/vehicleNumberTextView"
+            tools:ignore="HardcodedText,TextFields" />
+
+        <TextView
+            android:id="@+id/goDownTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:text="Select Godown :"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/vehicleNumberTextView"
+            tools:ignore="HardcodedText" />
+
+        <Spinner
+            android:id="@+id/goDownSpinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:entries="@array/godown_options"
+            app:layout_constraintBottom_toBottomOf="@id/goDownTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/goDownTextView"
+            app:layout_constraintTop_toTopOf="@id/goDownTextView" />
+
+        <TextView
+            android:id="@+id/lRNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:text="LR No :"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/goDownTextView"
+            tools:ignore="HardcodedText" />
+
+        <EditText
+            android:id="@+id/lrEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:ems="10"
+            android:hint="Enter LR No"
+            android:inputType="text"
+            app:layout_constraintBottom_toBottomOf="@id/lRNumber"
+            app:layout_constraintEnd_toStartOf="@id/addButton"
+            app:layout_constraintStart_toEndOf="@id/lRNumber"
+            app:layout_constraintTop_toTopOf="@id/lRNumber"
+            tools:ignore="HardcodedText" />
+
+        <Button
+            android:id="@+id/addButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:text="+"
+            android:textSize="24sp"
+            app:layout_constraintBottom_toBottomOf="@id/lrEditText"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/lrEditText"
+            app:layout_constraintTop_toTopOf="@id/lrEditText"
+            tools:ignore="HardcodedText" />
+
+        <SurfaceView
+            android:id="@+id/showCameraSurfaceView"
+            android:layout_width="0dp"
+            android:layout_height="164dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/lRNumber" />
+
+        <ScrollView
+            android:id="@+id/scrollViewForTableLayout"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="32dp"
+            app:layout_constraintBottom_toTopOf="@id/hamaliVendorNameTextView"
+            app:layout_constraintTop_toBottomOf="@id/showCameraSurfaceView"
+            app:layout_constraintVertical_bias="0.0"
+            tools:layout_editor_absoluteX="0dp"
+            tools:ignore="NestedScrolling">
+
+            <TableLayout
+                android:id="@+id/tableDisplay"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
-                android:gravity="center_horizontal"
-                android:visibility="visible" />
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <TableRow
+                    android:id="@+id/displayRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
                     android:layout_marginEnd="8dp"
-                    android:text="Total Box Weight:"
-                    android:textStyle="bold"
-                    tools:ignore="HardcodedText" />
+                    android:layout_marginBottom="16dp"
+                    android:gravity="center_horizontal"
+                    android:visibility="visible" />
 
-                <EditText
-                    android:id="@+id/totalBoxWeightEditText"
-                    android:layout_width="0dp"
+                <TableRow
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Calculated Values"
-                    android:inputType="none"
-                    tools:ignore="HardcodedText" />
-
-            </TableRow>
-
-            <!-- Row for Total Bag Weight -->
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
-                    android:text="Total Bag Weight:"
-                    android:textStyle="bold"
-                    tools:ignore="HardcodedText" />
+                    android:layout_marginBottom="8dp"
+                    android:gravity="center_vertical">
 
-                <EditText
-                    android:id="@+id/totalBagWeightEditText"
-                    android:layout_width="0dp"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="Total Box Weight:"
+                        android:textStyle="bold"
+                        tools:ignore="HardcodedText" />
+
+                    <EditText
+                        android:id="@+id/totalBoxWeightEditText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Calculated Values"
+                        android:inputType="none"
+                        tools:ignore="HardcodedText" />
+
+                </TableRow>
+
+                <!-- Row for Total Bag Weight -->
+                <TableRow
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Calculated Values"
-                    android:inputType="none"
-                    tools:ignore="HardcodedText" />
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:gravity="center_vertical">
 
-            </TableRow>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="Total Bag Weight:"
+                        android:textStyle="bold"
+                        tools:ignore="HardcodedText" />
 
-        </TableLayout>
-    </ScrollView>
+                    <EditText
+                        android:id="@+id/totalBagWeightEditText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Calculated Values"
+                        android:inputType="none"
+                        tools:ignore="HardcodedText" />
 
-    <Button
-        android:id="@+id/submit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="Submit"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="HardcodedText" />
+                </TableRow>
 
+            </TableLayout>
+        </ScrollView>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/hamaliVendorNameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:text="Hamali vendor Name:"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/scrollViewForTableLayout"
+            tools:ignore="HardcodedText" />
+
+        <EditText
+            android:id="@+id/hamaliVendorNameEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:ems="10"
+            android:hint="Enter Hamali Vendor Name"
+            android:inputType="text"
+            app:layout_constraintBottom_toBottomOf="@id/hamaliVendorNameTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/hamaliVendorNameTextView"
+            app:layout_constraintTop_toTopOf="@id/hamaliVendorNameTextView"
+            tools:ignore="HardcodedText,TextFields" />
+
+        <TextView
+            android:id="@+id/hamaliTypeTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:text="Hamali Type :"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/hamaliVendorNameTextView"
+            tools:ignore="HardcodedText" />
+
+        <Spinner
+            android:id="@+id/hamaliTypeSpinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:entries="@array/hamali_type_options"
+            app:layout_constraintBottom_toBottomOf="@id/hamaliTypeTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/hamaliTypeTextView"
+            app:layout_constraintTop_toTopOf="@id/hamaliTypeTextView" />
+
+        <TextView
+            android:id="@+id/hamaliAmountTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:text="Hamali Amount:"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/hamaliTypeTextView"
+            tools:ignore="HardcodedText" />
+
+        <EditText
+            android:id="@+id/hamaliAmountEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:ems="10"
+            android:hint="Enter Hamali Amount"
+            android:inputType="number"
+            app:layout_constraintBottom_toBottomOf="@id/hamaliAmountTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/hamaliAmountTextView"
+            app:layout_constraintTop_toTopOf="@id/hamaliAmountTextView"
+            tools:ignore="HardcodedText,TextFields" />
+
+        <TextView
+            android:id="@+id/deductionAmountTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="32dp"
+            android:text="Deduction Amount:"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/hamaliAmountTextView"
+            tools:ignore="HardcodedText" />
+
+        <EditText
+            android:id="@+id/deductionAmountEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:ems="10"
+            android:hint="Enter Deduction Amount"
+            android:inputType="number"
+            app:layout_constraintBottom_toBottomOf="@id/deductionAmountTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/deductionAmountTextView"
+            app:layout_constraintTop_toTopOf="@id/deductionAmountTextView"
+            tools:ignore="HardcodedText,TextFields" />
+
+        <TextView
+            android:id="@+id/amountPaidToHVendorTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="32dp"
+            android:text="Amount Paid To HVendor:"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/deductionAmountTextView"
+            tools:ignore="HardcodedText" />
+
+        <EditText
+            android:id="@+id/amountPaidToHVendorEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:ems="10"
+            android:hint="Enter Amount Paid"
+            android:inputType="number"
+            app:layout_constraintBottom_toBottomOf="@id/amountPaidToHVendorTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/amountPaidToHVendorTextView"
+            app:layout_constraintTop_toTopOf="@id/amountPaidToHVendorTextView"
+            tools:ignore="HardcodedText,TextFields" />
+
+        <Button
+            android:id="@+id/submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:text="Submit"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/amountPaidToHVendorTextView"
+            tools:ignore="HardcodedText" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>
