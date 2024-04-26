@@ -8,6 +8,7 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -30,13 +31,16 @@ import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import okhttp3.Call;
@@ -59,7 +63,7 @@ public class MainActivity2 extends AppCompatActivity {
 
     private TextView showUserNameTextView;
 
-    private Spinner goDownSpinner;
+    private Spinner goDownSpinner, hamaliVendorNameSpinner;
 
     private String username = "", depo = "", year = "";
 
@@ -77,6 +81,7 @@ public class MainActivity2 extends AppCompatActivity {
         lrEditText = findViewById(R.id.lrEditText);
         vehicleNumberEditText = findViewById(R.id.vehicleNumberEditText);
         goDownSpinner = findViewById(R.id.goDownSpinner);
+        hamaliVendorNameSpinner = findViewById(R.id.hamaliVendorNameSpinner);
 
         Button addButton = findViewById(R.id.addButton);
         addButton.setOnClickListener(v -> addRowToTable());
@@ -144,6 +149,8 @@ public class MainActivity2 extends AppCompatActivity {
                 }
             }
         });
+
+        fetchHvendors();
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -237,6 +244,64 @@ public class MainActivity2 extends AppCompatActivity {
         // Clear the lrEditText after adding the row
         lrEditText.setText("");
         isProcessing = false;
+    }
+
+    private void fetchHvendors() {
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .build();
+
+        // URL for fetching Hvendors
+        String url = "https://vtc3pl.com/fetch_hamalivendor_only_prn_app.php";
+
+        // Create a form body with spinnerDepo as a parameter
+        FormBody formBody = new FormBody.Builder()
+                .add("spinnerDepo", depo)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .post(formBody) // Use POST method and set the form body
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+
+                    // Parse the JSON response
+                    List<String> hVendors = new ArrayList<>();
+                    try {
+                        JSONArray jsonArray = new JSONArray(responseBody);
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            String hVendor = jsonArray.getString(i);
+                            hVendors.add(hVendor);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    // Update the spinner UI on the main thread
+                    runOnUiThread(() -> {
+                        ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity2.this, android.R.layout.simple_spinner_item, hVendors);
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        hamaliVendorNameSpinner.setAdapter(adapter); // Use hamaliVendorNameSpinner instead of goDownSpinner
+                    });
+                } else {
+                    onFailure(call, new IOException("Unexpected response code " + response));
+                }
+            }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity2.this, "Failed to fetch Hamali Vendors", Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
     }
 
     private void submitDataToServer() {
