@@ -34,6 +34,7 @@ import com.google.android.gms.vision.barcode.BarcodeDetector;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ public class MainActivity2 extends AppCompatActivity {
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
     private final Set<String> lrNumbersSet = new HashSet<>();
     private TableLayout tableLayout;
-    private EditText lrEditText, vehicleNumberEditText;
+    private EditText lrEditText, vehicleNumberEditText, totalBoxWeightEditText, totalBagWeightEditText;
     private SurfaceView cameraView;
     private BarcodeDetector barcodeDetector;
     private CameraSource cameraSource;
@@ -82,6 +83,8 @@ public class MainActivity2 extends AppCompatActivity {
         vehicleNumberEditText = findViewById(R.id.vehicleNumberEditText);
         goDownSpinner = findViewById(R.id.goDownSpinner);
         hamaliVendorNameSpinner = findViewById(R.id.hamaliVendorNameSpinner);
+        totalBoxWeightEditText = findViewById(R.id.totalBoxWeightEditText);
+        totalBagWeightEditText = findViewById(R.id.totalBagWeightEditText);
 
         Button addButton = findViewById(R.id.addButton);
         addButton.setOnClickListener(v -> addRowToTable());
@@ -234,6 +237,8 @@ public class MainActivity2 extends AppCompatActivity {
             tableLayout.removeView(newRow);
             // Remove LR number from the set
             lrNumbersSet.remove(lrNumber);
+
+            fetchWeightsFromServer();
         });
         newRow.addView(deleteButton);
 
@@ -241,28 +246,23 @@ public class MainActivity2 extends AppCompatActivity {
 
         // Add LR number to the set
         lrNumbersSet.add(lrNumber);
+
+        fetchWeightsFromServer();
         // Clear the lrEditText after adding the row
         lrEditText.setText("");
         isProcessing = false;
     }
 
     private void fetchHvendors() {
-        OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .build();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         // URL for fetching Hvendors
         String url = "https://vtc3pl.com/fetch_hamalivendor_only_prn_app.php";
 
         // Create a form body with spinnerDepo as a parameter
-        FormBody formBody = new FormBody.Builder()
-                .add("spinnerDepo", depo)
-                .build();
+        FormBody formBody = new FormBody.Builder().add("spinnerDepo", depo).build();
 
-        Request request = new Request.Builder()
-                .url(url)
-                .post(formBody) // Use POST method and set the form body
+        Request request = new Request.Builder().url(url).post(formBody) // Use POST method and set the form body
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -275,6 +275,7 @@ public class MainActivity2 extends AppCompatActivity {
                     List<String> hVendors = new ArrayList<>();
                     try {
                         JSONArray jsonArray = new JSONArray(responseBody);
+                        hVendors.add("Please Select Vendor");
                         for (int i = 0; i < jsonArray.length(); i++) {
                             String hVendor = jsonArray.getString(i);
                             hVendors.add(hVendor);
@@ -300,6 +301,61 @@ public class MainActivity2 extends AppCompatActivity {
                 runOnUiThread(() -> {
                     Toast.makeText(MainActivity2.this, "Failed to fetch Hamali Vendors", Toast.LENGTH_SHORT).show();
                 });
+            }
+        });
+    }
+
+    private void fetchWeightsFromServer() {
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
+
+        // URL for fetching weights
+        String url = "vtc3pl.com/hamali_bag_box_weight_prn_app.php";
+
+        Request request = new Request.Builder().url(url).build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity2.this, "Failed to fetch weights from server", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+
+                    final double[] totalBoxWeight = {0};
+                    final double[] totalBagWeight = {0};
+
+                    // Parse the JSON response
+                    try {
+                        JSONArray jsonArray = new JSONArray(responseBody);
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            JSONObject jsonObject = jsonArray.getJSONObject(i);
+                            String lrNumber = jsonObject.getString("LRNO");
+                            if (lrNumbersSet.contains(lrNumber)) {
+                                totalBoxWeight[0] += jsonObject.getDouble("TotalWeightBox");
+                                totalBagWeight[0] += jsonObject.getDouble("TotalWeightBag");
+                            }
+                        }
+
+                        // Update the UI on the main thread
+                        runOnUiThread(() -> {
+                            totalBoxWeightEditText.setText(String.valueOf(totalBoxWeight[0]));
+                            totalBagWeightEditText.setText(String.valueOf(totalBagWeight[0]));
+                        });
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        runOnUiThread(() -> {
+                            Toast.makeText(MainActivity2.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                } else {
+                    onFailure(call, new IOException("Unexpected response code " + response));
+                }
             }
         });
     }
