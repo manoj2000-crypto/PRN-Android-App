@@ -57,19 +57,29 @@ public class MainActivity2 extends AppCompatActivity {
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
     private final Set<String> lrNumbersSet = new HashSet<>();
     private TableLayout tableLayout;
-    private EditText lrEditText, vehicleNumberEditText, totalBoxWeightEditText, totalBagWeightEditText;
+    private EditText lrEditText, vehicleNumberEditText, totalBoxWeightEditText, totalBagWeightEditText, deductionAmountEditText, hamaliAmountEditText, amountPaidToHVendorEditText;
     private SurfaceView cameraView;
     private BarcodeDetector barcodeDetector;
     private CameraSource cameraSource;
 
     private TextView showUserNameTextView;
 
-    private Spinner goDownSpinner, hamaliVendorNameSpinner;
+    private Spinner goDownSpinner, hamaliVendorNameSpinner , hamaliTypeSpinner;
 
     private String username = "", depo = "", year = "";
 
     // Define a flag to indicate whether an LR number is being processed
     private boolean isProcessing = false;
+
+    final double[] totalBoxWeight = {0};
+    final double[] totalBoxQty = {0};
+    final double[] totalBagWeight = {0};
+    final double[] totalBagQty = {0};
+
+    private double regularRate = 0.0d;
+    private double crossingRate = 0.0d;
+    private double regularBagRate = 0.0d;
+    private double crossingBagRate = 0.0d;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,8 +93,12 @@ public class MainActivity2 extends AppCompatActivity {
         vehicleNumberEditText = findViewById(R.id.vehicleNumberEditText);
         goDownSpinner = findViewById(R.id.goDownSpinner);
         hamaliVendorNameSpinner = findViewById(R.id.hamaliVendorNameSpinner);
+        hamaliTypeSpinner = findViewById(R.id.hamaliTypeSpinner);
         totalBoxWeightEditText = findViewById(R.id.totalBoxWeightEditText);
         totalBagWeightEditText = findViewById(R.id.totalBagWeightEditText);
+        deductionAmountEditText = findViewById(R.id.deductionAmountEditText);
+        hamaliAmountEditText = findViewById(R.id.hamaliAmountEditText);
+        amountPaidToHVendorEditText = findViewById(R.id.amountPaidToHVendorEditText);
 
         Button addButton = findViewById(R.id.addButton);
         addButton.setOnClickListener(v -> addRowToTable());
@@ -205,7 +219,9 @@ public class MainActivity2 extends AppCompatActivity {
                     String responseBody = response.body().string();
                     // Process the response here
                     if (responseBody.equals("0")) {
-                        Toast.makeText(MainActivity2.this, "This LR Number not available for PRN", Toast.LENGTH_SHORT).show();
+                        runOnUiThread(() -> {
+                            Toast.makeText(MainActivity2.this, "This LR Number not available for PRN", Toast.LENGTH_SHORT).show();
+                        });
                     } else if (responseBody.equals("PRN already generated")) {
                         runOnUiThread(() -> {
                             Toast.makeText(MainActivity2.this, "PRN already generated", Toast.LENGTH_SHORT).show();
@@ -309,7 +325,7 @@ public class MainActivity2 extends AppCompatActivity {
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         // URL for fetching weights
-        String url = "vtc3pl.com/hamali_bag_box_weight_prn_app.php";
+        String url = "https://vtc3pl.com/hamali_bag_box_weight_prn_app.php";
 
         Request request = new Request.Builder().url(url).build();
 
@@ -327,8 +343,11 @@ public class MainActivity2 extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     String responseBody = response.body().string();
 
-                    final double[] totalBoxWeight = {0};
-                    final double[] totalBagWeight = {0};
+//                    final double[] totalBoxWeight = {0};
+//                    final double[] totalBoxQty = {0};
+//
+//                    final double[] totalBagWeight = {0};
+//                    final double[] totalBagQty = {0};
 
                     // Parse the JSON response
                     try {
@@ -339,6 +358,8 @@ public class MainActivity2 extends AppCompatActivity {
                             if (lrNumbersSet.contains(lrNumber)) {
                                 totalBoxWeight[0] += jsonObject.getDouble("TotalWeightBox");
                                 totalBagWeight[0] += jsonObject.getDouble("TotalWeightBag");
+                                totalBoxQty[0] += jsonObject.getDouble("TotalBoxQty");
+                                totalBagQty[0] += jsonObject.getDouble("TotalBagQty");
                             }
                         }
 
@@ -346,6 +367,12 @@ public class MainActivity2 extends AppCompatActivity {
                         runOnUiThread(() -> {
                             totalBoxWeightEditText.setText(String.valueOf(totalBoxWeight[0]));
                             totalBagWeightEditText.setText(String.valueOf(totalBagWeight[0]));
+
+                            Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeight[0]));
+                            Log.d("totalBagWeight : ", String.valueOf(totalBagWeight[0]));
+
+                            Log.d("totalBoxQty : ", String.valueOf(totalBoxQty[0]));
+                            Log.d("totalBagQty : ", String.valueOf(totalBagQty[0]));
                         });
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -355,6 +382,65 @@ public class MainActivity2 extends AppCompatActivity {
                     }
                 } else {
                     onFailure(call, new IOException("Unexpected response code " + response));
+                }
+            }
+        });
+    }
+
+    private void calculateHamali() {
+        String selectedHamaliVendor = hamaliVendorNameSpinner.getSelectedItem().toString();
+
+        String selectedHamaliType = hamaliTypeSpinner.getSelectedItem().toString();
+
+        OkHttpClient client = new OkHttpClient();
+
+        FormBody.Builder formBuilder = new FormBody.Builder();
+        formBuilder.add("spinnerDepo", depo);
+        formBuilder.add("Hvendor", selectedHamaliVendor);
+
+        Request request = new Request.Builder()
+                .url("https://vtc3pl.com/fetch_hamali_rates_calculation_prn_app.php")
+                .post(formBuilder.build())
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    // Handle failure
+                    Toast.makeText(MainActivity2.this, "Failed to fetch hamali rates", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    try {
+                        JSONObject jsonObject = new JSONObject(responseBody);
+                        // Assuming the keys in the JSON response are 'Regular', 'Crossing', 'Regularbag', 'Crossingbag'
+                        regularRate = jsonObject.getDouble("Regular");
+                        crossingRate = jsonObject.getDouble("Crossing");
+                        regularBagRate = jsonObject.getDouble("Regularbag");
+                        crossingBagRate = jsonObject.getDouble("Crossingbag");
+
+                        // Do something with these rates, maybe update UI or perform calculations
+                        runOnUiThread(() -> {
+                            // Update UI or perform calculations here with the rates
+                        });
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        runOnUiThread(() -> {
+                            // Handle JSON parsing error
+                            Toast.makeText(MainActivity2.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                } else {
+                    runOnUiThread(() -> {
+                        // Handle server error
+                        Toast.makeText(MainActivity2.this, "Server error: " + response.code(), Toast.LENGTH_SHORT).show();
+                    });
                 }
             }
         });
