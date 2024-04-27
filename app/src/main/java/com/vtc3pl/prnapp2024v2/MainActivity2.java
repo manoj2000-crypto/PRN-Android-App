@@ -4,10 +4,16 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -55,31 +61,21 @@ public class MainActivity2 extends AppCompatActivity {
 
     private static final Pattern LR_NUMBER_PATTERN = Pattern.compile("[A-Z]{3,4}[0-9]{10}+");
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
-    private final Set<String> lrNumbersSet = new HashSet<>();
-    private TableLayout tableLayout;
-    private EditText lrEditText, vehicleNumberEditText, totalBoxWeightEditText, totalBagWeightEditText, deductionAmountEditText, hamaliAmountEditText, amountPaidToHVendorEditText;
-    private SurfaceView cameraView;
-    private BarcodeDetector barcodeDetector;
-    private CameraSource cameraSource;
-
-    private TextView showUserNameTextView;
-
-    private Spinner goDownSpinner, hamaliVendorNameSpinner , hamaliTypeSpinner;
-
-    private String username = "", depo = "", year = "";
-
-    // Define a flag to indicate whether an LR number is being processed
-    private boolean isProcessing = false;
-
     final double[] totalBoxWeight = {0};
     final double[] totalBoxQty = {0};
     final double[] totalBagWeight = {0};
     final double[] totalBagQty = {0};
-
-    private double regularRate = 0.0d;
-    private double crossingRate = 0.0d;
-    private double regularBagRate = 0.0d;
-    private double crossingBagRate = 0.0d;
+    private final Set<String> lrNumbersSet = new HashSet<>();
+    private TableLayout tableLayout;
+    private EditText lrEditText, vehicleNumberEditText, totalBoxQtyEditText, totalBagWeightEditText, deductionAmountEditText, hamaliAmountEditText, amountPaidToHVendorEditText;
+    private SurfaceView cameraView;
+    private BarcodeDetector barcodeDetector;
+    private CameraSource cameraSource;
+    private TextView showUserNameTextView;
+    private Spinner goDownSpinner, hamaliVendorNameSpinner, hamaliTypeSpinner;
+    private String username = "", depo = "", year = "";
+    // Define a flag to indicate whether an LR number is being processed
+    private boolean isProcessing = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,12 +85,18 @@ public class MainActivity2 extends AppCompatActivity {
 
         showUserNameTextView = findViewById(R.id.showUserNameTextView);
         tableLayout = findViewById(R.id.tableDisplay);
+
         lrEditText = findViewById(R.id.lrEditText);
+        lrEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+
         vehicleNumberEditText = findViewById(R.id.vehicleNumberEditText);
+        vehicleNumberEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+
         goDownSpinner = findViewById(R.id.goDownSpinner);
         hamaliVendorNameSpinner = findViewById(R.id.hamaliVendorNameSpinner);
         hamaliTypeSpinner = findViewById(R.id.hamaliTypeSpinner);
-        totalBoxWeightEditText = findViewById(R.id.totalBoxWeightEditText);
+
+        totalBoxQtyEditText = findViewById(R.id.totalBoxQtyEditText);
         totalBagWeightEditText = findViewById(R.id.totalBagWeightEditText);
         deductionAmountEditText = findViewById(R.id.deductionAmountEditText);
         hamaliAmountEditText = findViewById(R.id.hamaliAmountEditText);
@@ -168,6 +170,43 @@ public class MainActivity2 extends AppCompatActivity {
         });
 
         fetchHvendors();
+
+        hamaliVendorNameSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selectedVendor = parent.getItemAtPosition(position).toString();
+                if (selectedVendor.equals("No hamali Vendor")) {
+                    hamaliAmountEditText.setText("0.0");
+                    hamaliAmountEditText.setEnabled(false);
+
+                    deductionAmountEditText.setText("0.0");
+                    deductionAmountEditText.setEnabled(false);
+
+                    amountPaidToHVendorEditText.setText("0.0");
+                    amountPaidToHVendorEditText.setEnabled(false);
+                } else {
+                    // If user select any pother value then calculate,
+                    calculateHamali();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Do nothing if nothing is selected
+            }
+        });
+
+        hamaliTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                calculateHamali();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Do nothing if nothing is selected
+            }
+        });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -255,6 +294,9 @@ public class MainActivity2 extends AppCompatActivity {
             lrNumbersSet.remove(lrNumber);
 
             fetchWeightsFromServer();
+
+            // Calculate new hamali amount after deleting the LR number
+            calculateHamali();
         });
         newRow.addView(deleteButton);
 
@@ -292,6 +334,7 @@ public class MainActivity2 extends AppCompatActivity {
                     try {
                         JSONArray jsonArray = new JSONArray(responseBody);
                         hVendors.add("Please Select Vendor");
+                        hVendors.add("No hamali Vendor");
                         for (int i = 0; i < jsonArray.length(); i++) {
                             String hVendor = jsonArray.getString(i);
                             hVendors.add(hVendor);
@@ -343,12 +386,6 @@ public class MainActivity2 extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     String responseBody = response.body().string();
 
-//                    final double[] totalBoxWeight = {0};
-//                    final double[] totalBoxQty = {0};
-//
-//                    final double[] totalBagWeight = {0};
-//                    final double[] totalBagQty = {0};
-
                     // Parse the JSON response
                     try {
                         JSONArray jsonArray = new JSONArray(responseBody);
@@ -365,7 +402,7 @@ public class MainActivity2 extends AppCompatActivity {
 
                         // Update the UI on the main thread
                         runOnUiThread(() -> {
-                            totalBoxWeightEditText.setText(String.valueOf(totalBoxWeight[0]));
+                            totalBoxQtyEditText.setText(String.valueOf(totalBoxQty[0]));
                             totalBagWeightEditText.setText(String.valueOf(totalBagWeight[0]));
 
                             Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeight[0]));
@@ -388,6 +425,7 @@ public class MainActivity2 extends AppCompatActivity {
     }
 
     private void calculateHamali() {
+        Log.d("calculateHamali() :", "Method is invoked");
         String selectedHamaliVendor = hamaliVendorNameSpinner.getSelectedItem().toString();
 
         String selectedHamaliType = hamaliTypeSpinner.getSelectedItem().toString();
@@ -408,7 +446,6 @@ public class MainActivity2 extends AppCompatActivity {
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
-                    // Handle failure
                     Toast.makeText(MainActivity2.this, "Failed to fetch hamali rates", Toast.LENGTH_SHORT).show();
                 });
             }
@@ -419,16 +456,99 @@ public class MainActivity2 extends AppCompatActivity {
                     String responseBody = response.body().string();
                     try {
                         JSONObject jsonObject = new JSONObject(responseBody);
-                        // Assuming the keys in the JSON response are 'Regular', 'Crossing', 'Regularbag', 'Crossingbag'
-                        regularRate = jsonObject.getDouble("Regular");
-                        crossingRate = jsonObject.getDouble("Crossing");
-                        regularBagRate = jsonObject.getDouble("Regularbag");
-                        crossingBagRate = jsonObject.getDouble("Crossingbag");
 
-                        // Do something with these rates, maybe update UI or perform calculations
+                        double boxRate;
+                        double bagRate;
+
+                        if (selectedHamaliType.equals("Regular")) {
+                            boxRate = Double.parseDouble(jsonObject.getString("Regular"));
+                            bagRate = Double.parseDouble(String.valueOf(jsonObject.getInt("Regularbag")));
+                            Log.d("Regular boxrate : ", boxRate + " bag rate : " + bagRate);
+                        } else if (selectedHamaliType.equals("Crossing")) {
+                            boxRate = Double.parseDouble(jsonObject.getString("Crossing"));
+                            bagRate = Double.parseDouble(String.valueOf(jsonObject.getInt("Crossingbag")));
+                            Log.d("Crossing box rate : ", boxRate + " bag rate : " + bagRate);
+                        } else {
+                            runOnUiThread(() -> {
+                                Toast.makeText(MainActivity2.this, "Unknown hamali type", Toast.LENGTH_SHORT).show();
+                            });
+                            return;
+                        }
+
+                        // Perform calculations
+                        double hamaliBoxValue = boxRate * totalBoxQty[0];
+                        Log.d("hamaliBoxValue : ", String.valueOf(hamaliBoxValue));
+                        double ratePerTon = bagRate;
+                        double weightInTons = totalBagWeight[0] / 1000;
+                        Log.d("weightInTons : ", String.valueOf(weightInTons));
+                        double hamaliBagValue = weightInTons * ratePerTon;
+                        Log.d("hamaliBagValue : ", String.valueOf(hamaliBagValue));
+                        double totalHamaliAmount = hamaliBoxValue + hamaliBagValue;
+                        Log.d("totalHamaliAmount : ", String.valueOf(totalHamaliAmount));
+
                         runOnUiThread(() -> {
                             // Update UI or perform calculations here with the rates
+                            hamaliAmountEditText.setText(String.valueOf(totalHamaliAmount));
+                            hamaliAmountEditText.setEnabled(false);
                         });
+
+                        // Assuming you have deductionAmountEditText and amountPaidToHVendorEditText declared and initialized
+                        // Assuming these variables are declared globally
+                        deductionAmountEditText.setOnKeyListener((v, keyCode, event) -> {
+                            if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                                double deductionAmount = Double.parseDouble(deductionAmountEditText.getText().toString());
+
+                                if (deductionAmount < 0) {
+                                    // Prevent deduction amount from being less than zero
+                                    Toast.makeText(MainActivity2.this, "Deduction amount cannot be less than zero", Toast.LENGTH_SHORT).show();
+                                    deductionAmountEditText.setText("0.0");
+                                    return true;
+                                }
+                                double amountPaidToHVendor = (totalHamaliAmount - deductionAmount);
+                                Log.d("amountPaidToHVendor : ", String.valueOf(amountPaidToHVendor));
+                                amountPaidToHVendorEditText.setText(String.valueOf(amountPaidToHVendor));
+                                amountPaidToHVendorEditText.setEnabled(false);
+                                return true;
+                            }
+                            return false;
+                        });
+
+                        deductionAmountEditText.setOnFocusChangeListener((v, hasFocus) -> {
+                            if (!hasFocus) {
+                                // Calculate amount paid to vendor when deduction amount is entered
+                                String deductionAmountStr = deductionAmountEditText.getText().toString().trim();
+                                double deductionAmount = deductionAmountStr.isEmpty() ? 0.0 : Double.parseDouble(deductionAmountStr);
+                                double amountPaidToHVendor = Double.parseDouble(hamaliAmountEditText.getText().toString()) - deductionAmount;
+                                amountPaidToHVendorEditText.setText(String.valueOf(amountPaidToHVendor));
+                                amountPaidToHVendorEditText.setEnabled(false);
+                            }
+                        });
+
+                        // Set up hamaliAmountEditText listener
+                        hamaliAmountEditText.addTextChangedListener(new TextWatcher() {
+                            @Override
+                            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                                // Not needed
+                            }
+
+                            @Override
+                            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                                // Not needed
+                            }
+
+                            @Override
+                            public void afterTextChanged(Editable s) {
+
+                                String hamaliAmountStr = s.toString().trim();
+                                double hamaliAmount = hamaliAmountStr.isEmpty() ? 0.0 : Double.parseDouble(hamaliAmountStr);
+                                String deductionAmountStr = deductionAmountEditText.getText().toString().trim();
+                                double deductionAmount = deductionAmountStr.isEmpty() ? 0.0 : Double.parseDouble(deductionAmountStr);
+                                double amountPaidToHVendor = hamaliAmount - deductionAmount;
+                                amountPaidToHVendorEditText.setText(String.valueOf(amountPaidToHVendor));
+                                amountPaidToHVendorEditText.setEnabled(false);
+                            }
+                        });
+
                     } catch (JSONException e) {
                         e.printStackTrace();
                         runOnUiThread(() -> {
@@ -445,6 +565,7 @@ public class MainActivity2 extends AppCompatActivity {
             }
         });
     }
+
 
     private void submitDataToServer() {
         // Retrieve data from UI components
