@@ -3,6 +3,8 @@
 
     <string name="select_godown">Select Godown</string>
 
+    <string name="delete_button_text">Delete</string>
+
     <string-array name="godown_options">
         <item>Select Godown</item>
         <item>Line 1</item>
@@ -15,5 +17,11 @@
         <item>Regular</item>
         <item>Crossing</item>
     </string-array>
+
+    <string name="create_prn">Create PRN</string>
+    <string name="arrival_prn">Arrival PRN</string>
+    <string name="prn_list">PRN List</string>
+
+    <string name="user_name_prefix">User name: %s</string>
 
 </resources>

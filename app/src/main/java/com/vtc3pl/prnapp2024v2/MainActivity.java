@@ -14,6 +14,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -148,14 +149,12 @@ public class MainActivity extends AppCompatActivity {
         Request request = new Request.Builder().url(loginUrl).post(formBody).build();
 
         // Create OkHttpClient instance with a timeout
-        OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .build();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
 
         // Execute the request asynchronously
         client.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 if (e instanceof SocketTimeoutException || e instanceof ConnectTimeoutException) {
                     runOnUiThread(new Runnable() {
                         @Override
@@ -175,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 final String responseData = response.body().string();
                 Log.d("Response Data : ", responseData);
                 runOnUiThread(new Runnable() {
@@ -183,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
 
                         if (responseData.equals("Success")) {
-                            Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+                            Intent intent = new Intent(MainActivity.this, MainActivity4.class);
                             intent.putExtra("username", username);
                             intent.putExtra("depo", depo);
                             intent.putExtra("year", year);
@@ -202,13 +201,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void fetchDepoCodes() {
         OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url("https://vtc3pl.com/Fetch_DepoCode_PRN_APP.php")
-                .build();
+        Request request = new Request.Builder().url("https://vtc3pl.com/Fetch_DepoCode_PRN_APP.php").build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(new Runnable() {
                     @Override
@@ -224,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 final String responseData = response.body().string();
                 Log.d("Response Data", responseData);
                 runOnUiThread(new Runnable() {

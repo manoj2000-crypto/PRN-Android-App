@@ -56,6 +56,7 @@ import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class MainActivity2 extends AppCompatActivity {
 
@@ -76,6 +77,11 @@ public class MainActivity2 extends AppCompatActivity {
     private String username = "", depo = "", year = "";
     // Define a flag to indicate whether an LR number is being processed
     private boolean isProcessing = false;
+
+    private String selectedHamaliVendor = "";
+    private String selectedHamaliType = "";
+
+    private double amountPaidToHVendor , deductionAmount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,7 +133,7 @@ public class MainActivity2 extends AppCompatActivity {
 
         cameraView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
-            public void surfaceCreated(SurfaceHolder holder) {
+            public void surfaceCreated(@NonNull SurfaceHolder holder) {
                 if (ContextCompat.checkSelfPermission(MainActivity2.this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                     try {
                         cameraSource.start(cameraView.getHolder());
@@ -140,11 +146,11 @@ public class MainActivity2 extends AppCompatActivity {
             }
 
             @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
             }
 
             @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {
+            public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
                 cameraSource.stop();
             }
         });
@@ -155,7 +161,7 @@ public class MainActivity2 extends AppCompatActivity {
             }
 
             @Override
-            public void receiveDetections(Detector.Detections<Barcode> detections) {
+            public void receiveDetections(@NonNull Detector.Detections<Barcode> detections) {
                 // Check if LR number is currently being processed
                 if (isProcessing) {
                     return;
@@ -245,7 +251,7 @@ public class MainActivity2 extends AppCompatActivity {
 
         client.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
                     Toast.makeText(MainActivity2.this, "Failed to connect to server", Toast.LENGTH_SHORT).show();
@@ -253,21 +259,27 @@ public class MainActivity2 extends AppCompatActivity {
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-                    // Process the response here
-                    if (responseBody.equals("0")) {
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        String responseBody = body.string();
+                        if (responseBody.equals("0")) {
+                            runOnUiThread(() -> {
+                                Toast.makeText(MainActivity2.this, "This LR Number not available for PRN", Toast.LENGTH_SHORT).show();
+                            });
+                        } else if (responseBody.equals("PRN already generated")) {
+                            runOnUiThread(() -> {
+                                Toast.makeText(MainActivity2.this, "PRN already generated", Toast.LENGTH_SHORT).show();
+                            });
+                        } else if (responseBody.equals(lrNumber)) {
+                            Log.d("LR NUMBER : ", String.valueOf(response));
+                            runOnUiThread(() -> addLRNumberToTable(lrNumber));
+                        }
+                    } else {
                         runOnUiThread(() -> {
-                            Toast.makeText(MainActivity2.this, "This LR Number not available for PRN", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity2.this, "Response body is null", Toast.LENGTH_SHORT).show();
                         });
-                    } else if (responseBody.equals("PRN already generated")) {
-                        runOnUiThread(() -> {
-                            Toast.makeText(MainActivity2.this, "PRN already generated", Toast.LENGTH_SHORT).show();
-                        });
-                    } else if (responseBody.equals(lrNumber)) {
-                        Log.d("LR NUMBER : ", String.valueOf(response));
-                        runOnUiThread(() -> addLRNumberToTable(lrNumber));
                     }
                 } else {
                     runOnUiThread(() -> {
@@ -286,7 +298,7 @@ public class MainActivity2 extends AppCompatActivity {
         newRow.addView(textView);
 
         Button deleteButton = new Button(this);
-        deleteButton.setText("Delete");
+        deleteButton.setText(getString(R.string.delete_button_text));
         deleteButton.setOnClickListener(v -> {
             // Remove the row when delete button is clicked
             tableLayout.removeView(newRow);
@@ -327,28 +339,40 @@ public class MainActivity2 extends AppCompatActivity {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-
-                    // Parse the JSON response
-                    List<String> hVendors = new ArrayList<>();
-                    try {
-                        JSONArray jsonArray = new JSONArray(responseBody);
-                        hVendors.add("Please Select Vendor");
-                        hVendors.add("No hamali Vendor");
-                        for (int i = 0; i < jsonArray.length(); i++) {
-                            String hVendor = jsonArray.getString(i);
-                            hVendors.add(hVendor);
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        String responseBody = body.string();
+                        // Parse the JSON response
+                        List<String> hVendors = new ArrayList<>();
+                        try {
+                            JSONArray jsonArray = new JSONArray(responseBody);
+                            if (jsonArray.length() > 0) {
+                                hVendors.add("Please Select Vendor");
+                                hVendors.add("No hamali Vendor");
+                                for (int i = 0; i < jsonArray.length(); i++) {
+                                    String hVendor = jsonArray.getString(i);
+                                    hVendors.add(hVendor);
+                                }
+                            } else {
+                                runOnUiThread(() -> {
+                                    Toast.makeText(MainActivity2.this, "No hamali vendors found", Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
 
-                    // Update the spinner UI on the main thread
-                    runOnUiThread(() -> {
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity2.this, android.R.layout.simple_spinner_item, hVendors);
-                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        hamaliVendorNameSpinner.setAdapter(adapter); // Use hamaliVendorNameSpinner instead of goDownSpinner
-                    });
+                        // Update the spinner UI on the main thread
+                        runOnUiThread(() -> {
+                            ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity2.this, android.R.layout.simple_spinner_item, hVendors);
+                            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            hamaliVendorNameSpinner.setAdapter(adapter); // Use hamaliVendorNameSpinner instead of goDownSpinner
+                        });
+                    } else {
+                        runOnUiThread(() -> {
+                            Toast.makeText(MainActivity2.this, "Response body is null (fetch vendors)", Toast.LENGTH_SHORT).show();
+                        });
+                    }
                 } else {
                     onFailure(call, new IOException("Unexpected response code " + response));
                 }
@@ -384,37 +408,43 @@ public class MainActivity2 extends AppCompatActivity {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-
-                    // Parse the JSON response
-                    try {
-                        JSONArray jsonArray = new JSONArray(responseBody);
-                        for (int i = 0; i < jsonArray.length(); i++) {
-                            JSONObject jsonObject = jsonArray.getJSONObject(i);
-                            String lrNumber = jsonObject.getString("LRNO");
-                            if (lrNumbersSet.contains(lrNumber)) {
-                                totalBoxWeight[0] += jsonObject.getDouble("TotalWeightBox");
-                                totalBagWeight[0] += jsonObject.getDouble("TotalWeightBag");
-                                totalBoxQty[0] += jsonObject.getDouble("TotalBoxQty");
-                                totalBagQty[0] += jsonObject.getDouble("TotalBagQty");
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        String responseBody = body.string();
+                        // Parse the JSON response
+                        try {
+                            JSONArray jsonArray = new JSONArray(responseBody);
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                String lrNumber = jsonObject.getString("LRNO");
+                                if (lrNumbersSet.contains(lrNumber)) {
+                                    totalBoxWeight[0] += jsonObject.getDouble("TotalWeightBox");
+                                    totalBagWeight[0] += jsonObject.getDouble("TotalWeightBag");
+                                    totalBoxQty[0] += jsonObject.getDouble("TotalBoxQty");
+                                    totalBagQty[0] += jsonObject.getDouble("TotalBagQty");
+                                }
                             }
+
+                            // Update the UI on the main thread
+                            runOnUiThread(() -> {
+                                totalBoxQtyEditText.setText(String.valueOf(totalBoxQty[0]));
+                                totalBagWeightEditText.setText(String.valueOf(totalBagWeight[0]));
+
+                                Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeight[0]));
+                                Log.d("totalBagWeight : ", String.valueOf(totalBagWeight[0]));
+
+                                Log.d("totalBoxQty : ", String.valueOf(totalBoxQty[0]));
+                                Log.d("totalBagQty : ", String.valueOf(totalBagQty[0]));
+                            });
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            runOnUiThread(() -> {
+                                Toast.makeText(MainActivity2.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
+                            });
                         }
-
-                        // Update the UI on the main thread
+                    } else {
                         runOnUiThread(() -> {
-                            totalBoxQtyEditText.setText(String.valueOf(totalBoxQty[0]));
-                            totalBagWeightEditText.setText(String.valueOf(totalBagWeight[0]));
-
-                            Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeight[0]));
-                            Log.d("totalBagWeight : ", String.valueOf(totalBagWeight[0]));
-
-                            Log.d("totalBoxQty : ", String.valueOf(totalBoxQty[0]));
-                            Log.d("totalBagQty : ", String.valueOf(totalBagQty[0]));
-                        });
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        runOnUiThread(() -> {
-                            Toast.makeText(MainActivity2.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity2.this, "Response body is null(Box Qty and Bag Weight)", Toast.LENGTH_SHORT).show();
                         });
                     }
                 } else {
@@ -426,9 +456,15 @@ public class MainActivity2 extends AppCompatActivity {
 
     private void calculateHamali() {
         Log.d("calculateHamali() :", "Method is invoked");
-        String selectedHamaliVendor = hamaliVendorNameSpinner.getSelectedItem().toString();
 
-        String selectedHamaliType = hamaliTypeSpinner.getSelectedItem().toString();
+        if (hamaliVendorNameSpinner.getSelectedItem() == null || hamaliTypeSpinner.getSelectedItem() == null) {
+            // One or both spinners are not selected, return without calculating hamali
+            return;
+        }
+
+        selectedHamaliVendor = hamaliVendorNameSpinner.getSelectedItem().toString();
+
+        selectedHamaliType = hamaliTypeSpinner.getSelectedItem().toString();
 
         OkHttpClient client = new OkHttpClient();
 
@@ -443,7 +479,7 @@ public class MainActivity2 extends AppCompatActivity {
 
         client.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
                     Toast.makeText(MainActivity2.this, "Failed to fetch hamali rates", Toast.LENGTH_SHORT).show();
@@ -451,109 +487,116 @@ public class MainActivity2 extends AppCompatActivity {
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-                    try {
-                        JSONObject jsonObject = new JSONObject(responseBody);
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        String responseBody = body.string();
+                        try {
+                            JSONObject jsonObject = new JSONObject(responseBody);
 
-                        double boxRate;
-                        double bagRate;
+                            double boxRate;
+                            double bagRate;
 
-                        if (selectedHamaliType.equals("Regular")) {
-                            boxRate = Double.parseDouble(jsonObject.getString("Regular"));
-                            bagRate = Double.parseDouble(String.valueOf(jsonObject.getInt("Regularbag")));
-                            Log.d("Regular boxrate : ", boxRate + " bag rate : " + bagRate);
-                        } else if (selectedHamaliType.equals("Crossing")) {
-                            boxRate = Double.parseDouble(jsonObject.getString("Crossing"));
-                            bagRate = Double.parseDouble(String.valueOf(jsonObject.getInt("Crossingbag")));
-                            Log.d("Crossing box rate : ", boxRate + " bag rate : " + bagRate);
-                        } else {
+                            if (selectedHamaliType.equals("Regular")) {
+                                boxRate = Double.parseDouble(jsonObject.getString("Regular"));
+                                bagRate = Double.parseDouble(String.valueOf(jsonObject.getInt("Regularbag")));
+                                Log.d("Regular boxrate : ", boxRate + " bag rate : " + bagRate);
+                            } else if (selectedHamaliType.equals("Crossing")) {
+                                boxRate = Double.parseDouble(jsonObject.getString("Crossing"));
+                                bagRate = Double.parseDouble(String.valueOf(jsonObject.getInt("Crossingbag")));
+                                Log.d("Crossing box rate : ", boxRate + " bag rate : " + bagRate);
+                            } else {
+                                runOnUiThread(() -> {
+                                    Toast.makeText(MainActivity2.this, "Unknown hamali type", Toast.LENGTH_SHORT).show();
+                                });
+                                return;
+                            }
+
+                            // Perform calculations
+                            double hamaliBoxValue = boxRate * totalBoxQty[0];
+                            Log.d("hamaliBoxValue : ", String.valueOf(hamaliBoxValue));
+                            double ratePerTon = bagRate;
+                            double weightInTons = totalBagWeight[0] / 1000;
+                            Log.d("weightInTons : ", String.valueOf(weightInTons));
+                            double hamaliBagValue = weightInTons * ratePerTon;
+                            Log.d("hamaliBagValue : ", String.valueOf(hamaliBagValue));
+                            double totalHamaliAmount = hamaliBoxValue + hamaliBagValue;
+                            Log.d("totalHamaliAmount : ", String.valueOf(totalHamaliAmount));
+
                             runOnUiThread(() -> {
-                                Toast.makeText(MainActivity2.this, "Unknown hamali type", Toast.LENGTH_SHORT).show();
+                                // Update UI or perform calculations here with the rates
+                                hamaliAmountEditText.setText(String.valueOf(totalHamaliAmount));
+                                hamaliAmountEditText.setEnabled(false);
                             });
-                            return;
-                        }
 
-                        // Perform calculations
-                        double hamaliBoxValue = boxRate * totalBoxQty[0];
-                        Log.d("hamaliBoxValue : ", String.valueOf(hamaliBoxValue));
-                        double ratePerTon = bagRate;
-                        double weightInTons = totalBagWeight[0] / 1000;
-                        Log.d("weightInTons : ", String.valueOf(weightInTons));
-                        double hamaliBagValue = weightInTons * ratePerTon;
-                        Log.d("hamaliBagValue : ", String.valueOf(hamaliBagValue));
-                        double totalHamaliAmount = hamaliBoxValue + hamaliBagValue;
-                        Log.d("totalHamaliAmount : ", String.valueOf(totalHamaliAmount));
+                            // Assuming you have deductionAmountEditText and amountPaidToHVendorEditText declared and initialized
+                            // Assuming these variables are declared globally
+                            deductionAmountEditText.setOnKeyListener((v, keyCode, event) -> {
+                                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                                    deductionAmount = Double.parseDouble(deductionAmountEditText.getText().toString());
 
-                        runOnUiThread(() -> {
-                            // Update UI or perform calculations here with the rates
-                            hamaliAmountEditText.setText(String.valueOf(totalHamaliAmount));
-                            hamaliAmountEditText.setEnabled(false);
-                        });
-
-                        // Assuming you have deductionAmountEditText and amountPaidToHVendorEditText declared and initialized
-                        // Assuming these variables are declared globally
-                        deductionAmountEditText.setOnKeyListener((v, keyCode, event) -> {
-                            if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                                double deductionAmount = Double.parseDouble(deductionAmountEditText.getText().toString());
-
-                                if (deductionAmount < 0) {
-                                    // Prevent deduction amount from being less than zero
-                                    Toast.makeText(MainActivity2.this, "Deduction amount cannot be less than zero", Toast.LENGTH_SHORT).show();
-                                    deductionAmountEditText.setText("0.0");
+                                    if (deductionAmount < 0) {
+                                        // Prevent deduction amount from being less than zero
+                                        Toast.makeText(MainActivity2.this, "Deduction amount cannot be less than zero", Toast.LENGTH_SHORT).show();
+                                        deductionAmountEditText.setText("0.0");
+                                        return true;
+                                    }
+                                    amountPaidToHVendor = (totalHamaliAmount - deductionAmount);
+                                    Log.d("amountPaidToHVendor : ", String.valueOf(amountPaidToHVendor));
+                                    amountPaidToHVendorEditText.setText(String.valueOf(amountPaidToHVendor));
+                                    amountPaidToHVendorEditText.setEnabled(false);
                                     return true;
                                 }
-                                double amountPaidToHVendor = (totalHamaliAmount - deductionAmount);
-                                Log.d("amountPaidToHVendor : ", String.valueOf(amountPaidToHVendor));
-                                amountPaidToHVendorEditText.setText(String.valueOf(amountPaidToHVendor));
-                                amountPaidToHVendorEditText.setEnabled(false);
-                                return true;
-                            }
-                            return false;
-                        });
+                                return false;
+                            });
 
-                        deductionAmountEditText.setOnFocusChangeListener((v, hasFocus) -> {
-                            if (!hasFocus) {
-                                // Calculate amount paid to vendor when deduction amount is entered
-                                String deductionAmountStr = deductionAmountEditText.getText().toString().trim();
-                                double deductionAmount = deductionAmountStr.isEmpty() ? 0.0 : Double.parseDouble(deductionAmountStr);
-                                double amountPaidToHVendor = Double.parseDouble(hamaliAmountEditText.getText().toString()) - deductionAmount;
-                                amountPaidToHVendorEditText.setText(String.valueOf(amountPaidToHVendor));
-                                amountPaidToHVendorEditText.setEnabled(false);
-                            }
-                        });
+                            deductionAmountEditText.setOnFocusChangeListener((v, hasFocus) -> {
+                                if (!hasFocus) {
+                                    // Calculate amount paid to vendor when deduction amount is entered
+                                    String deductionAmountStr = deductionAmountEditText.getText().toString().trim();
+                                    deductionAmount = deductionAmountStr.isEmpty() ? 0.0 : Double.parseDouble(deductionAmountStr);
+                                    amountPaidToHVendor = Double.parseDouble(hamaliAmountEditText.getText().toString()) - deductionAmount;
+                                    amountPaidToHVendorEditText.setText(String.valueOf(amountPaidToHVendor));
+                                    amountPaidToHVendorEditText.setEnabled(false);
+                                }
+                            });
 
-                        // Set up hamaliAmountEditText listener
-                        hamaliAmountEditText.addTextChangedListener(new TextWatcher() {
-                            @Override
-                            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                                // Not needed
-                            }
+                            // Set up hamaliAmountEditText listener
+                            hamaliAmountEditText.addTextChangedListener(new TextWatcher() {
+                                @Override
+                                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                                    // Not needed
+                                }
 
-                            @Override
-                            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                                // Not needed
-                            }
+                                @Override
+                                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                                    // Not needed
+                                }
 
-                            @Override
-                            public void afterTextChanged(Editable s) {
+                                @Override
+                                public void afterTextChanged(Editable s) {
 
-                                String hamaliAmountStr = s.toString().trim();
-                                double hamaliAmount = hamaliAmountStr.isEmpty() ? 0.0 : Double.parseDouble(hamaliAmountStr);
-                                String deductionAmountStr = deductionAmountEditText.getText().toString().trim();
-                                double deductionAmount = deductionAmountStr.isEmpty() ? 0.0 : Double.parseDouble(deductionAmountStr);
-                                double amountPaidToHVendor = hamaliAmount - deductionAmount;
-                                amountPaidToHVendorEditText.setText(String.valueOf(amountPaidToHVendor));
-                                amountPaidToHVendorEditText.setEnabled(false);
-                            }
-                        });
+                                    String hamaliAmountStr = s.toString().trim();
+                                    double hamaliAmount = hamaliAmountStr.isEmpty() ? 0.0 : Double.parseDouble(hamaliAmountStr);
+                                    String deductionAmountStr = deductionAmountEditText.getText().toString().trim();
+                                    deductionAmount = deductionAmountStr.isEmpty() ? 0.0 : Double.parseDouble(deductionAmountStr);
+                                    amountPaidToHVendor = (hamaliAmount - deductionAmount);
+                                    amountPaidToHVendorEditText.setText(String.valueOf(amountPaidToHVendor));
+                                    amountPaidToHVendorEditText.setEnabled(false);
+                                }
+                            });
 
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            runOnUiThread(() -> {
+                                // Handle JSON parsing error
+                                Toast.makeText(MainActivity2.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
+                            });
+                        }
+                    } else {
                         runOnUiThread(() -> {
-                            // Handle JSON parsing error
-                            Toast.makeText(MainActivity2.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity2.this, "Response body is empty (Hamali rates)", Toast.LENGTH_SHORT).show();
                         });
                     }
                 } else {
@@ -599,12 +642,16 @@ public class MainActivity2 extends AppCompatActivity {
         formBuilder.add("vehicleNo", vehicleNo);
         formBuilder.add("goDown", goDown);
         formBuilder.add("arrayListOfLR", arrayListOfLR);
+        formBuilder.add("selectedHamaliVendor",selectedHamaliVendor);
+        formBuilder.add("finalHamliAmount", String.valueOf(amountPaidToHVendor));
+        formBuilder.add("selectedHamaliType", selectedHamaliType);
+        formBuilder.add("deductionAmount", String.valueOf(deductionAmount));
 
         Request request = new Request.Builder().url("https://vtc3pl.com/insert_prn_app.php").post(formBuilder.build()).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 e.printStackTrace();
                 Log.e("MainActivity2(submit)", "Failed to connect to server", e);
                 runOnUiThread(() -> {
@@ -613,7 +660,7 @@ public class MainActivity2 extends AppCompatActivity {
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if (response.isSuccessful()) {
                     String responseBody = response.body().string();
                     // Process the response here
@@ -624,6 +671,11 @@ public class MainActivity2 extends AppCompatActivity {
                         tableLayout.removeAllViews();
                         lrNumbersSet.clear();
                         goDownSpinner.setSelection(0);
+                        hamaliVendorNameSpinner.setSelection(0);
+                        amountPaidToHVendorEditText.setText("");
+                        hamaliTypeSpinner.setSelection(0);
+                        deductionAmountEditText.setText("");
+                        hamaliAmountEditText.setText("");
                     });
                 } else {
                     runOnUiThread(() -> {
