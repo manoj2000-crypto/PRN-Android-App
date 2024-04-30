@@ -1,19 +1,329 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity3">
+    android:nestedScrollingEnabled="true">
 
-    <WebView
-        android:id="@+id/webView"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:layout_height="wrap_content"
+        tools:context=".MainActivity3">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/showUserNameTextViewActivityThree"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/textViewFromDateActivityThree"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/from_date"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/showUserNameTextViewActivityThree" />
+
+        <EditText
+            android:id="@+id/editTextFromDateActivityThree"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
+            android:focusable="false"
+            android:inputType="none"
+            android:onClick="showDatePickerDialogFromDate"
+            app:layout_constraintBottom_toBottomOf="@id/textViewFromDateActivityThree"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/textViewFromDateActivityThree"
+            app:layout_constraintTop_toTopOf="@id/textViewFromDateActivityThree" />
+
+        <TextView
+            android:id="@+id/textViewToDateActivityThree"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="32dp"
+            android:text="@string/to_date"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textViewFromDateActivityThree" />
+
+        <EditText
+            android:id="@+id/editTextToDateActivityThree"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
+            android:focusable="false"
+            android:inputType="none"
+            android:onClick="showDatePickerDialogToDate"
+            app:layout_constraintBottom_toBottomOf="@id/textViewToDateActivityThree"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/textViewToDateActivityThree"
+            app:layout_constraintTop_toTopOf="@id/textViewToDateActivityThree" />
+
+        <TextView
+            android:id="@+id/contractPartyTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/contract_party"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/editTextToDateActivityThree" />
+
+        <AutoCompleteTextView
+            android:id="@+id/contractPartyAutoCompleteTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
+            android:hint="Enter Contract Party"
+            app:layout_constraintBottom_toBottomOf="@id/contractPartyTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/contractPartyTextView"
+            app:layout_constraintTop_toTopOf="@id/contractPartyTextView" />
+
+        <TextView
+            android:id="@+id/vehicleNumberTextViewActivityThree"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/vehicle_number"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/contractPartyAutoCompleteTextView" />
+
+        <AutoCompleteTextView
+            android:id="@+id/vehicleNumberAutoCompleteTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:hint="Enter Vehicle Number"
+            app:layout_constraintBottom_toBottomOf="@id/vehicleNumberTextViewActivityThree"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/vehicleNumberTextViewActivityThree"
+            app:layout_constraintTop_toTopOf="@id/vehicleNumberTextViewActivityThree"
+            tools:ignore="HardcodedText,TextFields" />
+
+        <ScrollView
+            android:id="@+id/scrollViewForTableLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/vehicleNumberAutoCompleteTextView">
+
+            <TableLayout
+                android:id="@+id/tableLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/srNoHeader"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:padding="8dp"
+                        android:text="Sr No"
+                        android:textAlignment="center"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/lrNoHeader"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:padding="8dp"
+                        android:text="Lr No"
+                        android:textAlignment="center"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/selectHeader"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="8dp"
+                            android:text="Select"
+                            android:textAlignment="center"
+                            android:textStyle="bold" />
+
+                        <CheckBox
+                            android:id="@+id/selectAllCheckBox"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="8dp" />
+
+                    </LinearLayout>
+                </TableRow>
+            </TableLayout>
+        </ScrollView>
+
+        <TextView
+            android:id="@+id/hamaliVendorNameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:text="Hamali vendor Name:"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/scrollViewForTableLayout"
+            tools:ignore="HardcodedText" />
+
+        <Spinner
+            android:id="@+id/hamaliVendorNameSpinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintBottom_toBottomOf="@id/hamaliVendorNameTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/hamaliVendorNameTextView"
+            app:layout_constraintTop_toTopOf="@id/hamaliVendorNameTextView" />
+
+        <TextView
+            android:id="@+id/hamaliTypeTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:text="Hamali Type :"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/hamaliVendorNameTextView"
+            tools:ignore="HardcodedText" />
+
+        <Spinner
+            android:id="@+id/hamaliTypeSpinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:entries="@array/hamali_type_options"
+            app:layout_constraintBottom_toBottomOf="@id/hamaliTypeTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/hamaliTypeTextView"
+            app:layout_constraintTop_toTopOf="@id/hamaliTypeTextView" />
+
+        <TextView
+            android:id="@+id/hamaliAmountTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:text="Hamali Amount:"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/hamaliTypeTextView"
+            tools:ignore="HardcodedText" />
+
+        <EditText
+            android:id="@+id/hamaliAmountEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:ems="10"
+            android:hint="Enter Hamali Amount"
+            android:inputType="numberDecimal"
+            app:layout_constraintBottom_toBottomOf="@id/hamaliAmountTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/hamaliAmountTextView"
+            app:layout_constraintTop_toTopOf="@id/hamaliAmountTextView"
+            tools:ignore="HardcodedText,TextFields" />
+
+        <TextView
+            android:id="@+id/deductionAmountTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="32dp"
+            android:text="Deduction Amount:"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/hamaliAmountTextView"
+            tools:ignore="HardcodedText" />
+
+        <EditText
+            android:id="@+id/deductionAmountEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:ems="10"
+            android:hint="Enter Deduction Amount"
+            android:inputType="numberDecimal"
+            app:layout_constraintBottom_toBottomOf="@id/deductionAmountTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/deductionAmountTextView"
+            app:layout_constraintTop_toTopOf="@id/deductionAmountTextView"
+            tools:ignore="HardcodedText,TextFields" />
+
+        <TextView
+            android:id="@+id/amountPaidToHVendorTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="32dp"
+            android:text="Amount Paid To HVendor:"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/deductionAmountTextView"
+            tools:ignore="HardcodedText" />
+
+        <EditText
+            android:id="@+id/amountPaidToHVendorEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:ems="10"
+            android:hint="Enter Amount Paid"
+            android:inputType="numberDecimal"
+            app:layout_constraintBottom_toBottomOf="@id/amountPaidToHVendorTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/amountPaidToHVendorTextView"
+            app:layout_constraintTop_toTopOf="@id/amountPaidToHVendorTextView"
+            tools:ignore="HardcodedText,TextFields" />
+
+        <Button
+            android:id="@+id/submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:text="Submit"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/amountPaidToHVendorTextView"
+            tools:ignore="HardcodedText" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

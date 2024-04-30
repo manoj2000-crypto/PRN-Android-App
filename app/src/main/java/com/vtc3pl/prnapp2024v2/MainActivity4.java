@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,7 +18,7 @@ public class MainActivity4 extends AppCompatActivity {
     private String username = "", depo = "", year = "";
     private TextView showUserNameActivityFourTextView;
 
-    private Button createPrnButton;
+    private Button createPrnButton, arrivalPrnButton, prnListButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +28,8 @@ public class MainActivity4 extends AppCompatActivity {
 
         showUserNameActivityFourTextView = findViewById(R.id.showUserNameActivityFourTextView);
         createPrnButton = findViewById(R.id.createPrnButton);
+        arrivalPrnButton = findViewById(R.id.arrivalPrnButton);
+        prnListButton = findViewById(R.id.prnListButton);
 
         Intent intent = getIntent();
         if (intent != null) {
@@ -50,6 +53,23 @@ public class MainActivity4 extends AppCompatActivity {
                 intent.putExtra("username", username);
                 intent.putExtra("depo", depo);
                 intent.putExtra("year", year);
+                startActivity(intent);
+            }
+        });
+
+        arrivalPrnButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity4.this, "Under Developemnt...", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Set onClickListener for prnListButton
+        prnListButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Start MainActivity5
+                Intent intent = new Intent(MainActivity4.this, MainActivity5.class);
                 startActivity(intent);
             }
         });

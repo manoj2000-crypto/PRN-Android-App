@@ -12,6 +12,16 @@
         android:layout_height="wrap_content"
         tools:context=".MainActivity2">
 
+        <Button
+            android:id="@+id/companyWiseButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Company Wise"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="16dp" />
+
         <TextView
             android:id="@+id/showUserNameTextView"
             android:layout_width="wrap_content"
@@ -20,7 +30,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/companyWiseButton"
             tools:ignore="HardcodedText" />
 
         <TextView

@@ -24,4 +24,10 @@
 
     <string name="user_name_prefix">User name: %s</string>
 
+    <string name="from_date">From Date:</string>
+    <string name="to_date">To Date:</string>
+    <string name="contract_party">Contract Party:</string>
+
+    <string name="vehicle_number">Vehicle No:</string>
+
 </resources>

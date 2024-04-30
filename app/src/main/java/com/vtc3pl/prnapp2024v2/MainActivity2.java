@@ -81,7 +81,7 @@ public class MainActivity2 extends AppCompatActivity {
     private String selectedHamaliVendor = "";
     private String selectedHamaliType = "";
 
-    private double amountPaidToHVendor , deductionAmount;
+    private double amountPaidToHVendor, deductionAmount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,6 +125,19 @@ public class MainActivity2 extends AppCompatActivity {
                 showUserNameTextView.setText("User name: " + username);
             }
         }
+
+        Button companyWiseButton = findViewById(R.id.companyWiseButton);
+        companyWiseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Start MainActivity2 and pass values as extras
+                Intent intent = new Intent(MainActivity2.this, MainActivity3.class);
+                intent.putExtra("username", username);
+                intent.putExtra("depo", depo);
+                intent.putExtra("year", year);
+                startActivity(intent);
+            }
+        });
 
         cameraView = findViewById(R.id.showCameraSurfaceView);
         barcodeDetector = new BarcodeDetector.Builder(this).setBarcodeFormats(Barcode.ALL_FORMATS).build();
@@ -499,13 +512,23 @@ public class MainActivity2 extends AppCompatActivity {
                             double bagRate;
 
                             if (selectedHamaliType.equals("Regular")) {
-                                boxRate = Double.parseDouble(jsonObject.getString("Regular"));
-                                bagRate = Double.parseDouble(String.valueOf(jsonObject.getInt("Regularbag")));
-                                Log.d("Regular boxrate : ", boxRate + " bag rate : " + bagRate);
+                                if (jsonObject.has("Regular")) {
+                                    boxRate = Double.parseDouble(jsonObject.getString("Regular"));
+                                    bagRate = Double.parseDouble(String.valueOf(jsonObject.getInt("Regularbag")));
+                                    Log.d("Regular boxrate : ", boxRate + " bag rate : " + bagRate);
+                                } else {
+                                    Log.d("Regular Else part : ", "Inside else part just after opening MainActivity2.java");
+                                    return;
+                                }
                             } else if (selectedHamaliType.equals("Crossing")) {
-                                boxRate = Double.parseDouble(jsonObject.getString("Crossing"));
-                                bagRate = Double.parseDouble(String.valueOf(jsonObject.getInt("Crossingbag")));
-                                Log.d("Crossing box rate : ", boxRate + " bag rate : " + bagRate);
+                                if (jsonObject.has("Crossing")) {
+                                    boxRate = Double.parseDouble(jsonObject.getString("Crossing"));
+                                    bagRate = Double.parseDouble(String.valueOf(jsonObject.getInt("Crossingbag")));
+                                    Log.d("Crossing box rate : ", boxRate + " bag rate : " + bagRate);
+                                } else {
+                                    Log.d("Crossing Else part : ", "Inside else part just after opening MainActivity2.java");
+                                    return;
+                                }
                             } else {
                                 runOnUiThread(() -> {
                                     Toast.makeText(MainActivity2.this, "Unknown hamali type", Toast.LENGTH_SHORT).show();
@@ -642,7 +665,7 @@ public class MainActivity2 extends AppCompatActivity {
         formBuilder.add("vehicleNo", vehicleNo);
         formBuilder.add("goDown", goDown);
         formBuilder.add("arrayListOfLR", arrayListOfLR);
-        formBuilder.add("selectedHamaliVendor",selectedHamaliVendor);
+        formBuilder.add("selectedHamaliVendor", selectedHamaliVendor);
         formBuilder.add("finalHamliAmount", String.valueOf(amountPaidToHVendor));
         formBuilder.add("selectedHamaliType", selectedHamaliType);
         formBuilder.add("deductionAmount", String.valueOf(deductionAmount));

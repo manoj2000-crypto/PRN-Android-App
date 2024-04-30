@@ -11,7 +11,10 @@
         android:id="@+id/textViewFromDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="From Date"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/from_date"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -19,7 +22,9 @@
         android:id="@+id/textViewToDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="To Date"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
+        android:text="@string/to_date"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textViewFromDate" />
 
@@ -27,7 +32,11 @@
         android:id="@+id/editTextFromDate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:inputType="date"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:focusable="false"
+        android:inputType="none"
+        android:onClick="showDatePickerDialogFromDate"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/textViewFromDate"
         app:layout_constraintTop_toTopOf="@id/textViewFromDate" />
@@ -36,7 +45,11 @@
         android:id="@+id/editTextToDate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:inputType="date"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:focusable="false"
+        android:inputType="none"
+        android:onClick="showDatePickerDialogToDate"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/textViewToDate"
         app:layout_constraintTop_toTopOf="@id/textViewToDate" />
@@ -46,16 +59,32 @@
         android:id="@+id/checkButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="Check"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/editTextToDate" />
 
-    <TableLayout
-        android:id="@+id/tableLayout"
+    <ScrollView
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="32dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/checkButton" />
+        app:layout_constraintTop_toBottomOf="@id/checkButton">
+
+        <TableLayout
+            android:id="@+id/tableLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" />
+
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

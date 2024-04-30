@@ -38,7 +38,7 @@
         app:layout_constraintTop_toBottomOf="@id/createPrnButton" />
 
     <Button
-        android:id="@+id/prnList"
+        android:id="@+id/prnListButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
