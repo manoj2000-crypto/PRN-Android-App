@@ -86,19 +86,30 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/editTextToDateActivityThree" />
 
-        <AutoCompleteTextView
-            android:id="@+id/contractPartyAutoCompleteTextView"
+        <EditText
+            android:id="@+id/contractPartyEditText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="8dp"
             android:hint="Enter Contract Party"
             app:layout_constraintBottom_toBottomOf="@id/contractPartyTextView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/contractPartyTextView"
-            app:layout_constraintTop_toTopOf="@id/contractPartyTextView" />
+            app:layout_constraintTop_toTopOf="@id/contractPartyTextView"
+            android:inputType="text"/>
+
+        <Spinner
+            android:id="@+id/contractPartySpinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/contractPartyEditText"/>
 
         <TextView
             android:id="@+id/vehicleNumberTextViewActivityThree"
@@ -108,10 +119,10 @@
             android:layout_marginTop="16dp"
             android:text="@string/vehicle_number"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/contractPartyAutoCompleteTextView" />
+            app:layout_constraintTop_toBottomOf="@id/contractPartySpinner" />
 
-        <AutoCompleteTextView
-            android:id="@+id/vehicleNumberAutoCompleteTextView"
+        <EditText
+            android:id="@+id/vehicleNumberEditText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -121,14 +132,25 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/vehicleNumberTextViewActivityThree"
             app:layout_constraintTop_toTopOf="@id/vehicleNumberTextViewActivityThree"
-            tools:ignore="HardcodedText,TextFields" />
+            android:inputType="text" />
+
+        <Spinner
+            android:id="@+id/vehicleNumberSpinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/vehicleNumberEditText"/>
 
         <ScrollView
             android:id="@+id/scrollViewForTableLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@id/vehicleNumberAutoCompleteTextView">
+            app:layout_constraintTop_toBottomOf="@id/vehicleNumberSpinner">
 
             <TableLayout
                 android:id="@+id/tableLayout"

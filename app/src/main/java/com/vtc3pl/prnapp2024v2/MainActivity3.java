@@ -3,15 +3,16 @@ package com.vtc3pl.prnapp2024v2;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -26,6 +27,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -37,17 +39,22 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class MainActivity3 extends AppCompatActivity {
 
+    private final Handler handler = new Handler();
     private TextView showUserNameTextViewActivityThree;
-    private EditText editTextFromDateActivityThree, editTextToDateActivityThree;
+    private EditText editTextFromDateActivityThree, editTextToDateActivityThree, vehicleNumberEditText , contractPartyEditText;
     private Calendar fromCalendar, toCalendar;
     private DatePickerDialog.OnDateSetListener fromDateSetListener, toDateSetListener;
     private String username = "", depo = "", year = "";
-    private AutoCompleteTextView contractPartyAutoCompleteTextView;
-    private List<String> contractPartiesList;
-    private ArrayAdapter<String> adapter;
+    private List<String> contractPartiesList , vehicleNumberList;
+    private ArrayAdapter<String> spinnerAdapter, vehicleNumberSpinnerAdapter;
+    private Spinner contractPartySpinner, vehicleNumberSpinner;
+    private Runnable runnable;
+
+    private boolean isItemSelected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +65,12 @@ public class MainActivity3 extends AppCompatActivity {
         showUserNameTextViewActivityThree = findViewById(R.id.showUserNameTextViewActivityThree);
         editTextFromDateActivityThree = findViewById(R.id.editTextFromDateActivityThree);
         editTextToDateActivityThree = findViewById(R.id.editTextToDateActivityThree);
-        contractPartyAutoCompleteTextView = findViewById(R.id.contractPartyAutoCompleteTextView);
+
+        contractPartyEditText = findViewById(R.id.contractPartyEditText);
+        vehicleNumberEditText = findViewById(R.id.vehicleNumberEditText);
+
+        contractPartySpinner = findViewById(R.id.contractPartySpinner);
+        vehicleNumberSpinner = findViewById(R.id.vehicleNumberSpinner);
 
         fromCalendar = Calendar.getInstance();
         toCalendar = Calendar.getInstance();
@@ -97,40 +109,113 @@ public class MainActivity3 extends AppCompatActivity {
         };
 
         contractPartiesList = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, contractPartiesList);
-        contractPartyAutoCompleteTextView.setAdapter(adapter);
+        spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, contractPartiesList);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        contractPartySpinner.setAdapter(spinnerAdapter);
 
-        contractPartyAutoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String selectedContractParty = (String) parent.getItemAtPosition(position);
-                String custName = selectedContractParty.split(" : ")[1];
-                contractPartyAutoCompleteTextView.setText(custName);
-            }
-        });
-
-        contractPartyAutoCompleteTextView.addTextChangedListener(new TextWatcher() {
+        contractPartyEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // Not needed
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                String input = s.toString().trim();
-                if (!input.isEmpty()) {
-                    fetchContractParties(input);
-                }
-                contractPartyAutoCompleteTextView.showDropDown();
+                // Fetch contract parties based on the text entered
+                fetchContractPartiesWithDelay(s.toString());
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
+            public void afterTextChanged(Editable s) { }
+        });
+
+        contractPartySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                // Check if the item selection was initiated programmatically
+                if (!isItemSelected) {
+                    // Clear the spinner selection
+                    contractPartySpinner.setSelection(0);
+                } else {
+                    // Set flag to false since this selection was initiated by the user
+                    isItemSelected = false;
+
+                    // Clear the contract parties list
+                    contractPartiesList.clear();
+
+                    // Notify the spinner adapter that the data set has changed
+                    spinnerAdapter.notifyDataSetChanged();
+                }
+
+                // Set the selected contract party in the edit text
+                contractPartyEditText.setText(contractPartiesList.get(position));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Not needed
+            }
+        });
+
+
+        vehicleNumberList = new ArrayList<>();
+        vehicleNumberSpinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, contractPartiesList);
+        vehicleNumberSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        vehicleNumberSpinner.setAdapter(vehicleNumberSpinnerAdapter);
+
+        vehicleNumberEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // Not needed
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Fetch contract parties based on the text entered
+//                fetchContractPartiesWithDelay(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { }
+        });
+
+        vehicleNumberSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                // Check if the item selection was initiated programmatically
+                if (!isItemSelected) {
+                    // Clear the spinner selection
+                    vehicleNumberSpinner.setSelection(0);
+                } else {
+                    // Set flag to false since this selection was initiated by the user
+                    isItemSelected = false;
+
+                    // Clear the contract parties list
+                    vehicleNumberList.clear();
+
+                    // Notify the spinner adapter that the data set has changed
+                    vehicleNumberSpinnerAdapter.notifyDataSetChanged();
+                }
+
+                // Set the selected contract party in the edit text
+                vehicleNumberEditText.setText(vehicleNumberList.get(position));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Not needed
             }
         });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            try {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            } catch (IllegalArgumentException e) {
+                Log.e("IllegalArgumentExcep : ", "Must pass in a valid surface control if only instrument surface");
+            }
             return insets;
         });
     }
@@ -153,11 +238,37 @@ public class MainActivity3 extends AppCompatActivity {
         editTextToDateActivityThree.setText(android.text.format.DateFormat.format(dateFormat, toCalendar));
     }
 
+    private void fetchContractPartiesWithDelay(String input) {
+        if (runnable != null) {
+            handler.removeCallbacks(runnable);
+        }
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                fetchContractParties(input);
+            }
+        };
+        handler.postDelayed(runnable, 500); // Delay of 500 milliseconds
+    }
+
+    private void fetchVehicleNumbersWithDelay(String input) {
+        if (runnable != null) {
+            handler.removeCallbacks(runnable);
+        }
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                fetchVehicleNumbers(input);
+            }
+        };
+        handler.postDelayed(runnable, 500); // Delay of 500 milliseconds
+    }
+
     private void fetchContractParties(String input) {
         OkHttpClient client = new OkHttpClient();
 
         RequestBody formBody = new FormBody.Builder()
-                .add("depo", depo) // Assuming depo is defined in your class
+                .add("depo", depo)
                 .add("contractParty", input)
                 .build();
 
@@ -169,20 +280,29 @@ public class MainActivity3 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                e.printStackTrace();
+                if (e instanceof SocketTimeoutException) {
+                    Log.e("SocketTimeoutException", "Read timed out");
+                } else {
+                    e.printStackTrace();
+                }
             }
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    final String responseData = response.body() != null ? response.body().string() : null;
-                    Log.d("Response 1 : ", responseData);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            handleResponse(responseData);
-                        }
-                    });
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        final String responseData = body.string();
+                        Log.d("OnResponse", responseData);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                handleResponse(responseData);
+                            }
+                        });
+                    } else {
+                        Log.e("Response Error", "Response body is null");
+                    }
                 }
             }
         });
@@ -191,19 +311,97 @@ public class MainActivity3 extends AppCompatActivity {
     private void handleResponse(String responseData) {
         try {
             JSONArray jsonArray = new JSONArray(responseData);
-            contractPartiesList.clear();
+            Log.d("JSON handleResponse()", String.valueOf(jsonArray));
+
+            // Create a temporary list to store contract parties
+            List<String> tempContractPartiesList = new ArrayList<>();
+
+            // Iterate through the JSON array and add contract parties to the temporary list
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                String contractParty = jsonObject.getString("CustCode") + " : " + jsonObject.getString("CustName") + " : " + jsonObject.getString("IndType");
-                Log.d("Response 2 ", "contract party : " + contractParty);
-                contractPartiesList.add(contractParty);
+                String contractParty = jsonObject.getString("CustCode") + " : " +
+                        jsonObject.getString("CustName") + " : " +
+                        jsonObject.getString("IndType");
+                tempContractPartiesList.add(contractParty);
             }
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    adapter.notifyDataSetChanged();
+
+            // Clear the existing list and add all items from the temporary list
+//            contractPartiesList.clear();
+            contractPartiesList.addAll(tempContractPartiesList);
+
+            // Notify the spinner adapter that the data set has changed
+            spinnerAdapter.notifyDataSetChanged();
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void fetchVehicleNumbers(String input) {
+        OkHttpClient client = new OkHttpClient();
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("depo", depo)
+                .add("contractParty", input)
+                .build();
+
+        Request request = new Request.Builder()
+                .url("https://vtc3pl.com/vehnum.php")
+                .post(formBody)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                if (e instanceof SocketTimeoutException) {
+                    Log.e("SocketTimeoutException", "Read timed out");
+                } else {
+                    e.printStackTrace();
                 }
-            });
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        final String responseData = body.string();
+                        Log.d("OnResponse", responseData);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                handleResponseForVehicleNumbers(responseData);
+                            }
+                        });
+                    } else {
+                        Log.e("Response Error", "Response body is null");
+                    }
+                }
+            }
+        });
+    }
+
+    private void handleResponseForVehicleNumbers(String responseData) {
+        try {
+            JSONArray jsonArray = new JSONArray(responseData);
+            Log.d("JSON handleResponse()", String.valueOf(jsonArray));
+
+            // Create a temporary list to store contract parties
+            List<String> tempVehicleNumberList = new ArrayList<>();
+
+            // Iterate through the JSON array and add contract parties to the temporary list
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                String contractParty = jsonObject.getString("CustCode") + " : " +
+                        jsonObject.getString("CustName") + " : " +
+                        jsonObject.getString("IndType");
+                tempVehicleNumberList.add(contractParty);
+            }
+
+            vehicleNumberList.addAll(tempVehicleNumberList);
+
+            vehicleNumberSpinnerAdapter.notifyDataSetChanged();
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
