@@ -161,7 +161,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@id/getLRNOButton">
+            app:layout_constraintTop_toBottomOf="@id/getLRNOButton"
+            android:layout_above="@id/totalBoxQtyTextView">
 
             <TableLayout
                 android:id="@+id/tableLayout"
@@ -218,63 +219,64 @@
 
                     </LinearLayout>
                 </TableRow>
-
-                <!-- Row for Total Bax Qty -->
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginBottom="8dp"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:text="Total Box Qty:"
-                        android:textStyle="bold"
-                        tools:ignore="HardcodedText" />
-
-                    <EditText
-                        android:id="@+id/totalBoxQtyEditTextActivityThree"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:hint="Calculated Values"
-                        android:inputType="none"
-                        tools:ignore="HardcodedText" />
-
-                </TableRow>
-
-                <!-- Row for Total Bag Weight -->
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:text="Total Bag Weight:"
-                        android:textStyle="bold"
-                        tools:ignore="HardcodedText" />
-
-                    <EditText
-                        android:id="@+id/totalBagWeightEditTextActivityThree"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:hint="Calculated Values"
-                        android:inputType="none"
-                        tools:ignore="HardcodedText" />
-
-                </TableRow>
             </TableLayout>
         </ScrollView>
+
+                            <TextView
+                                android:id="@+id/totalBoxQtyTextView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:layout_marginStart="16dp"
+                                android:layout_marginTop="24dp"
+                                android:text="Total Box Qty:"
+                                android:textStyle="bold"
+                                tools:ignore="HardcodedText"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/scrollViewForTableLayout"/>
+
+                            <EditText
+                                android:id="@+id/totalBoxQtyEditTextActivityThree"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:hint="Calculated Values"
+                                android:inputType="none"
+                                android:layout_marginStart="8dp"
+                                android:layout_marginEnd="16dp"
+                                app:layout_constraintBottom_toBottomOf="@id/totalBoxQtyTextView"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toEndOf="@id/totalBoxQtyTextView"
+                                app:layout_constraintTop_toTopOf="@id/totalBoxQtyTextView"
+                                tools:ignore="HardcodedText" />
+
+                            <TextView
+                                android:id="@+id/totalBagWeighttextView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:layout_marginStart="16dp"
+                                android:layout_marginTop="28dp"
+                                android:text="Total Bag Weight:"
+                                android:textStyle="bold"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/totalBoxQtyTextView"
+                                tools:ignore="HardcodedText" />
+
+                            <EditText
+                                android:id="@+id/totalBagWeightEditTextActivityThree"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:hint="Calculated Values"
+                                android:inputType="none"
+                                android:layout_marginStart="8dp"
+                                android:layout_marginEnd="16dp"
+                                app:layout_constraintBottom_toBottomOf="@id/totalBagWeighttextView"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toEndOf="@id/totalBagWeighttextView"
+                                app:layout_constraintTop_toTopOf="@id/totalBagWeighttextView"
+                                tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/hamaliVendorNameTextViewActivityThree"
@@ -284,7 +286,7 @@
             android:layout_marginTop="24dp"
             android:text="Hamali vendor Name:"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/scrollViewForTableLayout"
+            app:layout_constraintTop_toBottomOf="@id/totalBagWeighttextView"
             tools:ignore="HardcodedText" />
 
         <Spinner
