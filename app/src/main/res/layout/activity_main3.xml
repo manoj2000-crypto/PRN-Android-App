@@ -94,11 +94,11 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
             android:hint="Enter Contract Party"
+            android:inputType="text"
             app:layout_constraintBottom_toBottomOf="@id/contractPartyTextView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/contractPartyTextView"
-            app:layout_constraintTop_toTopOf="@id/contractPartyTextView"
-            android:inputType="text"/>
+            app:layout_constraintTop_toTopOf="@id/contractPartyTextView" />
 
         <Spinner
             android:id="@+id/contractPartySpinner"
@@ -109,7 +109,7 @@
             android:layout_marginEnd="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/contractPartyEditText"/>
+            app:layout_constraintTop_toBottomOf="@id/contractPartyEditText" />
 
         <TextView
             android:id="@+id/vehicleNumberTextViewActivityThree"
@@ -128,11 +128,11 @@
             android:layout_marginStart="8dp"
             android:layout_marginEnd="16dp"
             android:hint="Enter Vehicle Number"
+            android:inputType="text"
             app:layout_constraintBottom_toBottomOf="@id/vehicleNumberTextViewActivityThree"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/vehicleNumberTextViewActivityThree"
-            app:layout_constraintTop_toTopOf="@id/vehicleNumberTextViewActivityThree"
-            android:inputType="text" />
+            app:layout_constraintTop_toTopOf="@id/vehicleNumberTextViewActivityThree" />
 
         <Spinner
             android:id="@+id/vehicleNumberSpinner"
@@ -143,14 +143,25 @@
             android:layout_marginEnd="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/vehicleNumberEditText"/>
+            app:layout_constraintTop_toBottomOf="@id/vehicleNumberEditText" />
+
+        <Button
+            android:id="@+id/getLRNOButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:onClick="onGetLRNOButtonClick"
+            android:text="Get LR Numbers"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/vehicleNumberSpinner" />
 
         <ScrollView
             android:id="@+id/scrollViewForTableLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@id/vehicleNumberSpinner">
+            app:layout_constraintTop_toBottomOf="@id/getLRNOButton">
 
             <TableLayout
                 android:id="@+id/tableLayout"
@@ -207,11 +218,66 @@
 
                     </LinearLayout>
                 </TableRow>
+
+                <!-- Row for Total Bax Qty -->
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="Total Box Qty:"
+                        android:textStyle="bold"
+                        tools:ignore="HardcodedText" />
+
+                    <EditText
+                        android:id="@+id/totalBoxQtyEditTextActivityThree"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Calculated Values"
+                        android:inputType="none"
+                        tools:ignore="HardcodedText" />
+
+                </TableRow>
+
+                <!-- Row for Total Bag Weight -->
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="Total Bag Weight:"
+                        android:textStyle="bold"
+                        tools:ignore="HardcodedText" />
+
+                    <EditText
+                        android:id="@+id/totalBagWeightEditTextActivityThree"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Calculated Values"
+                        android:inputType="none"
+                        tools:ignore="HardcodedText" />
+
+                </TableRow>
             </TableLayout>
         </ScrollView>
 
         <TextView
-            android:id="@+id/hamaliVendorNameTextView"
+            android:id="@+id/hamaliVendorNameTextViewActivityThree"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -222,52 +288,52 @@
             tools:ignore="HardcodedText" />
 
         <Spinner
-            android:id="@+id/hamaliVendorNameSpinner"
+            android:id="@+id/hamaliVendorNameSpinnerActivityThree"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="16dp"
-            app:layout_constraintBottom_toBottomOf="@id/hamaliVendorNameTextView"
+            app:layout_constraintBottom_toBottomOf="@id/hamaliVendorNameTextViewActivityThree"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/hamaliVendorNameTextView"
-            app:layout_constraintTop_toTopOf="@id/hamaliVendorNameTextView" />
+            app:layout_constraintStart_toEndOf="@id/hamaliVendorNameTextViewActivityThree"
+            app:layout_constraintTop_toTopOf="@id/hamaliVendorNameTextViewActivityThree" />
 
         <TextView
-            android:id="@+id/hamaliTypeTextView"
+            android:id="@+id/hamaliTypeTextViewActivityThree"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
             android:text="Hamali Type :"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/hamaliVendorNameTextView"
+            app:layout_constraintTop_toBottomOf="@id/hamaliVendorNameTextViewActivityThree"
             tools:ignore="HardcodedText" />
 
         <Spinner
-            android:id="@+id/hamaliTypeSpinner"
+            android:id="@+id/hamaliTypeSpinnerActivityThree"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="16dp"
             android:entries="@array/hamali_type_options"
-            app:layout_constraintBottom_toBottomOf="@id/hamaliTypeTextView"
+            app:layout_constraintBottom_toBottomOf="@id/hamaliTypeTextViewActivityThree"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/hamaliTypeTextView"
-            app:layout_constraintTop_toTopOf="@id/hamaliTypeTextView" />
+            app:layout_constraintStart_toEndOf="@id/hamaliTypeTextViewActivityThree"
+            app:layout_constraintTop_toTopOf="@id/hamaliTypeTextViewActivityThree" />
 
         <TextView
-            android:id="@+id/hamaliAmountTextView"
+            android:id="@+id/hamaliAmountTextViewActivityThree"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
             android:text="Hamali Amount:"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/hamaliTypeTextView"
+            app:layout_constraintTop_toBottomOf="@id/hamaliTypeTextViewActivityThree"
             tools:ignore="HardcodedText" />
 
         <EditText
-            android:id="@+id/hamaliAmountEditText"
+            android:id="@+id/hamaliAmountEditTextActivityThree"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -275,25 +341,25 @@
             android:ems="10"
             android:hint="Enter Hamali Amount"
             android:inputType="numberDecimal"
-            app:layout_constraintBottom_toBottomOf="@id/hamaliAmountTextView"
+            app:layout_constraintBottom_toBottomOf="@id/hamaliAmountTextViewActivityThree"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/hamaliAmountTextView"
-            app:layout_constraintTop_toTopOf="@id/hamaliAmountTextView"
+            app:layout_constraintStart_toEndOf="@id/hamaliAmountTextViewActivityThree"
+            app:layout_constraintTop_toTopOf="@id/hamaliAmountTextViewActivityThree"
             tools:ignore="HardcodedText,TextFields" />
 
         <TextView
-            android:id="@+id/deductionAmountTextView"
+            android:id="@+id/deductionAmountTextViewActivityThree"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="32dp"
             android:text="Deduction Amount:"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/hamaliAmountTextView"
+            app:layout_constraintTop_toBottomOf="@id/hamaliAmountTextViewActivityThree"
             tools:ignore="HardcodedText" />
 
         <EditText
-            android:id="@+id/deductionAmountEditText"
+            android:id="@+id/deductionAmountEditTextActivityThree"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -301,25 +367,25 @@
             android:ems="10"
             android:hint="Enter Deduction Amount"
             android:inputType="numberDecimal"
-            app:layout_constraintBottom_toBottomOf="@id/deductionAmountTextView"
+            app:layout_constraintBottom_toBottomOf="@id/deductionAmountTextViewActivityThree"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/deductionAmountTextView"
-            app:layout_constraintTop_toTopOf="@id/deductionAmountTextView"
+            app:layout_constraintStart_toEndOf="@id/deductionAmountTextViewActivityThree"
+            app:layout_constraintTop_toTopOf="@id/deductionAmountTextViewActivityThree"
             tools:ignore="HardcodedText,TextFields" />
 
         <TextView
-            android:id="@+id/amountPaidToHVendorTextView"
+            android:id="@+id/amountPaidToHVendorTextViewActivityThree"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="32dp"
             android:text="Amount Paid To HVendor:"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/deductionAmountTextView"
+            app:layout_constraintTop_toBottomOf="@id/deductionAmountTextViewActivityThree"
             tools:ignore="HardcodedText" />
 
         <EditText
-            android:id="@+id/amountPaidToHVendorEditText"
+            android:id="@+id/amountPaidToHVendorEditTextActivityThree"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -327,23 +393,25 @@
             android:ems="10"
             android:hint="Enter Amount Paid"
             android:inputType="numberDecimal"
-            app:layout_constraintBottom_toBottomOf="@id/amountPaidToHVendorTextView"
+            app:layout_constraintBottom_toBottomOf="@id/amountPaidToHVendorTextViewActivityThree"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/amountPaidToHVendorTextView"
-            app:layout_constraintTop_toTopOf="@id/amountPaidToHVendorTextView"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@id/amountPaidToHVendorTextViewActivityThree"
+            app:layout_constraintTop_toTopOf="@id/amountPaidToHVendorTextViewActivityThree"
+            app:layout_constraintVertical_bias="0.73"
             tools:ignore="HardcodedText,TextFields" />
 
         <Button
-            android:id="@+id/submit"
+            android:id="@+id/createPRN"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="16dp"
-            android:text="Submit"
+            android:text="Create PRN"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/amountPaidToHVendorTextView"
+            app:layout_constraintTop_toBottomOf="@id/amountPaidToHVendorTextViewActivityThree"
             tools:ignore="HardcodedText" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

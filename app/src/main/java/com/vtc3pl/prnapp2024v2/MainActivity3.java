@@ -2,20 +2,30 @@ package com.vtc3pl.prnapp2024v2;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -30,11 +40,15 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -43,18 +57,27 @@ import okhttp3.ResponseBody;
 
 public class MainActivity3 extends AppCompatActivity {
 
+    final double[] totalBoxWeight = {0};
+    final double[] totalBoxQty = {0};
+    final double[] totalBagWeight = {0};
+    final double[] totalBagQty = {0};
     private final Handler handler = new Handler();
     private TextView showUserNameTextViewActivityThree;
-    private EditText editTextFromDateActivityThree, editTextToDateActivityThree, vehicleNumberEditText , contractPartyEditText;
+    private EditText editTextFromDateActivityThree, editTextToDateActivityThree, vehicleNumberEditText, contractPartyEditText, hamaliAmountEditTextActivityThree, deductionAmountEditTextActivityThree, amountPaidToHVendorEditTextActivityThree, totalBoxQtyEditTextActivityThree, totalBagWeightEditTextActivityThree;
+    private Button getLRNOButton, createPRN;
     private Calendar fromCalendar, toCalendar;
     private DatePickerDialog.OnDateSetListener fromDateSetListener, toDateSetListener;
-    private String username = "", depo = "", year = "";
-    private List<String> contractPartiesList , vehicleNumberList;
+    private String username = "", depo = "", year = "", custName = "";
+    private List<String> contractPartiesList, vehicleNumberList;
     private ArrayAdapter<String> spinnerAdapter, vehicleNumberSpinnerAdapter;
-    private Spinner contractPartySpinner, vehicleNumberSpinner;
+    private Spinner contractPartySpinner, vehicleNumberSpinner, hamaliVendorNameSpinnerActivityThree, hamaliTypeSpinnerActivityThree;
     private Runnable runnable;
-
     private boolean isItemSelected = false;
+    private boolean isSpinnerInteraction = false;
+    private Set<String> selectedLRNOs = new HashSet<>();
+    private String selectedHamaliVendor = "";
+    private String selectedHamaliType = "";
+    private double amountPaidToHVendor, deductionAmount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,15 +85,25 @@ public class MainActivity3 extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main3);
 
+        getLRNOButton = findViewById(R.id.getLRNOButton);
+        createPRN = findViewById(R.id.createPRN);
+
         showUserNameTextViewActivityThree = findViewById(R.id.showUserNameTextViewActivityThree);
         editTextFromDateActivityThree = findViewById(R.id.editTextFromDateActivityThree);
         editTextToDateActivityThree = findViewById(R.id.editTextToDateActivityThree);
 
         contractPartyEditText = findViewById(R.id.contractPartyEditText);
         vehicleNumberEditText = findViewById(R.id.vehicleNumberEditText);
+        hamaliAmountEditTextActivityThree = findViewById(R.id.hamaliAmountEditTextActivityThree);
+        deductionAmountEditTextActivityThree = findViewById(R.id.deductionAmountEditTextActivityThree);
+        amountPaidToHVendorEditTextActivityThree = findViewById(R.id.amountPaidToHVendorEditTextActivityThree);
+        totalBoxQtyEditTextActivityThree = findViewById(R.id.totalBoxQtyEditTextActivityThree);
+        totalBagWeightEditTextActivityThree = findViewById(R.id.totalBagWeightEditTextActivityThree);
 
         contractPartySpinner = findViewById(R.id.contractPartySpinner);
         vehicleNumberSpinner = findViewById(R.id.vehicleNumberSpinner);
+        hamaliVendorNameSpinnerActivityThree = findViewById(R.id.hamaliVendorNameSpinnerActivityThree);
+        hamaliTypeSpinnerActivityThree = findViewById(R.id.hamaliTypeSpinnerActivityThree);
 
         fromCalendar = Calendar.getInstance();
         toCalendar = Calendar.getInstance();
@@ -126,30 +159,22 @@ public class MainActivity3 extends AppCompatActivity {
             }
 
             @Override
-            public void afterTextChanged(Editable s) { }
+            public void afterTextChanged(Editable s) {
+            }
         });
 
         contractPartySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (!isSpinnerInteraction) { // Only update EditText if not due to spinner interaction
+                    contractPartyEditText.setText(contractPartiesList.get(position));
 
-                // Check if the item selection was initiated programmatically
-                if (!isItemSelected) {
-                    // Clear the spinner selection
-                    contractPartySpinner.setSelection(0);
-                } else {
-                    // Set flag to false since this selection was initiated by the user
-                    isItemSelected = false;
-
-                    // Clear the contract parties list
+                    // Clear the spinner and remove all options
                     contractPartiesList.clear();
-
-                    // Notify the spinner adapter that the data set has changed
                     spinnerAdapter.notifyDataSetChanged();
+                } else {
+                    isSpinnerInteraction = false; // Reset the flag
                 }
-
-                // Set the selected contract party in the edit text
-                contractPartyEditText.setText(contractPartiesList.get(position));
             }
 
             @Override
@@ -160,7 +185,7 @@ public class MainActivity3 extends AppCompatActivity {
 
 
         vehicleNumberList = new ArrayList<>();
-        vehicleNumberSpinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, contractPartiesList);
+        vehicleNumberSpinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, vehicleNumberList);
         vehicleNumberSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         vehicleNumberSpinner.setAdapter(vehicleNumberSpinnerAdapter);
 
@@ -173,39 +198,62 @@ public class MainActivity3 extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // Fetch contract parties based on the text entered
-//                fetchContractPartiesWithDelay(s.toString());
+                fetchVehicleNumbersWithDelay(s.toString());
             }
 
             @Override
-            public void afterTextChanged(Editable s) { }
+            public void afterTextChanged(Editable s) {
+            }
         });
 
         vehicleNumberSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
-                // Check if the item selection was initiated programmatically
-                if (!isItemSelected) {
-                    // Clear the spinner selection
-                    vehicleNumberSpinner.setSelection(0);
-                } else {
-                    // Set flag to false since this selection was initiated by the user
-                    isItemSelected = false;
-
-                    // Clear the contract parties list
-                    vehicleNumberList.clear();
-
-                    // Notify the spinner adapter that the data set has changed
-                    vehicleNumberSpinnerAdapter.notifyDataSetChanged();
-                }
-
-                // Set the selected contract party in the edit text
                 vehicleNumberEditText.setText(vehicleNumberList.get(position));
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 // Not needed
+            }
+        });
+
+        fetchHvendors();
+
+        hamaliVendorNameSpinnerActivityThree.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selectedVendor = parent.getItemAtPosition(position).toString();
+                if (selectedVendor.equals("No hamali Vendor")) {
+                    hamaliAmountEditTextActivityThree.setText("0.0");
+                    hamaliAmountEditTextActivityThree.setEnabled(false);
+
+                    deductionAmountEditTextActivityThree.setText("0.0");
+                    deductionAmountEditTextActivityThree.setEnabled(false);
+
+                    amountPaidToHVendorEditTextActivityThree.setText("0.0");
+                    amountPaidToHVendorEditTextActivityThree.setEnabled(false);
+                } else {
+                    // If user select any pother value then calculate,
+                    calculateHamali();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Do nothing if nothing is selected
+            }
+        });
+
+        hamaliTypeSpinnerActivityThree.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                calculateHamali();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Do nothing if nothing is selected
             }
         });
 
@@ -218,6 +266,18 @@ public class MainActivity3 extends AppCompatActivity {
             }
             return insets;
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isSpinnerInteraction = false; // Reset the flag onResume
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isSpinnerInteraction = false; // Reset the flag onPause
     }
 
     public void showDatePickerDialogFromDate(View v) {
@@ -267,15 +327,9 @@ public class MainActivity3 extends AppCompatActivity {
     private void fetchContractParties(String input) {
         OkHttpClient client = new OkHttpClient();
 
-        RequestBody formBody = new FormBody.Builder()
-                .add("depo", depo)
-                .add("contractParty", input)
-                .build();
+        RequestBody formBody = new FormBody.Builder().add("depo", depo).add("contractParty", input).build();
 
-        Request request = new Request.Builder()
-                .url("https://vtc3pl.com/fetch_contract_party_prn_app.php")
-                .post(formBody)
-                .build();
+        Request request = new Request.Builder().url("https://vtc3pl.com/fetch_contract_party_prn_app.php").post(formBody).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -303,6 +357,7 @@ public class MainActivity3 extends AppCompatActivity {
                     } else {
                         Log.e("Response Error", "Response body is null");
                     }
+                    isSpinnerInteraction = true;
                 }
             }
         });
@@ -312,26 +367,17 @@ public class MainActivity3 extends AppCompatActivity {
         try {
             JSONArray jsonArray = new JSONArray(responseData);
             Log.d("JSON handleResponse()", String.valueOf(jsonArray));
+            contractPartiesList.clear();
+//            List<String> tempContractPartiesList = new ArrayList<>();
 
-            // Create a temporary list to store contract parties
-            List<String> tempContractPartiesList = new ArrayList<>();
-
-            // Iterate through the JSON array and add contract parties to the temporary list
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                String contractParty = jsonObject.getString("CustCode") + " : " +
-                        jsonObject.getString("CustName") + " : " +
-                        jsonObject.getString("IndType");
-                tempContractPartiesList.add(contractParty);
+                String contractParty = jsonObject.getString("CustCode") + " : " + jsonObject.getString("CustName") + " : " + jsonObject.getString("IndType");
+                contractPartiesList.add(contractParty);
+//                tempContractPartiesList.add(contractParty);
             }
-
-            // Clear the existing list and add all items from the temporary list
-//            contractPartiesList.clear();
-            contractPartiesList.addAll(tempContractPartiesList);
-
-            // Notify the spinner adapter that the data set has changed
+//            contractPartiesList.addAll(tempContractPartiesList);
             spinnerAdapter.notifyDataSetChanged();
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -340,15 +386,11 @@ public class MainActivity3 extends AppCompatActivity {
     private void fetchVehicleNumbers(String input) {
         OkHttpClient client = new OkHttpClient();
 
-        RequestBody formBody = new FormBody.Builder()
-                .add("depo", depo)
-                .add("contractParty", input)
-                .build();
+        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://vtc3pl.com/vehnum.php").newBuilder();
+        urlBuilder.addQueryParameter("term", input);
+        String url = urlBuilder.build().toString();
 
-        Request request = new Request.Builder()
-                .url("https://vtc3pl.com/vehnum.php")
-                .post(formBody)
-                .build();
+        Request request = new Request.Builder().url(url).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -385,25 +427,497 @@ public class MainActivity3 extends AppCompatActivity {
         try {
             JSONArray jsonArray = new JSONArray(responseData);
             Log.d("JSON handleResponse()", String.valueOf(jsonArray));
+            vehicleNumberList.clear();
 
-            // Create a temporary list to store contract parties
-            List<String> tempVehicleNumberList = new ArrayList<>();
-
-            // Iterate through the JSON array and add contract parties to the temporary list
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                String contractParty = jsonObject.getString("CustCode") + " : " +
-                        jsonObject.getString("CustName") + " : " +
-                        jsonObject.getString("IndType");
-                tempVehicleNumberList.add(contractParty);
+                String vehicleNumber = jsonObject.getString("Vehicle_No");
+                vehicleNumberList.add(vehicleNumber);
             }
-
-            vehicleNumberList.addAll(tempVehicleNumberList);
-
             vehicleNumberSpinnerAdapter.notifyDataSetChanged();
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
+
+    public void onGetLRNOButtonClick(View view) {
+        // Retrieve input values
+        String fromDate = editTextFromDateActivityThree.getText().toString();
+        String toDate = editTextToDateActivityThree.getText().toString();
+        String contractPartyText = contractPartyEditText.getText().toString();
+        String[] parts = contractPartyText.split(":");
+        String contractParty = parts.length >= 2 ? parts[1].trim() : "";
+
+        // Validate input values
+        if (TextUtils.isEmpty(fromDate)) {
+            // Display a Toast message indicating fromDate is empty
+            Toast.makeText(MainActivity3.this, "Please enter From Date", Toast.LENGTH_SHORT).show();
+            // Focus on the fromDate EditText
+            editTextFromDateActivityThree.requestFocus();
+            return;
+        }
+
+        if (TextUtils.isEmpty(toDate)) {
+            // Display a Toast message indicating toDate is empty
+            Toast.makeText(MainActivity3.this, "Please enter To Date", Toast.LENGTH_SHORT).show();
+            // Focus on the toDate EditText
+            editTextToDateActivityThree.requestFocus();
+            return;
+        }
+
+        if (TextUtils.isEmpty(contractParty)) {
+            // Display a Toast message indicating contractParty is empty
+            Toast.makeText(MainActivity3.this, "Please enter Contract Party", Toast.LENGTH_SHORT).show();
+            // Focus on the contractParty EditText
+            contractPartyEditText.requestFocus();
+            return;
+        }
+
+        OkHttpClient client = new OkHttpClient();
+
+        // Construct the POST request body
+        RequestBody formBody = new FormBody.Builder().add("fromDate", fromDate).add("toDate", toDate).add("consignor", contractParty).add("depo", depo).build();
+
+        // Create the request
+        Request request = new Request.Builder().url("https://vtc3pl.com/get_company_wise_lrno_for_create_prn.php").post(formBody).build();
+
+        // Execute the request asynchronously
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                e.printStackTrace();
+                if (e instanceof SocketTimeoutException) {
+                    // Handle socket timeout exception
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity3.this, "Request Timed Out. Please try again later.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    // Handle successful response
+                    String responseData = response.body().string();
+                    Log.d("Reponse For LR :", responseData);
+                    if (responseData.equals("[0]")) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MainActivity3.this, "LRNO not found.", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else {
+                        // Handle LRNO response
+                        handleLRNOResponse(responseData);
+                    }
+                } else {
+                    // Handle unsuccessful response
+                    Log.e("Response Error", "Unsuccessful response");
+                }
+            }
+        });
+    }
+
+    private void fetchWeightsFromServer() {
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
+
+        // URL for fetching weights
+        String url = "https://vtc3pl.com/hamali_bag_box_weight_prn_app.php";
+
+        Request request = new Request.Builder().url(url).build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity3.this, "Failed to fetch weights from server", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        String responseBody = body.string();
+                        // Parse the JSON response
+                        try {
+                            JSONArray jsonArray = new JSONArray(responseBody);
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                String lrNumber = jsonObject.getString("LRNO");
+                                if (selectedLRNOs.contains(lrNumber)) {
+                                    totalBoxWeight[0] += jsonObject.getDouble("TotalWeightBox");
+                                    totalBagWeight[0] += jsonObject.getDouble("TotalWeightBag");
+                                    totalBoxQty[0] += jsonObject.getDouble("TotalBoxQty");
+                                    totalBagQty[0] += jsonObject.getDouble("TotalBagQty");
+                                }
+                            }
+
+                            // Update the UI on the main thread
+                            runOnUiThread(() -> {
+                                totalBoxQtyEditTextActivityThree.setText(String.valueOf(totalBoxQty[0]));
+                                totalBagWeightEditTextActivityThree.setText(String.valueOf(totalBagWeight[0]));
+
+                                Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeight[0]));
+                                Log.d("totalBagWeight : ", String.valueOf(totalBagWeight[0]));
+
+                                Log.d("totalBoxQty : ", String.valueOf(totalBoxQty[0]));
+                                Log.d("totalBagQty : ", String.valueOf(totalBagQty[0]));
+                            });
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            runOnUiThread(() -> {
+                                Toast.makeText(MainActivity3.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
+                            });
+                        }
+                    } else {
+                        runOnUiThread(() -> {
+                            Toast.makeText(MainActivity3.this, "Response body is null(Box Qty and Bag Weight)", Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                } else {
+                    onFailure(call, new IOException("Unexpected response code " + response));
+                }
+            }
+        });
+    }
+
+    private void handleLRNOResponse(String responseData) {
+        Log.d("handleLRNOResponse() : ", responseData);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONArray jsonArray = new JSONArray(responseData);
+                    TableLayout tableLayout = findViewById(R.id.tableLayout);
+
+                    // Remove all existing rows to refresh the table
+                    tableLayout.removeAllViews();
+
+                    // Add headers row
+                    TableRow headersRow = new TableRow(MainActivity3.this);
+
+                    TextView srNoHeader = new TextView(MainActivity3.this);
+                    srNoHeader.setText("Sr No");
+                    srNoHeader.setPadding(8, 8, 8, 8);
+                    srNoHeader.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                    srNoHeader.setTypeface(null, Typeface.BOLD);
+                    headersRow.addView(srNoHeader);
+
+                    TextView lrNoHeader = new TextView(MainActivity3.this);
+                    lrNoHeader.setText("Lr No");
+                    lrNoHeader.setPadding(8, 8, 8, 8);
+                    lrNoHeader.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                    lrNoHeader.setTypeface(null, Typeface.BOLD);
+                    headersRow.addView(lrNoHeader);
+
+                    // Create CheckBox for "Select All"
+                    CheckBox selectAllCheckBox = new CheckBox(MainActivity3.this);
+                    selectAllCheckBox.setText("Select All");
+                    selectAllCheckBox.setPadding(8, 8, 8, 8);
+                    selectAllCheckBox.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                    selectAllCheckBox.setTypeface(null, Typeface.BOLD);
+                    selectAllCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            // Toggle selection of all checkboxes in the table
+                            for (int i = 1; i < tableLayout.getChildCount(); i++) {
+                                View view = tableLayout.getChildAt(i);
+                                if (view instanceof TableRow) {
+                                    TableRow row = (TableRow) view;
+                                    CheckBox checkBox = (CheckBox) row.getChildAt(2);
+                                    checkBox.setChecked(isChecked);
+                                }
+                            }
+                        }
+                    });
+                    headersRow.addView(selectAllCheckBox);
+
+                    tableLayout.addView(headersRow);
+
+                    // Iterate through the JSON array and add rows to the table
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        String lrNo = jsonArray.getString(i);
+
+                        // Create a new TableRow
+                        TableRow newRow = new TableRow(MainActivity3.this);
+
+                        // Create TextViews for SrNo and LRNO
+                        TextView srNoTextView = new TextView(MainActivity3.this);
+                        srNoTextView.setText(String.valueOf(i + 1)); // SrNo starts from 1
+                        srNoTextView.setPadding(8, 8, 8, 8);
+                        srNoTextView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                        newRow.addView(srNoTextView);
+
+                        TextView lrNoTextView = new TextView(MainActivity3.this);
+                        lrNoTextView.setText(lrNo);
+                        lrNoTextView.setPadding(8, 8, 8, 8);
+                        lrNoTextView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                        newRow.addView(lrNoTextView);
+
+                        // Create CheckBox for selection
+                        CheckBox selectCheckBox = new CheckBox(MainActivity3.this);
+                        selectCheckBox.setTag(lrNo); // Set LRNO as tag
+                        selectCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                            @Override
+                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                                String lrNo = (String) buttonView.getTag();
+                                if (isChecked) {
+                                    // Add LRNO to the selectedLRNOs collection
+                                    selectedLRNOs.add(lrNo);
+                                    Log.d("LRNO Added : ", selectedLRNOs.toString());
+                                } else {
+                                    // Remove LRNO from the selectedLRNOs collection
+                                    selectedLRNOs.remove(lrNo);
+                                    Log.d("LRNO Remove : ", selectedLRNOs.toString());
+                                }
+                                // Call fetchWeightsFromServer() whenever a checkbox is checked or unchecked
+                                fetchWeightsFromServer();
+                            }
+                        });
+                        newRow.addView(selectCheckBox);
+
+                        // Add the new row to the TableLayout
+                        tableLayout.addView(newRow);
+                    }
+                } catch (JSONException e) {
+                    Log.e("JSON Exception : ", String.valueOf(e));
+                }
+            }
+        });
+    }
+
+    private void fetchHvendors() {
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
+
+        // URL for fetching Hvendors
+        String url = "https://vtc3pl.com/fetch_hamalivendor_only_prn_app.php";
+
+        // Create a form body with spinnerDepo as a parameter
+        FormBody formBody = new FormBody.Builder().add("spinnerDepo", depo).build();
+
+        Request request = new Request.Builder().url(url).post(formBody).build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        String responseBody = body.string();
+                        // Parse the JSON response
+                        List<String> hVendors = new ArrayList<>();
+                        try {
+                            JSONArray jsonArray = new JSONArray(responseBody);
+                            if (jsonArray.length() > 0) {
+                                hVendors.add("Please Select Vendor");
+                                hVendors.add("No hamali Vendor");
+                                for (int i = 0; i < jsonArray.length(); i++) {
+                                    String hVendor = jsonArray.getString(i);
+                                    hVendors.add(hVendor);
+                                }
+                            } else {
+                                runOnUiThread(() -> {
+                                    Toast.makeText(MainActivity3.this, "No hamali vendors found", Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        // Update the spinner UI on the main thread
+                        runOnUiThread(() -> {
+                            ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity3.this, android.R.layout.simple_spinner_item, hVendors);
+                            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            hamaliVendorNameSpinnerActivityThree.setAdapter(adapter); // Use hamaliVendorNameSpinner instead of goDownSpinner
+                        });
+                    } else {
+                        runOnUiThread(() -> {
+                            Toast.makeText(MainActivity3.this, "Response body is null (fetch vendors)", Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                } else {
+                    onFailure(call, new IOException("Unexpected response code " + response));
+                }
+            }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity3.this, "Failed to fetch Hamali Vendors", Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
+    }
+
+    private void calculateHamali() {
+        Log.d("calculateHamali() :", "Method is invoked");
+
+        if (hamaliVendorNameSpinnerActivityThree.getSelectedItem() == null || hamaliTypeSpinnerActivityThree.getSelectedItem() == null) {
+            // One or both spinners are not selected, return without calculating hamali
+            return;
+        }
+
+        selectedHamaliVendor = hamaliVendorNameSpinnerActivityThree.getSelectedItem().toString();
+
+        selectedHamaliType = hamaliTypeSpinnerActivityThree.getSelectedItem().toString();
+
+        OkHttpClient client = new OkHttpClient();
+
+        FormBody.Builder formBuilder = new FormBody.Builder();
+        formBuilder.add("spinnerDepo", depo);
+        formBuilder.add("Hvendor", selectedHamaliVendor);
+
+        Request request = new Request.Builder().url("https://vtc3pl.com/fetch_hamali_rates_calculation_prn_app.php").post(formBuilder.build()).build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity3.this, "Failed to fetch hamali rates", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        String responseBody = body.string();
+                        try {
+                            JSONObject jsonObject = new JSONObject(responseBody);
+
+                            double boxRate;
+                            double bagRate;
+
+                            if (selectedHamaliType.equals("Regular")) {
+                                if (jsonObject.has("Regular")) {
+                                    boxRate = Double.parseDouble(jsonObject.getString("Regular"));
+                                    bagRate = Double.parseDouble(String.valueOf(jsonObject.getInt("Regularbag")));
+                                    Log.d("Regular boxrate : ", boxRate + " bag rate : " + bagRate);
+                                } else {
+                                    Log.d("Regular Else part : ", "Inside else part just after opening MainActivity2.java");
+                                    return;
+                                }
+                            } else if (selectedHamaliType.equals("Crossing")) {
+                                if (jsonObject.has("Crossing")) {
+                                    boxRate = Double.parseDouble(jsonObject.getString("Crossing"));
+                                    bagRate = Double.parseDouble(String.valueOf(jsonObject.getInt("Crossingbag")));
+                                    Log.d("Crossing box rate : ", boxRate + " bag rate : " + bagRate);
+                                } else {
+                                    Log.d("Crossing Else part : ", "Inside else part just after opening MainActivity2.java");
+                                    return;
+                                }
+                            } else {
+                                runOnUiThread(() -> {
+                                    Toast.makeText(MainActivity3.this, "Unknown hamali type", Toast.LENGTH_SHORT).show();
+                                });
+                                return;
+                            }
+
+                            // Perform calculations
+                            double hamaliBoxValue = boxRate * totalBoxQty[0];
+                            Log.d("hamaliBoxValue : ", String.valueOf(hamaliBoxValue));
+                            double ratePerTon = bagRate;
+                            double weightInTons = totalBagWeight[0] / 1000;
+                            Log.d("weightInTons : ", String.valueOf(weightInTons));
+                            double hamaliBagValue = weightInTons * ratePerTon;
+                            Log.d("hamaliBagValue : ", String.valueOf(hamaliBagValue));
+                            double totalHamaliAmount = hamaliBoxValue + hamaliBagValue;
+                            Log.d("totalHamaliAmount : ", String.valueOf(totalHamaliAmount));
+
+                            runOnUiThread(() -> {
+                                // Update UI or perform calculations here with the rates
+                                hamaliAmountEditTextActivityThree.setText(String.valueOf(totalHamaliAmount));
+                                hamaliAmountEditTextActivityThree.setEnabled(false);
+                            });
+
+                            // Assuming you have deductionAmountEditText and amountPaidToHVendorEditText declared and initialized
+                            // Assuming these variables are declared globally
+                            deductionAmountEditTextActivityThree.setOnKeyListener((v, keyCode, event) -> {
+                                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                                    deductionAmount = Double.parseDouble(deductionAmountEditTextActivityThree.getText().toString());
+
+                                    if (deductionAmount < 0) {
+                                        // Prevent deduction amount from being less than zero
+                                        Toast.makeText(MainActivity3.this, "Deduction amount cannot be less than zero", Toast.LENGTH_SHORT).show();
+                                        deductionAmountEditTextActivityThree.setText("0.0");
+                                        return true;
+                                    }
+                                    amountPaidToHVendor = (totalHamaliAmount - deductionAmount);
+                                    Log.d("amountPaidToHVendor : ", String.valueOf(amountPaidToHVendor));
+                                    amountPaidToHVendorEditTextActivityThree.setText(String.valueOf(amountPaidToHVendor));
+                                    amountPaidToHVendorEditTextActivityThree.setEnabled(false);
+                                    return true;
+                                }
+                                return false;
+                            });
+
+                            deductionAmountEditTextActivityThree.setOnFocusChangeListener((v, hasFocus) -> {
+                                if (!hasFocus) {
+                                    // Calculate amount paid to vendor when deduction amount is entered
+                                    String deductionAmountStr = deductionAmountEditTextActivityThree.getText().toString().trim();
+                                    deductionAmount = deductionAmountStr.isEmpty() ? 0.0 : Double.parseDouble(deductionAmountStr);
+                                    amountPaidToHVendor = Double.parseDouble(hamaliAmountEditTextActivityThree.getText().toString()) - deductionAmount;
+                                    amountPaidToHVendorEditTextActivityThree.setText(String.valueOf(amountPaidToHVendor));
+                                    amountPaidToHVendorEditTextActivityThree.setEnabled(false);
+                                }
+                            });
+
+                            // Set up hamaliAmountEditText listener
+                            hamaliAmountEditTextActivityThree.addTextChangedListener(new TextWatcher() {
+                                @Override
+                                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                                    // Not needed
+                                }
+
+                                @Override
+                                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                                    // Not needed
+                                }
+
+                                @Override
+                                public void afterTextChanged(Editable s) {
+
+                                    String hamaliAmountStr = s.toString().trim();
+                                    double hamaliAmount = hamaliAmountStr.isEmpty() ? 0.0 : Double.parseDouble(hamaliAmountStr);
+                                    String deductionAmountStr = deductionAmountEditTextActivityThree.getText().toString().trim();
+                                    deductionAmount = deductionAmountStr.isEmpty() ? 0.0 : Double.parseDouble(deductionAmountStr);
+                                    amountPaidToHVendor = (hamaliAmount - deductionAmount);
+                                    amountPaidToHVendorEditTextActivityThree.setText(String.valueOf(amountPaidToHVendor));
+                                    amountPaidToHVendorEditTextActivityThree.setEnabled(false);
+                                }
+                            });
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            runOnUiThread(() -> {
+                                // Handle JSON parsing error
+                                Toast.makeText(MainActivity3.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
+                            });
+                        }
+                    } else {
+                        runOnUiThread(() -> {
+                            Toast.makeText(MainActivity3.this, "Response body is empty (Hamali rates)", Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                } else {
+                    runOnUiThread(() -> {
+                        // Handle server error
+                        Toast.makeText(MainActivity3.this, "Server error: " + response.code(), Toast.LENGTH_SHORT).show();
+                    });
+                }
+            }
+        });
+    }
+
+
 }
