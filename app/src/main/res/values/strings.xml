@@ -2,6 +2,7 @@
     <string name="app_name">PRN APP V2</string>
 
     <string name="select_godown">Select Godown</string>
+    <string name="please_select_vendor">Please Select Vendor</string>
 
     <string name="delete_button_text">Delete</string>
 

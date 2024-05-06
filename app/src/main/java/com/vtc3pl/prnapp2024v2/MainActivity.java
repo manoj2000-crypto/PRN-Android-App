@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
         String depo = spinnerDepo.getSelectedItem().toString();
         String year = spinnerYear.getSelectedItem().toString();
 
-        if (username.isEmpty() || password.isEmpty() || depo.equals("Select an option") || year.equals("Select an option")) {
+        if (username.isEmpty() || password.isEmpty() || depo.equals("Please Select Depo") || year.equals("Please Select Year")) {
             Toast.makeText(MainActivity.this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
             return false;
         }
