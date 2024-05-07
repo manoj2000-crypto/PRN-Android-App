@@ -12,21 +12,21 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
         <RadioButton
             android:id="@+id/radioButtonDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/date_range"/>
+            android:text="@string/date_range" />
 
         <RadioButton
             android:id="@+id/radioButtonPRN"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/prn_number"/>
+            android:text="@string/prn_number" />
     </RadioGroup>
 
     <TextView
@@ -37,9 +37,9 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp"
         android:text="@string/from_date"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/radioGroup"
-        android:visibility="gone" />
+        app:layout_constraintTop_toBottomOf="@id/radioGroup" />
 
     <EditText
         android:id="@+id/editTextFromDateActivitySix"
@@ -50,11 +50,11 @@
         android:focusable="false"
         android:inputType="none"
         android:onClick="showDatePickerDialogFromDate"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/textViewFromDateActivitySix"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/textViewFromDateActivitySix"
-        app:layout_constraintTop_toTopOf="@id/textViewFromDateActivitySix"
-        android:visibility="gone" />
+        app:layout_constraintTop_toTopOf="@id/textViewFromDateActivitySix" />
 
     <TextView
         android:id="@+id/textViewToDateActivitySix"
@@ -63,9 +63,9 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
         android:text="@string/to_date"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editTextFromDateActivitySix"
-        android:visibility="gone"/>
+        app:layout_constraintTop_toBottomOf="@id/editTextFromDateActivitySix" />
 
     <EditText
         android:id="@+id/editTextToDateActivitySix"
@@ -76,11 +76,11 @@
         android:focusable="false"
         android:inputType="none"
         android:onClick="showDatePickerDialogToDate"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/textViewToDateActivitySix"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/textViewToDateActivitySix"
-        app:layout_constraintTop_toTopOf="@id/textViewToDateActivitySix"
-        android:visibility="gone" />
+        app:layout_constraintTop_toTopOf="@id/textViewToDateActivitySix" />
 
     <TextView
         android:id="@+id/prnNumberTextView"
@@ -89,9 +89,9 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
         android:text="@string/prn_number"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/radioGroup"
-        android:visibility="gone" />
+        app:layout_constraintTop_toBottomOf="@id/radioGroup" />
 
     <EditText
         android:id="@+id/prnNumberEditText"
@@ -111,9 +111,32 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/search"
-        app:layout_constraintTop_toBottomOf="@id/editTextToDateActivitySix"
-        app:layout_constraintStart_toStartOf="parent"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
-        android:visibility="gone"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/editTextToDateActivitySix" />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/searchButton">
+
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+            <TableLayout
+                android:id="@+id/tableLayoutActivitySix"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+            </TableLayout>
+
+        </ScrollView>
+
+    </HorizontalScrollView>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
