@@ -48,7 +48,6 @@ public class MainActivity4 extends AppCompatActivity {
         createPrnButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Start MainActivity2 and pass values as extras
                 Intent intent = new Intent(MainActivity4.this, MainActivity2.class);
                 intent.putExtra("username", username);
                 intent.putExtra("depo", depo);
@@ -60,7 +59,11 @@ public class MainActivity4 extends AppCompatActivity {
         arrivalPrnButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity4.this, "Under Developemnt...", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity4.this, MainActivity6.class);
+                intent.putExtra("username", username);
+                intent.putExtra("depo", depo);
+                intent.putExtra("year", year);
+                startActivity(intent);
             }
         });
 
