@@ -249,28 +249,22 @@ public class MainActivity6 extends AppCompatActivity {
         TableRow headerRow = new TableRow(MainActivity6.this);
         headerRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
 
-        TextView srNoHeader = new TextView(MainActivity6.this);
-        srNoHeader.setText("SrNo");
+        TextView srNoHeader = createHeaderTextView("SrNo");
         headerRow.addView(srNoHeader);
 
-        TextView prnNoHeader = new TextView(MainActivity6.this);
-        prnNoHeader.setText("PRN No");
+        TextView prnNoHeader = createHeaderTextView("PRN No");
         headerRow.addView(prnNoHeader);
 
-        TextView prnDateHeader = new TextView(MainActivity6.this);
-        prnDateHeader.setText("PRN Date");
+        TextView prnDateHeader = createHeaderTextView("PRN Date");
         headerRow.addView(prnDateHeader);
 
-        TextView vehicleNoHeader = new TextView(MainActivity6.this);
-        vehicleNoHeader.setText("Vehicle No");
+        TextView vehicleNoHeader = createHeaderTextView("Vehicle No");
         headerRow.addView(vehicleNoHeader);
 
-        TextView locationHeader = new TextView(MainActivity6.this);
-        locationHeader.setText("Location");
+        TextView locationHeader = createHeaderTextView("Location");
         headerRow.addView(locationHeader);
 
-        TextView updateStockHeader = new TextView(MainActivity6.this);
-        updateStockHeader.setText("Update Stock");
+        TextView updateStockHeader = createHeaderTextView("Update Stock");
         headerRow.addView(updateStockHeader);
 
         tableLayout.addView(headerRow);
@@ -280,7 +274,7 @@ public class MainActivity6 extends AppCompatActivity {
             try {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
 
-                String prnId = jsonObject.getString("PRNId");
+                final String prnId = jsonObject.getString("PRNId");
                 String avDate = jsonObject.getString("AVDate");
                 String vehicleNo = jsonObject.getString("VehicleNo");
                 String depo = jsonObject.getString("Depo");
@@ -288,29 +282,36 @@ public class MainActivity6 extends AppCompatActivity {
                 TableRow row = new TableRow(MainActivity6.this);
                 row.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
 
-                TextView srNo = new TextView(MainActivity6.this);
-                srNo.setText(String.valueOf(i + 1));
+                TextView srNo = createTextView(String.valueOf(i + 1));
                 row.addView(srNo);
 
-                TextView prnNo = new TextView(MainActivity6.this);
-                prnNo.setText(prnId);
+                TextView prnNo = createTextView(prnId);
                 row.addView(prnNo);
 
-                TextView prnDate = new TextView(MainActivity6.this);
-                prnDate.setText(avDate);
+                TextView prnDate = createTextView(avDate);
                 row.addView(prnDate);
 
-                TextView vehicle = new TextView(MainActivity6.this);
-                vehicle.setText(vehicleNo);
+                TextView vehicle = createTextView(vehicleNo);
                 row.addView(vehicle);
 
-                TextView location = new TextView(MainActivity6.this);
-                location.setText(depo);
+                TextView location = createTextView(depo);
                 row.addView(location);
 
                 Button updateButton = new Button(MainActivity6.this);
                 updateButton.setText("Update");
-                // Add onClick listener for update button if needed
+                updateButton.setPadding(10, 5, 10, 5);
+
+                // Set OnClickListener for the update button
+                updateButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Open new activity and pass prnId as intent extra
+                        Intent intent = new Intent(MainActivity6.this, MainActivity7.class);
+                        intent.putExtra("prnId", prnId);
+                        intent.putExtra("depo", depo);
+                        startActivity(intent);
+                    }
+                });
 
                 row.addView(updateButton);
 
@@ -320,6 +321,22 @@ public class MainActivity6 extends AppCompatActivity {
                 Log.e("tableCreation Excep: ", String.valueOf(e));
             }
         }
+    }
+
+    private TextView createHeaderTextView(String text) {
+        TextView textView = new TextView(MainActivity6.this);
+        textView.setText(text);
+        textView.setPadding(10, 10, 10, 10); // Padding
+//        textView.setBackgroundResource(R.drawable.cell_border); // Border
+        return textView;
+    }
+
+    private TextView createTextView(String text) {
+        TextView textView = new TextView(MainActivity6.this);
+        textView.setText(text);
+        textView.setPadding(10, 10, 10, 10); // Padding
+//        textView.setBackgroundResource(R.drawable.cell_border); // Border
+        return textView;
     }
 
 
