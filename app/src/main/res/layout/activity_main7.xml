@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -6,5 +5,268 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity7">
+
+    <TextView
+        android:id="@+id/loadingUnloadingTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:text="Select One Option : "
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/radioGroupOptions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="@id/loadingUnloadingTextView"
+        app:layout_constraintStart_toEndOf="@id/loadingUnloadingTextView"
+        app:layout_constraintTop_toTopOf="@id/loadingUnloadingTextView">
+
+        <RadioButton
+            android:id="@+id/radioButtonUnLoading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="UnLoading" />
+
+        <RadioButton
+            android:id="@+id/radioButtonWithoutUnLoading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Without UnLoading" />
+
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/hamaliVendorNameTextViewActivityThree"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="Hamali vendor Name:"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/radioGroupOptions"
+        tools:ignore="HardcodedText" />
+
+    <Spinner
+        android:id="@+id/hamaliVendorNameSpinnerActivityThree"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintBottom_toBottomOf="@id/hamaliVendorNameTextViewActivityThree"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/hamaliVendorNameTextViewActivityThree"
+        app:layout_constraintTop_toTopOf="@id/hamaliVendorNameTextViewActivityThree" />
+
+    <TextView
+        android:id="@+id/hamaliTypeTextViewActivityThree"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:text="Hamali Type :"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/hamaliVendorNameTextViewActivityThree"
+        tools:ignore="HardcodedText" />
+
+    <Spinner
+        android:id="@+id/hamaliTypeSpinnerActivityThree"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:entries="@array/hamali_type_options"
+        app:layout_constraintBottom_toBottomOf="@id/hamaliTypeTextViewActivityThree"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/hamaliTypeTextViewActivityThree"
+        app:layout_constraintTop_toTopOf="@id/hamaliTypeTextViewActivityThree" />
+
+    <TextView
+        android:id="@+id/hamaliAmountTextViewActivityThree"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:text="Hamali Amount:"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/hamaliTypeTextViewActivityThree"
+        tools:ignore="HardcodedText" />
+
+    <EditText
+        android:id="@+id/hamaliAmountEditTextActivityThree"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:ems="10"
+        android:hint="Enter Hamali Amount"
+        android:inputType="numberDecimal"
+        app:layout_constraintBottom_toBottomOf="@id/hamaliAmountTextViewActivityThree"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/hamaliAmountTextViewActivityThree"
+        app:layout_constraintTop_toTopOf="@id/hamaliAmountTextViewActivityThree"
+        tools:ignore="HardcodedText,TextFields" />
+
+    <TextView
+        android:id="@+id/deductionAmountTextViewActivityThree"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:text="Deduction Amount:"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/hamaliAmountTextViewActivityThree"
+        tools:ignore="HardcodedText" />
+
+    <EditText
+        android:id="@+id/deductionAmountEditTextActivityThree"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:ems="10"
+        android:hint="Enter Deduction Amount"
+        android:inputType="numberDecimal"
+        app:layout_constraintBottom_toBottomOf="@id/deductionAmountTextViewActivityThree"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/deductionAmountTextViewActivityThree"
+        app:layout_constraintTop_toTopOf="@id/deductionAmountTextViewActivityThree"
+        tools:ignore="HardcodedText,TextFields" />
+
+    <TextView
+        android:id="@+id/amountPaidToHVendorTextViewActivityThree"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="36dp"
+        android:text="Amount Paid To HVendor:"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/deductionAmountTextViewActivityThree"
+        tools:ignore="HardcodedText" />
+
+    <EditText
+        android:id="@+id/amountPaidToHVendorEditTextActivityThree"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:ems="10"
+        android:hint="Enter Amount Paid"
+        android:inputType="numberDecimal"
+        app:layout_constraintBottom_toBottomOf="@id/amountPaidToHVendorTextViewActivityThree"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@id/amountPaidToHVendorTextViewActivityThree"
+        app:layout_constraintTop_toTopOf="@id/amountPaidToHVendorTextViewActivityThree"
+        app:layout_constraintVertical_bias="0.73"
+        tools:ignore="HardcodedText,TextFields" />
+
+    <TextView
+        android:id="@+id/freightTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:text="Freight : "
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/amountPaidToHVendorTextViewActivityThree"
+        tools:ignore="HardcodedText" />
+
+    <EditText
+        android:id="@+id/freightEditText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:ems="10"
+        android:hint="Enter Freight Amount"
+        android:inputType="numberDecimal"
+        app:layout_constraintBottom_toBottomOf="@id/freightTextView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@id/freightTextView"
+        app:layout_constraintTop_toTopOf="@id/freightTextView"
+        app:layout_constraintVertical_bias="0.73"
+        tools:ignore="HardcodedText,TextFields" />
+
+    <TextView
+        android:id="@+id/fuelVendorNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:text="Fuel Vendor Name : "
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/freightTextView"
+        tools:ignore="HardcodedText" />
+
+    <Spinner
+        android:id="@+id/fuelVendorNameSpinner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintBottom_toBottomOf="@id/fuelVendorNameTextView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/fuelVendorNameTextView"
+        app:layout_constraintTop_toTopOf="@id/fuelVendorNameTextView" />
+
+    <TextView
+        android:id="@+id/fuelQuantityTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:text="Fuel Quantity (ltr/kg) : "
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/fuelVendorNameTextView"
+        tools:ignore="HardcodedText" />
+
+    <EditText
+        android:id="@+id/fuelQuantityEditText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:ems="10"
+        android:hint="Enter Deduction Amount"
+        android:inputType="numberDecimal"
+        app:layout_constraintBottom_toBottomOf="@id/fuelQuantityTextView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/fuelQuantityTextView"
+        app:layout_constraintTop_toTopOf="@id/fuelQuantityTextView"
+        tools:ignore="HardcodedText,TextFields" />
+
+    <TextView
+        android:id="@+id/fuelrateTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:text="Fuel Quantity (ltr/kg) : "
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/fuelQuantityTextView"
+        tools:ignore="HardcodedText" />
+
+    <EditText
+        android:id="@+id/"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:ems="10"
+        android:hint="Enter Deduction Amount"
+        android:inputType="numberDecimal"
+        app:layout_constraintBottom_toBottomOf="@id/fuelrateTextView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/fuelrateTextView"
+        app:layout_constraintTop_toTopOf="@id/fuelrateTextView"
+        tools:ignore="HardcodedText,TextFields" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
