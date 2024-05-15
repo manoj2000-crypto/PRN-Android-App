@@ -305,12 +305,44 @@ public class MainActivity6 extends AppCompatActivity {
                 updateButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // Open new activity and pass prnId as intent extra
-                        Intent intent = new Intent(MainActivity6.this, MainActivity7.class);
-                        intent.putExtra("prnId", prnId);
-                        intent.putExtra("depo", depo);
-                        intent.putExtra("username", username);
-                        startActivity(intent);
+
+                        // Create a request body with prnId
+                        RequestBody requestBody = new FormBody.Builder()
+                                .add("prnId", prnId)
+                                .build();
+
+                        // Create a POST request with the URL and request body
+                        Request request = new Request.Builder()
+                                .url("https://vtc3pl.com/get_all_lrno_from_prn_number.php")
+                                .post(requestBody)
+                                .build();
+
+                        // Create an OkHttpClient to execute the request asynchronously
+                        OkHttpClient client = new OkHttpClient();
+                        client.newCall(request).enqueue(new Callback() {
+                            @Override
+                            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                                // Handle failure
+                                e.printStackTrace();
+                            }
+
+                            @Override
+                            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                                if (response.isSuccessful()) {
+                                    // Parse response and pass it to MainActivity7
+                                    String responseData = response.body().string();
+                                    Intent intent = new Intent(MainActivity6.this, MainActivity7.class);
+                                    intent.putExtra("prnId", prnId);
+                                    intent.putExtra("depo", depo);
+                                    intent.putExtra("username", username);
+                                    intent.putExtra("response", responseData);
+                                    startActivity(intent);
+                                } else {
+                                    // Handle unsuccessful response
+                                    Log.e("Error", "Unsuccessful response: " + response);
+                                }
+                            }
+                        });
                     }
                 });
 
