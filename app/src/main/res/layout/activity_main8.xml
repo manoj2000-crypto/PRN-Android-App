@@ -5,10 +5,10 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity5">
+    tools:context=".MainActivity8">
 
     <TextView
-        android:id="@+id/textViewFromDate"
+        android:id="@+id/textViewFromDateActivityEight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -18,18 +18,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/textViewToDate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="32dp"
-        android:text="@string/to_date"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewFromDate" />
-
     <EditText
-        android:id="@+id/editTextFromDate"
+        android:id="@+id/editTextFromDateActivityEight"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -37,12 +27,23 @@
         android:focusable="false"
         android:inputType="none"
         android:onClick="showDatePickerDialogFromDate"
+        app:layout_constraintBottom_toBottomOf="@id/textViewFromDateActivityEight"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/textViewFromDate"
-        app:layout_constraintTop_toTopOf="@id/textViewFromDate" />
+        app:layout_constraintStart_toEndOf="@id/textViewFromDateActivityEight"
+        app:layout_constraintTop_toTopOf="@id/textViewFromDateActivityEight" />
+
+    <TextView
+        android:id="@+id/textViewToDateActivityEight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
+        android:text="@string/to_date"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/editTextFromDateActivityEight" />
 
     <EditText
-        android:id="@+id/editTextToDate"
+        android:id="@+id/editTextToDateActivityEight"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -50,48 +51,40 @@
         android:focusable="false"
         android:inputType="none"
         android:onClick="showDatePickerDialogToDate"
+        app:layout_constraintBottom_toBottomOf="@id/textViewToDateActivityEight"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/textViewToDate"
-        app:layout_constraintTop_toTopOf="@id/textViewToDate" />
-
+        app:layout_constraintStart_toEndOf="@id/textViewToDateActivityEight"
+        app:layout_constraintTop_toTopOf="@id/textViewToDateActivityEight" />
 
     <Button
-        android:id="@+id/checkButton"
+        android:id="@+id/searchButtonActivityEight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Check"
+        android:text="@string/search"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editTextToDate" />
+        app:layout_constraintTop_toBottomOf="@id/editTextToDateActivityEight" />
 
-    <ScrollView
-        android:layout_width="0dp"
+    <HorizontalScrollView
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="32dp"
-        android:fillViewport="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/checkButton">
+        app:layout_constraintTop_toBottomOf="@id/searchButtonActivityEight">
 
-        <HorizontalScrollView
+        <ScrollView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent">
 
             <TableLayout
-                android:id="@+id/tableLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp">
+                android:id="@+id/tableLayoutActivityEight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
             </TableLayout>
 
-        </HorizontalScrollView>
+        </ScrollView>
 
-    </ScrollView>
+    </HorizontalScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

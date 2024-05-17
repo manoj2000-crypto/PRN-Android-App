@@ -31,6 +31,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -44,17 +45,18 @@ import okhttp3.ResponseBody;
 
 public class MainActivity7 extends AppCompatActivity {
 
+    final double[] totalBoxWeight = {0};
+    final double[] totalBoxQty = {0};
+    final double[] totalBagWeight = {0};
+    final double[] totalBagQty = {0};
     private String prnId = "", depo = "", username = "", response = "";
+    private String[] lrnoArray;
     private Spinner hamaliVendorNameSpinnerActivitySeven, hamaliTypeSpinnerActivitySeven;
     private EditText hamaliAmountEditTextActivitySeven, deductionAmountEditTextActivitySeven, amountPaidToHVendorEditTextActivitySeven, freightEditText;
     private RadioGroup radioGroupOptions;
     private RadioButton radioButtonUnLoading, radioButtonWithoutUnLoading;
     private String selectedHamaliVendor = "", selectedHamaliType = "";
     private double amountPaidToHVendor, deductionAmount;
-    final double[] totalBoxWeight = {0};
-    final double[] totalBoxQty = {0};
-    final double[] totalBagWeight = {0};
-    final double[] totalBagQty = {0};
     private TableLayout tableLayoutActivitySeven;
 
 
@@ -69,6 +71,9 @@ public class MainActivity7 extends AppCompatActivity {
         depo = getIntent().getStringExtra("depo");
         username = getIntent().getStringExtra("username");
         response = getIntent().getStringExtra("response");
+        lrnoArray = getIntent().getStringArrayExtra("lrnoArray");
+
+        Log.e("lrnoArray from Avt 7 :", Arrays.toString(lrnoArray));
 
         Log.d("response:", response);
 

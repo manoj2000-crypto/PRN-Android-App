@@ -27,6 +27,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 
 import okhttp3.Call;
@@ -213,7 +215,6 @@ public class MainActivity6 extends AppCompatActivity {
         });
     }
 
-    //https://vtc3pl.com/arrival_prn_search_prn_app.php
     private void showDateRangeViews() {
         textViewFromDateActivitySix.setVisibility(View.VISIBLE);
         editTextFromDateActivitySix.setVisibility(View.VISIBLE);
@@ -307,15 +308,10 @@ public class MainActivity6 extends AppCompatActivity {
                     public void onClick(View v) {
 
                         // Create a request body with prnId
-                        RequestBody requestBody = new FormBody.Builder()
-                                .add("prnId", prnId)
-                                .build();
+                        RequestBody requestBody = new FormBody.Builder().add("prnId", prnId).build();
 
                         // Create a POST request with the URL and request body
-                        Request request = new Request.Builder()
-                                .url("https://vtc3pl.com/get_all_lrno_from_prn_number.php")
-                                .post(requestBody)
-                                .build();
+                        Request request = new Request.Builder().url("https://vtc3pl.com/get_all_lrno_from_prn_number.php").post(requestBody).build();
 
                         // Create an OkHttpClient to execute the request asynchronously
                         OkHttpClient client = new OkHttpClient();
@@ -331,12 +327,35 @@ public class MainActivity6 extends AppCompatActivity {
                                 if (response.isSuccessful()) {
                                     // Parse response and pass it to MainActivity7
                                     String responseData = response.body().string();
-                                    Intent intent = new Intent(MainActivity6.this, MainActivity7.class);
-                                    intent.putExtra("prnId", prnId);
-                                    intent.putExtra("depo", depo);
-                                    intent.putExtra("username", username);
-                                    intent.putExtra("response", responseData);
-                                    startActivity(intent);
+
+                                    try {
+
+                                        // Parse the JSON response to extract LRNO values
+                                        JSONArray jsonArray = new JSONArray(responseData);
+                                        ArrayList<String> lrnoList = new ArrayList<>();
+                                        for (int i = 0; i < jsonArray.length(); i++) {
+                                            JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                            String lrno = jsonObject.getString("LRNO");
+                                            lrnoList.add(lrno);
+                                        }
+
+                                        // Convert ArrayList to array
+                                        String[] lrnoArray = new String[lrnoList.size()];
+                                        lrnoArray = lrnoList.toArray(lrnoArray);
+                                        Log.e("lrnoArray Only : ", Arrays.toString(lrnoArray));
+
+                                        Intent intent = new Intent(MainActivity6.this, MainActivity7.class);
+                                        intent.putExtra("prnId", prnId);
+                                        intent.putExtra("depo", depo);
+                                        intent.putExtra("username", username);
+                                        intent.putExtra("response", responseData);
+                                        intent.putExtra("lrnoArray", lrnoArray);
+                                        startActivity(intent);
+
+                                    } catch (JSONException e) {
+                                        Log.e("JSON Parse Error", e.getMessage());
+                                        e.printStackTrace();
+                                    }
                                 } else {
                                     // Handle unsuccessful response
                                     Log.e("Error", "Unsuccessful response: " + response);

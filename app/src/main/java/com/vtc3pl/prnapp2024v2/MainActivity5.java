@@ -1,6 +1,8 @@
 package com.vtc3pl.prnapp2024v2;
+// PRN LIST PAGE
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -13,6 +15,7 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -20,6 +23,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -40,6 +44,7 @@ public class MainActivity5 extends AppCompatActivity {
     private TableLayout tableLayout;
     private Calendar fromCalendar, toCalendar;
     private DatePickerDialog.OnDateSetListener fromDateSetListener, toDateSetListener;
+    private String username = "", depo = "", year = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +60,13 @@ public class MainActivity5 extends AppCompatActivity {
 
         fromCalendar = Calendar.getInstance();
         toCalendar = Calendar.getInstance();
+
+        Intent intent = getIntent();
+        if (intent != null) {
+            username = intent.getStringExtra("username");
+            depo = intent.getStringExtra("depo");
+            year = intent.getStringExtra("year");
+        }
 
         // Initialize date set listeners
         fromDateSetListener = new DatePickerDialog.OnDateSetListener() {
@@ -118,7 +130,7 @@ public class MainActivity5 extends AppCompatActivity {
         OkHttpClient client = new OkHttpClient();
 
         // Build request body
-        RequestBody requestBody = new FormBody.Builder().add("fromDate", fromDate).add("toDate", toDate).build();
+        RequestBody requestBody = new FormBody.Builder().add("fromDate", fromDate).add("toDate", toDate).add("username", username).build();
 
         // Build request
         Request request = new Request.Builder().url("https://vtc3pl.com/fetch_prnnumber_only_prn_app.php").post(requestBody).build();
@@ -136,13 +148,18 @@ public class MainActivity5 extends AppCompatActivity {
                     throw new IOException("Unexpected code " + response);
                 }
                 ResponseBody responseBody = response.body();
+                Log.e("Response Body PRN LIST:", String.valueOf(responseBody));
                 if (responseBody != null) {
-
                     final String responseData = response.body().string();
+                    Log.e("Response PRN LIST : " , responseData);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            processJSONResponse(responseData);
+                            if ("0 Result".equals(responseData)) {
+                                showAlert("No Records Found", "No records found for " + username);
+                            }else {
+                                processJSONResponse(responseData);
+                            }
                         }
                     });
                 } else {
@@ -159,22 +176,45 @@ public class MainActivity5 extends AppCompatActivity {
             // Clear previous table data
             tableLayout.removeAllViews();
 
+            // Create table headers
+            TableRow headerRow = new TableRow(this);
+            headerRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+
+            TextView srNoHeader = createHeaderTextView("SrNo");
+            headerRow.addView(srNoHeader);
+
+            TextView prnIdHeader = createHeaderTextView("PRN No");
+            headerRow.addView(prnIdHeader);
+
+            TextView prnDateHeader = createHeaderTextView("Date");
+            headerRow.addView(prnDateHeader);
+
+            TextView vehicleNoHeader = createHeaderTextView("Vehicle No");
+            headerRow.addView(vehicleNoHeader);
+
+            TextView quantityHeader = createHeaderTextView("Quantity");
+            headerRow.addView(quantityHeader);
+
+            tableLayout.addView(headerRow);
+
             // Create table rows dynamically
             for (int i = 0; i < jsonArray.length(); i++) {
+
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+
                 TableRow tableRow = new TableRow(this);
-                TextView textViewSrNo = new TextView(this);
-                TextView textViewPRNId = new TextView(this);
-
-                // Set Sr No
-                String srNo = String.valueOf(i + 1) + ") ";
-                textViewSrNo.setText(srNo);
-
-                // Set PRNId
-                textViewPRNId.setText(jsonArray.getString(i));
+                TextView textViewSrNo = createTextView(String.valueOf(i + 1) + ") ");
+                TextView textViewPRNId = createTextView(jsonObject.getString("PRNId"));
+                TextView textViewPRNDate = createTextView(jsonObject.getString("PRNDate"));
+                TextView textViewVehicleNo = createTextView(jsonObject.getString("VehicleNo"));
+                TextView textViewQuantity = createTextView(jsonObject.getString("Quantity"));
 
                 // Add views to the row
                 tableRow.addView(textViewSrNo);
                 tableRow.addView(textViewPRNId);
+                tableRow.addView(textViewPRNDate);
+                tableRow.addView(textViewVehicleNo);
+                tableRow.addView(textViewQuantity);
 
                 // Add row to the table
                 tableLayout.addView(tableRow);
@@ -183,5 +223,27 @@ public class MainActivity5 extends AppCompatActivity {
             e.printStackTrace();
             Log.e("JSON Exception: ", "MainActivity5(tableLayout) ", e);
         }
+    }
+
+    private TextView createHeaderTextView(String headerText) {
+        TextView headerTextView = new TextView(this);
+        headerTextView.setText(headerText);
+        headerTextView.setPadding(10, 10, 10, 10);
+        return headerTextView;
+    }
+
+    private TextView createTextView(String text) {
+        TextView textView = new TextView(this);
+        textView.setText(text);
+        textView.setPadding(10, 10, 10, 10); // Same padding as headerTextView
+        return textView;
+    }
+
+    private void showAlert(String title, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setPositiveButton("OK", null);
+        builder.show();
     }
 }

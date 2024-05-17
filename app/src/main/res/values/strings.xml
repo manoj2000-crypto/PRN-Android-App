@@ -22,6 +22,7 @@
     <string name="create_prn">Create PRN</string>
     <string name="arrival_prn">Arrival PRN</string>
     <string name="prn_list">PRN List</string>
+    <string name="lrno_pending_for_prn">LR Pending For PRN</string>
 
     <string name="user_name_prefix">User name: %s</string>
 

@@ -1,4 +1,5 @@
 package com.vtc3pl.prnapp2024v2;
+// Second Page with four Buttons
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,8 +18,7 @@ public class MainActivity4 extends AppCompatActivity {
 
     private String username = "", depo = "", year = "";
     private TextView showUserNameActivityFourTextView;
-
-    private Button createPrnButton, arrivalPrnButton, prnListButton;
+    private Button createPrnButton, arrivalPrnButton, prnListButton, lrNoPendingForPRNButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +30,7 @@ public class MainActivity4 extends AppCompatActivity {
         createPrnButton = findViewById(R.id.createPrnButton);
         arrivalPrnButton = findViewById(R.id.arrivalPrnButton);
         prnListButton = findViewById(R.id.prnListButton);
+        lrNoPendingForPRNButton = findViewById(R.id.lrNoPendingForPRNButton);
 
         Intent intent = getIntent();
         if (intent != null) {
@@ -59,11 +60,14 @@ public class MainActivity4 extends AppCompatActivity {
         arrivalPrnButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity4.this, MainActivity6.class);
-                intent.putExtra("username", username);
-                intent.putExtra("depo", depo);
-                intent.putExtra("year", year);
-                startActivity(intent);
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity4.this, "Under Maintenance...", Toast.LENGTH_SHORT).show();
+                });
+//                Intent intent = new Intent(MainActivity4.this, MainActivity6.class);
+//                intent.putExtra("username", username);
+//                intent.putExtra("depo", depo);
+//                intent.putExtra("year", year);
+//                startActivity(intent);
             }
         });
 
@@ -73,6 +77,21 @@ public class MainActivity4 extends AppCompatActivity {
             public void onClick(View v) {
                 // Start MainActivity5
                 Intent intent = new Intent(MainActivity4.this, MainActivity5.class);
+                intent.putExtra("username", username);
+                intent.putExtra("depo", depo);
+                intent.putExtra("year", year);
+                startActivity(intent);
+            }
+        });
+
+        lrNoPendingForPRNButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Start MainActivity5
+                Intent intent = new Intent(MainActivity4.this, MainActivity8.class);
+                intent.putExtra("username", username);
+                intent.putExtra("depo", depo);
+                intent.putExtra("year", year);
                 startActivity(intent);
             }
         });
