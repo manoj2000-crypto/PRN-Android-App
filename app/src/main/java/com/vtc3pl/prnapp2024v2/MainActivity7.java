@@ -32,7 +32,9 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -49,6 +51,7 @@ public class MainActivity7 extends AppCompatActivity {
     final double[] totalBoxQty = {0};
     final double[] totalBagWeight = {0};
     final double[] totalBagQty = {0};
+    private final Set<String> lrNumbersSet = new HashSet<>();
     private String prnId = "", depo = "", username = "", response = "";
     private String[] lrnoArray;
     private Spinner hamaliVendorNameSpinnerActivitySeven, hamaliTypeSpinnerActivitySeven;
@@ -58,7 +61,6 @@ public class MainActivity7 extends AppCompatActivity {
     private String selectedHamaliVendor = "", selectedHamaliType = "";
     private double amountPaidToHVendor, deductionAmount;
     private TableLayout tableLayoutActivitySeven;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +85,12 @@ public class MainActivity7 extends AppCompatActivity {
             Log.d("username", username);
 
             Toast.makeText(this, "PRN ID: " + prnId, Toast.LENGTH_LONG).show();
+        }
+
+        // Insert "lrnoArray" into lrNumbersSet
+        if (lrnoArray != null) {
+            lrNumbersSet.addAll(Arrays.asList(lrnoArray));
+            Log.d("lrNumbersSet", lrNumbersSet.toString());
         }
 
         hamaliVendorNameSpinnerActivitySeven = findViewById(R.id.hamaliVendorNameSpinnerActivitySeven);
@@ -110,6 +118,7 @@ public class MainActivity7 extends AppCompatActivity {
                     amountPaidToHVendorEditTextActivitySeven.setText("0.0");
                     amountPaidToHVendorEditTextActivitySeven.setEnabled(false);
                 } else {
+                    fetchWeightsFromServer();
                     // If user select any pother value then calculate,
                     calculateHamali();
                 }
@@ -203,6 +212,72 @@ public class MainActivity7 extends AppCompatActivity {
                 runOnUiThread(() -> {
                     Toast.makeText(MainActivity7.this, "Failed to fetch Hamali Vendors", Toast.LENGTH_SHORT).show();
                 });
+            }
+        });
+    }
+
+    private void fetchWeightsFromServer() {
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
+
+        // URL for fetching weights
+        String url = "https://vtc3pl.com/hamali_bag_box_weight_prn_app.php";
+
+        Request request = new Request.Builder().url(url).build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity7.this, "Failed to fetch weights from server", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        String responseBody = body.string();
+                        // Parse the JSON response
+                        try {
+                            JSONArray jsonArray = new JSONArray(responseBody);
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                String lrNumber = jsonObject.getString("LRNO");
+                                if (lrNumbersSet.contains(lrNumber)) {
+                                    totalBoxWeight[0] += jsonObject.getDouble("TotalWeightBox");
+                                    totalBagWeight[0] += jsonObject.getDouble("TotalWeightBag");
+                                    totalBoxQty[0] += jsonObject.getDouble("TotalBoxQty");
+                                    totalBagQty[0] += jsonObject.getDouble("TotalBagQty");
+                                }
+                            }
+
+                            // Update the UI on the main thread
+                            runOnUiThread(() -> {
+//                                totalBoxQtyEditText.setText(String.valueOf(totalBoxQty[0]));
+//                                totalBagWeightEditText.setText(String.valueOf(totalBagWeight[0]));
+
+                                Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeight[0]));
+                                Log.d("totalBagWeight : ", String.valueOf(totalBagWeight[0]));
+
+                                Log.d("totalBoxQty : ", String.valueOf(totalBoxQty[0]));
+                                Log.d("totalBagQty : ", String.valueOf(totalBagQty[0]));
+                            });
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            runOnUiThread(() -> {
+                                Toast.makeText(MainActivity7.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
+                            });
+                        }
+                    } else {
+                        runOnUiThread(() -> {
+                            Toast.makeText(MainActivity7.this, "Response body is null(Box Qty and Bag Weight)", Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                } else {
+                    onFailure(call, new IOException("Unexpected response code " + response));
+                }
             }
         });
     }

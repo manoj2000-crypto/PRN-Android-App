@@ -141,18 +141,18 @@ public class MainActivity4 extends AppCompatActivity {
 
             arrivalPrnButton.setOnClickListener(v -> {
                 if (arrivalPRNAccess) {
-                    runOnUiThread(() -> {
-                        new AlertDialog.Builder(MainActivity4.this)
-                                .setTitle("Maintenance")
-                                .setMessage("This feature is under maintenance.")
-                                .setPositiveButton("OK", null)
-                                .show();
-                    });
-//                    Intent intent = new Intent(MainActivity4.this, MainActivity6.class);
-//                    intent.putExtra("username", username);
-//                    intent.putExtra("depo", depo);
-//                    intent.putExtra("year", year);
-//                    startActivity(intent);
+//                    runOnUiThread(() -> {
+//                        new AlertDialog.Builder(MainActivity4.this)
+//                                .setTitle("Maintenance")
+//                                .setMessage("This feature is under maintenance.")
+//                                .setPositiveButton("OK", null)
+//                                .show();
+//                    });
+                    Intent intent = new Intent(MainActivity4.this, MainActivity6.class);
+                    intent.putExtra("username", username);
+                    intent.putExtra("depo", depo);
+                    intent.putExtra("year", year);
+                    startActivity(intent);
                 } else {
                     showAccessDeniedAlert();
                 }
