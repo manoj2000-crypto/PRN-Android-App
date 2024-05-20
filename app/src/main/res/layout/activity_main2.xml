@@ -12,15 +12,15 @@
         android:layout_height="wrap_content"
         tools:context=".MainActivity2">
 
-        <Button
-            android:id="@+id/companyWiseButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Company Wise"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="16dp" />
+        <!--        <Button-->
+        <!--            android:id="@+id/companyWiseButton"-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:text="Company Wise"-->
+        <!--            app:layout_constraintStart_toStartOf="parent"-->
+        <!--            app:layout_constraintEnd_toEndOf="parent"-->
+        <!--            app:layout_constraintTop_toTopOf="parent"-->
+        <!--            android:layout_marginTop="16dp" />-->
 
         <TextView
             android:id="@+id/showUserNameTextView"
@@ -30,7 +30,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/companyWiseButton"
+            app:layout_constraintTop_toTopOf="parent"
             tools:ignore="HardcodedText" />
 
         <TextView
@@ -139,10 +139,10 @@
             android:layout_height="150dp"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="32dp"
+            android:nestedScrollingEnabled="true"
             app:layout_constraintBottom_toTopOf="@id/hamaliVendorNameTextView"
             app:layout_constraintTop_toBottomOf="@id/showCameraSurfaceView"
             app:layout_constraintVertical_bias="0.0"
-            android:nestedScrollingEnabled="true"
             tools:layout_editor_absoluteX="0dp">
 
             <TableLayout

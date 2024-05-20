@@ -126,18 +126,18 @@ public class MainActivity2 extends AppCompatActivity {
             }
         }
 
-        Button companyWiseButton = findViewById(R.id.companyWiseButton);
-        companyWiseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Start MainActivity2 and pass values as extras
-                Intent intent = new Intent(MainActivity2.this, MainActivity3.class);
-                intent.putExtra("username", username);
-                intent.putExtra("depo", depo);
-                intent.putExtra("year", year);
-                startActivity(intent);
-            }
-        });
+//        Button companyWiseButton = findViewById(R.id.companyWiseButton);
+//        companyWiseButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                // Start MainActivity2 and pass values as extras
+//                Intent intent = new Intent(MainActivity2.this, MainActivity3.class);
+//                intent.putExtra("username", username);
+//                intent.putExtra("depo", depo);
+//                intent.putExtra("year", year);
+//                startActivity(intent);
+//            }
+//        });
 
         cameraView = findViewById(R.id.showCameraSurfaceView);
         barcodeDetector = new BarcodeDetector.Builder(this).setBarcodeFormats(Barcode.ALL_FORMATS).build();

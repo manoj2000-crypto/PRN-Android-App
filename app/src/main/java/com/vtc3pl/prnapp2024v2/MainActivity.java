@@ -1,5 +1,5 @@
 package com.vtc3pl.prnapp2024v2;
-
+//Login Page (1st Page)
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;

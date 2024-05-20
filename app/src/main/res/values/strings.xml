@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PRN APP V2</string>
+    <string name="app_name">PRN</string>
 
     <string name="select_godown">Select Godown</string>
     <string name="please_select_vendor">Please Select Vendor</string>
@@ -20,6 +20,8 @@
     </string-array>
 
     <string name="create_prn">Create PRN</string>
+    <string name="auto_create_prn">Auto</string>
+    <string name="companywise_create_prn">company wise</string>
     <string name="arrival_prn">Arrival PRN</string>
     <string name="prn_list">PRN List</string>
     <string name="lrno_pending_for_prn">LR Pending For PRN</string>
