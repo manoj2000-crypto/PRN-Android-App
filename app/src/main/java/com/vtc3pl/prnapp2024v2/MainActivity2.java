@@ -259,6 +259,7 @@ public class MainActivity2 extends AppCompatActivity {
 
         FormBody.Builder formBuilder = new FormBody.Builder();
         formBuilder.add("lrNumber", lrNumber);
+        formBuilder.add("depo", depo);
 
         Request request = new Request.Builder().url("https://vtc3pl.com/prn_app_get_lrno.php").post(formBuilder.build()).build();
 
