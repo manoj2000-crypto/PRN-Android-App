@@ -1,5 +1,6 @@
 package com.vtc3pl.prnapp2024v2;
 //Login Page (1st Page)
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -23,12 +24,15 @@ import androidx.core.view.WindowInsetsCompat;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -42,9 +46,10 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity {
 
     private EditText userNameEditText, passwordEditText;
-    private Spinner spinnerDepo, spinnerYear;
+    //    private Spinner spinnerDepo, spinnerYear;
     private Button loginButton;
     private CheckBox rememberLoginCheckBox;
+    private String depo = "", year = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,8 +59,12 @@ public class MainActivity extends AppCompatActivity {
 
         userNameEditText = findViewById(R.id.userName);
         passwordEditText = findViewById(R.id.userPassword);
-        spinnerDepo = findViewById(R.id.spinnerDepo);
-        spinnerYear = findViewById(R.id.spinnerYear);
+
+        // Calculate the year
+        calculateYear();
+
+//        spinnerDepo = findViewById(R.id.spinnerDepo);
+//        spinnerYear = findViewById(R.id.spinnerYear);
         loginButton = findViewById(R.id.loginButton);
         rememberLoginCheckBox = findViewById(R.id.rememberLoginCheckBox);
 
@@ -72,31 +81,31 @@ public class MainActivity extends AppCompatActivity {
             passwordEditText.setText(savedPassword);
         }
 
-        // Populate spinnerDepo
-        fetchDepoCodes();
+//        year = 2425 complete this , it should take by default current year if year = 2024 then take 2425 , if it is 2025 then take 2526
+//        ArrayAdapter<String> yearAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new String[]{"Please Select Year", "2122", "2223", "2324", "2425", "2526", "2627", "2728", "2829", "2930"});
+//        yearAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//        spinnerYear.setAdapter(yearAdapter);
 
-        ArrayAdapter<String> yearAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new String[]{"Please Select Year", "2122", "2223", "2324", "2425", "2526", "2627", "2728", "2829", "2930"});
-        yearAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerYear.setAdapter(yearAdapter);
-
-        spinnerYear.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                // Handle item selection
-                String selectedYear = (String) parent.getItemAtPosition(position);
-                Toast.makeText(MainActivity.this, "Selected year: " + selectedYear, Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
+//        spinnerYear.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+//            @Override
+//            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+//                // Handle item selection
+//                String selectedYear = (String) parent.getItemAtPosition(position);
+//                Toast.makeText(MainActivity.this, "Selected year: " + selectedYear, Toast.LENGTH_SHORT).show();
+//            }
+//
+//            @Override
+//            public void onNothingSelected(AdapterView<?> parent) {
+//            }
+//        });
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 if (validateInputs()) {
+
+                    fetchDepoFromUserName();
 
                     performLogin();
 
@@ -122,10 +131,10 @@ public class MainActivity extends AppCompatActivity {
     private boolean validateInputs() {
         String username = userNameEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
-        String depo = spinnerDepo.getSelectedItem().toString();
-        String year = spinnerYear.getSelectedItem().toString();
+//        String depo = spinnerDepo.getSelectedItem().toString();
+//        String year = spinnerYear.getSelectedItem().toString();
 
-        if (username.isEmpty() || password.isEmpty() || depo.equals("Please Select Depo") || year.equals("Please Select Year")) {
+        if (username.isEmpty() || password.isEmpty()) { //|| depo.equals("Please Select Depo") || year.equals("Please Select Year")) {
             Toast.makeText(MainActivity.this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
             return false;
         }
@@ -139,8 +148,8 @@ public class MainActivity extends AppCompatActivity {
         // Get inputs
         String username = userNameEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
-        String depo = spinnerDepo.getSelectedItem().toString();
-        String year = spinnerYear.getSelectedItem().toString();
+//        String depo = spinnerDepo.getSelectedItem().toString();
+//        String year = spinnerYear.getSelectedItem().toString();
 
         // Prepare the request body
         RequestBody formBody = new FormBody.Builder().add("user_name", username).add("password", password).build();
@@ -199,9 +208,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void fetchDepoCodes() {
+    private void fetchDepoFromUserName() {
         OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder().url("https://vtc3pl.com/Fetch_DepoCode_PRN_APP.php").build();
+//        Request request = new Request.Builder().url("https://vtc3pl.com/Fetch_DepoCode_PRN_APP.php").build();
+
+        String userName = userNameEditText.getText().toString().trim();
+
+        // Create the form body
+        RequestBody formBody = new FormBody.Builder().add("username", userName).build();
+
+        Request request = new Request.Builder().url("https://vtc3pl.com/fetch_depot_from_username_prn_app.php").post(formBody).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -215,7 +231,6 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             Toast.makeText(MainActivity.this, "Failed to connect to server", Toast.LENGTH_SHORT).show();
                         }
-                        Toast.makeText(MainActivity.this, "Failed to fetch depot codes", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -228,23 +243,34 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            JSONArray jsonArray = new JSONArray(responseData);
-                            List<String> depoCodes = new ArrayList<>();
-                            depoCodes.add("Please Select Depo");
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                String depoCode = jsonArray.getString(i);
-                                depoCodes.add(depoCode);
+                            JSONObject jsonObject = new JSONObject(responseData);
+                            if (jsonObject.has("depotCode")) {
+                                Log.d("DepotCodeFromUserName", jsonObject.getString("depotCode"));
+                                depo = jsonObject.getString("depotCode");
+                                Toast.makeText(MainActivity.this, "Depot Code: " + depo, Toast.LENGTH_SHORT).show();
+                            } else if (jsonObject.has("error")) {
+                                String error = jsonObject.getString("error");
+                                Toast.makeText(MainActivity.this, error, Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(MainActivity.this, "Unexpected response format", Toast.LENGTH_SHORT).show();
                             }
-                            ArrayAdapter<String> depoAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, depoCodes);
-                            depoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                            spinnerDepo.setAdapter(depoAdapter);
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            Toast.makeText(MainActivity.this, "Error parsing depot codes", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "Error parsing response", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
             }
         });
     }
+
+    private void calculateYear() {
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        Log.e("CurrentYear", String.valueOf(currentYear));
+        int nextYear = (currentYear % 100) + 1;
+        Log.e("nextYear", String.valueOf(nextYear));
+        year = String.format(Locale.getDefault(), "%02d%02d", currentYear % 100, nextYear);
+        Log.e("CalculatedYear", year);
+    }
+
 }

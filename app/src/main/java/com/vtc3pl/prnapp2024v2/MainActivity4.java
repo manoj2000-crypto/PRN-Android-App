@@ -87,7 +87,7 @@ public class MainActivity4 extends AppCompatActivity {
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
-                    new AlertDialog.Builder(MainActivity4.this).setTitle("Error").setMessage("Error fetching page access. Please wait for some time or try again later.").setPositiveButton("OK", null).show();
+                    new AlertDialog.Builder(MainActivity4.this).setTitle("Error").setMessage("Error fetching page access. Please try again later.").setPositiveButton("OK", null).show();
                 });
             }
 
@@ -102,9 +102,11 @@ public class MainActivity4 extends AppCompatActivity {
                     if (result.has("error")) {
                         runOnUiThread(() -> {
                             new AlertDialog.Builder(MainActivity4.this)
-                                    .setTitle("Error")
+                                    .setTitle("Information")
                                     .setMessage(result.optString("error"))
-                                    .setPositiveButton("OK", null)
+                                    .setPositiveButton("OK", (dialog, which) -> {
+                                        finish();
+                                    })
                                     .show();
                         });
                     } else {

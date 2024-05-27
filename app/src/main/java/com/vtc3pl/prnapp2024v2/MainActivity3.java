@@ -186,15 +186,15 @@ public class MainActivity3 extends AppCompatActivity {
         contractPartySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d("Spinner", "onItemSelected called");
                 if (!isSpinnerInteraction) { // Only update EditText if not due to spinner interaction
                     contractPartyEditText.setText(contractPartiesList.get(position));
 
                     // Clear the spinner and remove all options
                     contractPartiesList.clear();
                     spinnerAdapter.notifyDataSetChanged();
-                } else {
-                    isSpinnerInteraction = false; // Reset the flag
                 }
+                isSpinnerInteraction = false; // Reset the flag
             }
 
             @Override
@@ -358,6 +358,7 @@ public class MainActivity3 extends AppCompatActivity {
                 if (e instanceof SocketTimeoutException) {
                     Log.e("SocketTimeoutException", "Read timed out");
                 } else {
+                    Log.e("Exception", String.valueOf(e));
                     e.printStackTrace();
                 }
             }
@@ -400,6 +401,7 @@ public class MainActivity3 extends AppCompatActivity {
 //            contractPartiesList.addAll(tempContractPartiesList);
             spinnerAdapter.notifyDataSetChanged();
         } catch (JSONException e) {
+            Log.e("JSONEsception", String.valueOf(e));
             e.printStackTrace();
         }
     }
