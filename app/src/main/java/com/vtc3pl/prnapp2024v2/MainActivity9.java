@@ -1,5 +1,5 @@
 package com.vtc3pl.prnapp2024v2;
-
+//After clicking on button "Create PRN" on second page this page will open with two options "Auto", ""
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;

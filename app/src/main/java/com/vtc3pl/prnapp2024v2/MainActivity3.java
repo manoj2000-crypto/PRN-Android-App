@@ -61,11 +61,13 @@ import okhttp3.ResponseBody;
 
 public class MainActivity3 extends AppCompatActivity {
 
-    final double[] totalBoxWeight = {0};
-    final double[] totalBoxQty = {0};
-    final double[] totalBagWeight = {0};
-    final double[] totalBagQty = {0};
+//    final double[] totalBoxWeight = {0};
+//    final double[] totalBoxQty = {0};
+//    final double[] totalBagWeight = {0};
+//    final double[] totalBagQty = {0};
+
     private final Handler handler = new Handler();
+    private double totalBoxWeightFromAllLRNO = 0, totalBoxQtyFromAllLRNO = 0, totalBagWeightFromAllLRNO = 0, totalBagQtyFromAllLRNO = 0;
     private TextView showUserNameTextViewActivityThree;
     private EditText editTextFromDateActivityThree, editTextToDateActivityThree, vehicleNumberEditText, contractPartyEditText, hamaliAmountEditTextActivityThree, deductionAmountEditTextActivityThree, amountPaidToHVendorEditTextActivityThree, totalBoxQtyEditTextActivityThree, totalBagWeightEditTextActivityThree;
     private Button getLRNOButton, createPRN;
@@ -465,12 +467,17 @@ public class MainActivity3 extends AppCompatActivity {
 
     public void onGetLRNOButtonClick(View view) {
         // Retrieve input values
-        String fromDate = editTextFromDateActivityThree.getText().toString();
-        String toDate = editTextToDateActivityThree.getText().toString();
-        String contractPartyText = contractPartyEditText.getText().toString();
+        String fromDate = editTextFromDateActivityThree.getText().toString().trim();
+        Log.e("FromDate", fromDate);
+        String toDate = editTextToDateActivityThree.getText().toString().trim();
+        Log.e("ToDate", toDate);
+        String contractPartyText = contractPartyEditText.getText().toString().trim();
+        Log.e("WholeContractPartyText", contractPartyText);
         parts = contractPartyText.split(":");
         contractParty = parts.length >= 2 ? parts[1].trim() : "";
+        Log.e("OnlyContractParty", contractParty);
         contractPartyCode = parts.length >= 2 ? parts[0].trim() : "";
+        Log.e("OnlyContractPartyCode", contractPartyCode);
 
         // Validate input values
         if (TextUtils.isEmpty(fromDate)) {
@@ -549,10 +556,14 @@ public class MainActivity3 extends AppCompatActivity {
     private void fetchWeightsFromServer() {
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
+        //When getting the LR if status is 11 then do the calculation after missmatch for that perticuler LR
         // URL for fetching weights
         String url = "https://vtc3pl.com/hamali_bag_box_weight_prn_app.php";
 
-        Request request = new Request.Builder().url(url).build();
+        // Construct the POST request body
+        RequestBody formBody = new FormBody.Builder().add("depo", depo).build();
+
+        Request request = new Request.Builder().url(url).post(formBody).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -573,28 +584,37 @@ public class MainActivity3 extends AppCompatActivity {
                         // Parse the JSON response
                         try {
                             JSONArray jsonArray = new JSONArray(responseBody);
+                            double totalBoxWeight = 0;
+                            double totalBoxQty = 0;
+                            double totalBagWeight = 0;
+                            double totalBagQty = 0;
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                                 String lrNumber = jsonObject.getString("LRNO");
                                 if (selectedLRNOs.contains(lrNumber)) {
                                     Log.d("BagAndBox", "Lrno : " + lrNumber + ", [BoxQty: " + jsonObject.getDouble("TotalBoxQty") + " ]" + ", [BagWeight: " + jsonObject.getDouble("TotalWeightBag") + " ]");
-                                    totalBoxWeight[0] += jsonObject.getDouble("TotalWeightBox");
-                                    totalBagWeight[0] += jsonObject.getDouble("TotalWeightBag");
-                                    totalBoxQty[0] += jsonObject.getDouble("TotalBoxQty");
-                                    totalBagQty[0] += jsonObject.getDouble("TotalBagQty");
+                                    totalBoxWeight += jsonObject.getDouble("TotalWeightBox");
+                                    totalBagWeight += jsonObject.getDouble("TotalWeightBag");
+                                    totalBoxQty += jsonObject.getDouble("TotalBoxQty");
+                                    totalBagQty += jsonObject.getDouble("TotalBagQty");
                                 }
                             }
 
+                            totalBoxWeightFromAllLRNO = totalBoxWeight;
+                            totalBagWeightFromAllLRNO = totalBagWeight;
+                            totalBoxQtyFromAllLRNO = totalBoxQty;
+                            totalBagQtyFromAllLRNO = totalBagQty;
+
                             // Update the UI on the main thread
                             runOnUiThread(() -> {
-                                totalBoxQtyEditTextActivityThree.setText(String.valueOf(totalBoxQty[0]));
-                                totalBagWeightEditTextActivityThree.setText(String.valueOf(totalBagWeight[0]));
+                                totalBoxQtyEditTextActivityThree.setText(String.valueOf(totalBoxQtyFromAllLRNO));
+                                totalBagWeightEditTextActivityThree.setText(String.valueOf(totalBagWeightFromAllLRNO));
 
-                                Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeight[0]));
-                                Log.d("totalBagWeight : ", String.valueOf(totalBagWeight[0]));
+                                Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeightFromAllLRNO));
+                                Log.d("totalBagWeight : ", String.valueOf(totalBagWeightFromAllLRNO));
 
-                                Log.d("totalBoxQty : ", String.valueOf(totalBoxQty[0]));
-                                Log.d("totalBagQty : ", String.valueOf(totalBagQty[0]));
+                                Log.d("totalBoxQty : ", String.valueOf(totalBoxQtyFromAllLRNO));
+                                Log.d("totalBagQty : ", String.valueOf(totalBagQtyFromAllLRNO));
                             });
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -702,8 +722,8 @@ public class MainActivity3 extends AppCompatActivity {
                                     selectedLRNOs.remove(lrNo);
                                     Log.d("LRNO Remove : ", selectedLRNOs.toString());
 
-                                    totalBoxQty[0] -= totalBoxQty[0];
-                                    totalBagWeight[0] -= totalBagWeight[0];
+                                    totalBoxQtyFromAllLRNO -= totalBoxQtyFromAllLRNO;
+                                    totalBagWeightFromAllLRNO -= totalBagWeightFromAllLRNO;
                                 }
                                 fetchWeightsFromServer();
                                 calculateHamali();
@@ -852,10 +872,10 @@ public class MainActivity3 extends AppCompatActivity {
                             }
 
                             // Perform calculations
-                            double hamaliBoxValue = (boxRate * totalBoxQty[0]);
+                            double hamaliBoxValue = (boxRate * totalBoxQtyFromAllLRNO);
                             Log.d("hamaliBoxValue : ", String.valueOf(hamaliBoxValue));
                             double ratePerTon = bagRate;
-                            double weightInTons = (totalBagWeight[0] / 1000);
+                            double weightInTons = (totalBagWeightFromAllLRNO / 1000);
                             Log.d("weightInTons : ", String.valueOf(weightInTons));
                             double hamaliBagValue = (weightInTons * ratePerTon);
                             Log.d("hamaliBagValue : ", String.valueOf(hamaliBagValue));
@@ -963,6 +983,8 @@ public class MainActivity3 extends AppCompatActivity {
         hamaliTypeSpinnerActivityThree.setSelection(0);
         deductionAmountEditTextActivityThree.setText("");
         hamaliAmountEditTextActivityThree.setText("");
+
+        finish();
     }
 
 
@@ -1008,6 +1030,8 @@ public class MainActivity3 extends AppCompatActivity {
         formBuilder.add("selectedHamaliType", selectedHamaliType);
         formBuilder.add("deductionAmount", String.valueOf(deductionAmount));
 
+        Log.e("After POST depo data", depo);
+
         Request request = new Request.Builder().url("https://vtc3pl.com/create_prn_prn_app.php").post(formBuilder.build()).build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -1031,19 +1055,16 @@ public class MainActivity3 extends AppCompatActivity {
                         runOnUiThread(() -> {
 
                             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity3.this);
-                            builder.setTitle("Success")
-                                    .setMessage(responseBody)
-                                    .setPositiveButton("OK", (dialog, which) -> {
-                                        dialog.dismiss();
-                                        clearUIComponents();
-                                    }).setNeutralButton("Copy", (dialog, which) -> {
-                                        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                                        ClipData clip = ClipData.newPlainText("Response", responseBody);
-                                        clipboard.setPrimaryClip(clip);
-                                        clearUIComponents();
-                                        Toast.makeText(MainActivity3.this, "Response copied to clipboard", Toast.LENGTH_SHORT).show();
-                                    })
-                                    .show();
+                            builder.setTitle("Success").setMessage(responseBody).setPositiveButton("OK", (dialog, which) -> {
+                                dialog.dismiss();
+                                clearUIComponents();
+                            }).setNeutralButton("Copy", (dialog, which) -> {
+                                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                                ClipData clip = ClipData.newPlainText("Response", responseBody);
+                                clipboard.setPrimaryClip(clip);
+                                Toast.makeText(MainActivity3.this, "Response copied to clipboard", Toast.LENGTH_SHORT).show();
+                                clearUIComponents();
+                            }).show();
 
                         });
                     } else {

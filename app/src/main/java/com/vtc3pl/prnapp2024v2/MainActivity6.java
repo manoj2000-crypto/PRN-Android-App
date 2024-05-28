@@ -1,5 +1,5 @@
 package com.vtc3pl.prnapp2024v2;
-
+//Arrival Page Part 1
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;

@@ -1,6 +1,10 @@
 package com.vtc3pl.prnapp2024v2;
+//Auto PRN Creation page
 
 import android.Manifest;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -25,6 +29,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -62,11 +67,12 @@ public class MainActivity2 extends AppCompatActivity {
 
     private static final Pattern LR_NUMBER_PATTERN = Pattern.compile("[A-Z]{3,4}[0-9]{10}+");
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
-    final double[] totalBoxWeight = {0};
-    final double[] totalBoxQty = {0};
-    final double[] totalBagWeight = {0};
-    final double[] totalBagQty = {0};
+    //    final double[] totalBoxWeight = {0};
+//    final double[] totalBoxQty = {0};
+//    final double[] totalBagWeight = {0};
+//    final double[] totalBagQty = {0};
     private final Set<String> lrNumbersSet = new HashSet<>();
+    private double totalBoxWeightFromAllLRNO = 0, totalBoxQtyFromAllLRNO = 0, totalBagWeightFromAllLRNO = 0, totalBagQtyFromAllLRNO = 0;
     private TableLayout tableLayout;
     private EditText lrEditText, vehicleNumberEditText, totalBoxQtyEditText, totalBagWeightEditText, deductionAmountEditText, hamaliAmountEditText, amountPaidToHVendorEditText;
     private SurfaceView cameraView;
@@ -428,27 +434,38 @@ public class MainActivity2 extends AppCompatActivity {
                         // Parse the JSON response
                         try {
                             JSONArray jsonArray = new JSONArray(responseBody);
+                            double totalBoxWeight = 0;
+                            double totalBoxQty = 0;
+                            double totalBagWeight = 0;
+                            double totalBagQty = 0;
+
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                                 String lrNumber = jsonObject.getString("LRNO");
                                 if (lrNumbersSet.contains(lrNumber)) {
-                                    totalBoxWeight[0] += jsonObject.getDouble("TotalWeightBox");
-                                    totalBagWeight[0] += jsonObject.getDouble("TotalWeightBag");
-                                    totalBoxQty[0] += jsonObject.getDouble("TotalBoxQty");
-                                    totalBagQty[0] += jsonObject.getDouble("TotalBagQty");
+                                    totalBoxWeight += jsonObject.getDouble("TotalWeightBox");
+                                    totalBagWeight += jsonObject.getDouble("TotalWeightBag");
+                                    totalBoxQty += jsonObject.getDouble("TotalBoxQty");
+                                    totalBagQty += jsonObject.getDouble("TotalBagQty");
                                 }
                             }
 
+                            totalBoxWeightFromAllLRNO = totalBoxWeight;
+                            totalBagWeightFromAllLRNO = totalBagWeight;
+                            totalBoxQtyFromAllLRNO = totalBoxQty;
+                            totalBagQtyFromAllLRNO = totalBagQty;
+
+
                             // Update the UI on the main thread
                             runOnUiThread(() -> {
-                                totalBoxQtyEditText.setText(String.valueOf(totalBoxQty[0]));
-                                totalBagWeightEditText.setText(String.valueOf(totalBagWeight[0]));
+                                totalBoxQtyEditText.setText(String.valueOf(totalBoxQtyFromAllLRNO));
+                                totalBagWeightEditText.setText(String.valueOf(totalBagWeightFromAllLRNO));
 
-                                Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeight[0]));
-                                Log.d("totalBagWeight : ", String.valueOf(totalBagWeight[0]));
+                                Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeightFromAllLRNO));
+                                Log.d("totalBagWeight : ", String.valueOf(totalBagWeightFromAllLRNO));
 
-                                Log.d("totalBoxQty : ", String.valueOf(totalBoxQty[0]));
-                                Log.d("totalBagQty : ", String.valueOf(totalBagQty[0]));
+                                Log.d("totalBoxQty : ", String.valueOf(totalBoxQtyFromAllLRNO));
+                                Log.d("totalBagQty : ", String.valueOf(totalBagQtyFromAllLRNO));
                             });
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -486,10 +503,7 @@ public class MainActivity2 extends AppCompatActivity {
         formBuilder.add("spinnerDepo", depo);
         formBuilder.add("Hvendor", selectedHamaliVendor);
 
-        Request request = new Request.Builder()
-                .url("https://vtc3pl.com/fetch_hamali_rates_calculation_prn_app.php")
-                .post(formBuilder.build())
-                .build();
+        Request request = new Request.Builder().url("https://vtc3pl.com/fetch_hamali_rates_calculation_prn_app.php").post(formBuilder.build()).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -538,14 +552,14 @@ public class MainActivity2 extends AppCompatActivity {
                             }
 
                             // Perform calculations
-                            double hamaliBoxValue = boxRate * totalBoxQty[0];
+                            double hamaliBoxValue = (boxRate * totalBoxQtyFromAllLRNO);
                             Log.d("hamaliBoxValue : ", String.valueOf(hamaliBoxValue));
                             double ratePerTon = bagRate;
-                            double weightInTons = totalBagWeight[0] / 1000;
+                            double weightInTons = (totalBagWeightFromAllLRNO / 1000);
                             Log.d("weightInTons : ", String.valueOf(weightInTons));
-                            double hamaliBagValue = weightInTons * ratePerTon;
+                            double hamaliBagValue = (weightInTons * ratePerTon);
                             Log.d("hamaliBagValue : ", String.valueOf(hamaliBagValue));
-                            double totalHamaliAmount = hamaliBoxValue + hamaliBagValue;
+                            double totalHamaliAmount = (hamaliBoxValue + hamaliBagValue);
                             Log.d("totalHamaliAmount : ", String.valueOf(totalHamaliAmount));
 
                             runOnUiThread(() -> {
@@ -686,21 +700,30 @@ public class MainActivity2 extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-                    // Process the response here
-                    runOnUiThread(() -> {
-                        Toast.makeText(MainActivity2.this, responseBody, Toast.LENGTH_SHORT).show();
-                        vehicleNumberEditText.setText("");
-                        lrEditText.setText("");
-                        tableLayout.removeAllViews();
-                        lrNumbersSet.clear();
-                        goDownSpinner.setSelection(0);
-                        hamaliVendorNameSpinner.setSelection(0);
-                        amountPaidToHVendorEditText.setText("");
-                        hamaliTypeSpinner.setSelection(0);
-                        deductionAmountEditText.setText("");
-                        hamaliAmountEditText.setText("");
-                    });
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        String responseBody = body.string();
+                        Log.e("Response CreatePRN:", responseBody);
+                        // Process the response here
+                        runOnUiThread(() -> {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity2.this);
+                            builder.setTitle("Success").setMessage(responseBody).setPositiveButton("OK", (dialog, which) -> {
+                                dialog.dismiss();
+                                clearUIComponents();
+                            }).setNeutralButton("Copy", (dialog, which) -> {
+                                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                                ClipData clip = ClipData.newPlainText("Response", responseBody);
+                                clipboard.setPrimaryClip(clip);
+                                Toast.makeText(MainActivity2.this, "Response copied to clipboard", Toast.LENGTH_SHORT).show();
+                                clearUIComponents();
+                            }).show();
+                        });
+                    } else {
+                        Log.e("Response CreatePRN:", "Empty response body");
+                        runOnUiThread(() -> {
+                            Toast.makeText(MainActivity2.this, "Empty response", Toast.LENGTH_SHORT).show();
+                        });
+                    }
                 } else {
                     runOnUiThread(() -> {
                         Toast.makeText(MainActivity2.this, "Server error: " + response.code(), Toast.LENGTH_SHORT).show();
@@ -708,6 +731,21 @@ public class MainActivity2 extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void clearUIComponents() {
+        vehicleNumberEditText.setText("");
+        lrEditText.setText("");
+        tableLayout.removeAllViews();
+        lrNumbersSet.clear();
+        goDownSpinner.setSelection(0);
+        hamaliVendorNameSpinner.setSelection(0);
+        amountPaidToHVendorEditText.setText("");
+        hamaliTypeSpinner.setSelection(0);
+        deductionAmountEditText.setText("");
+        hamaliAmountEditText.setText("");
+
+        finish();
     }
 
     @Override

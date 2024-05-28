@@ -1,5 +1,5 @@
 package com.vtc3pl.prnapp2024v2;
-
+//Arrival Page Part 2
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;

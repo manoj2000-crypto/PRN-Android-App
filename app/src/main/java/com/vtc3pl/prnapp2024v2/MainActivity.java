@@ -4,6 +4,7 @@ package com.vtc3pl.prnapp2024v2;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         userNameEditText = findViewById(R.id.userName);
+        userNameEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
         passwordEditText = findViewById(R.id.userPassword);
 
         // Calculate the year
