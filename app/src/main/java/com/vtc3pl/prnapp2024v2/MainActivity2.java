@@ -652,8 +652,25 @@ public class MainActivity2 extends AppCompatActivity {
         // Retrieve data from UI components
         String vehicleNo = vehicleNumberEditText.getText().toString();
         String goDown = goDownSpinner.getSelectedItem().toString();
+        String hamaliVendor = hamaliVendorNameSpinner.getSelectedItem().toString();
+        String amountPaidToHVendor = amountPaidToHVendorEditText.getText().toString().trim();
+//        String hamaliType = hamaliTypeSpinner.getSelectedItem().toString();
+        String deductionAmount = deductionAmountEditText.getText().toString().trim();
+        String hamaliAmount = hamaliAmountEditText.getText().toString().trim();
 
-        if (goDown.equals(getString(R.string.select_godown))) {
+
+        // Check if mandatory fields are filled
+        if (vehicleNo.isEmpty() || lrNumbersSet.isEmpty() || goDown.equals("Select Godown") || hamaliVendor.equals("Please Select Vendor") || amountPaidToHVendor.isEmpty() || deductionAmount.isEmpty() || hamaliAmount.isEmpty()) {
+            // Show an alert dialog
+            new AlertDialog.Builder(this)
+                    .setTitle("Error")
+                    .setMessage("Fill all the details")
+                    .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                    .show();
+            return; // Exit the method
+        }
+
+        if (goDown.equals("Select Godown")) {
             // Show a message to the user
             Toast.makeText(this, "Please select a Godown", Toast.LENGTH_SHORT).show();
             return; // Exit the method

@@ -46,6 +46,8 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final String appVersion = "versionFive";
+
     private EditText userNameEditText, passwordEditText;
     //    private Spinner spinnerDepo, spinnerYear;
     private Button loginButton;
@@ -154,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
 //        String year = spinnerYear.getSelectedItem().toString();
 
         // Prepare the request body
-        RequestBody formBody = new FormBody.Builder().add("user_name", username).add("password", password).build();
+        RequestBody formBody = new FormBody.Builder().add("user_name", username).add("password", password).add("appVersion", appVersion).build();
 
         // Create the request
         Request request = new Request.Builder().url(loginUrl).post(formBody).build();
