@@ -1,5 +1,6 @@
 package com.vtc3pl.prnapp2024v2;
 //After clicking on button "Create PRN" on second page this page will open with two options "Auto", ""
+
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -33,7 +35,7 @@ public class MainActivity9 extends AppCompatActivity {
 
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private String username = "", depo = "", year = "";
-    private Button createPrnAutoButton, companyWiseButton;
+    private Button createPrnAutoButton, companyWiseButton, goDownToCustomerButton;
     private TextView showUserNameActivityNineTextView;
 
     @Override
@@ -44,6 +46,7 @@ public class MainActivity9 extends AppCompatActivity {
 
         createPrnAutoButton = findViewById(R.id.createPrnAutoButton);
         companyWiseButton = findViewById(R.id.companyWiseButton);
+        goDownToCustomerButton = findViewById(R.id.goDownToCustomerButton);
         showUserNameActivityNineTextView = findViewById(R.id.showUserNameActivityNineTextView);
 
         Intent intent = getIntent();
@@ -68,7 +71,7 @@ public class MainActivity9 extends AppCompatActivity {
     }
 
     private void fetchPageAccess(String username) {
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         FormBody.Builder formBuilder = new FormBody.Builder();
         formBuilder.add("userName", username);
@@ -117,6 +120,7 @@ public class MainActivity9 extends AppCompatActivity {
         try {
             final boolean createPRNAutoAccess = accessData.getInt("createPrnAuto") == 1;
             final boolean companyWiseAccess = accessData.getInt("companyWise") == 1;
+            final boolean godownLRAccess = accessData.getInt("godownLR") == 1;
 
             createPrnAutoButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -138,6 +142,21 @@ public class MainActivity9 extends AppCompatActivity {
                 public void onClick(View v) {
                     if (companyWiseAccess) {
                         Intent intent = new Intent(MainActivity9.this, MainActivity3.class);
+                        intent.putExtra("username", username);
+                        intent.putExtra("depo", depo);
+                        intent.putExtra("year", year);
+                        startActivity(intent);
+                    } else {
+                        showAccessDeniedAlert();
+                    }
+                }
+            });
+
+            goDownToCustomerButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (godownLRAccess) {
+                        Intent intent = new Intent(MainActivity9.this, MainActivity10.class);
                         intent.putExtra("username", username);
                         intent.putExtra("depo", depo);
                         intent.putExtra("year", year);

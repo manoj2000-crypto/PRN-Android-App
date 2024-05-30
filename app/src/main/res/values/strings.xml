@@ -21,7 +21,7 @@
 
     <string name="create_prn">Create PRN</string>
     <string name="auto_create_prn">Auto</string>
-    <string name="companywise_create_prn">company wise</string>
+    <string name="companywise_create_prn">Company Wise</string>
     <string name="arrival_prn">Arrival PRN</string>
     <string name="prn_list">PRN List</string>
     <string name="lrno_pending_for_prn">LR Pending For PRN</string>
@@ -38,5 +38,6 @@
     <string name="search">Search</string>
     <string name="enter_contract_party">Enter Contract Party</string>
     <string name="selected_contract_party">Selected Contract Party</string>
+    <string name="godown_lr">Godown LR</string>
 
 </resources>
