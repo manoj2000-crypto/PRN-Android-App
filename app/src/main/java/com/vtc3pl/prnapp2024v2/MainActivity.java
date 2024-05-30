@@ -1,38 +1,38 @@
 package com.vtc3pl.prnapp2024v2;
 //Login Page (1st Page)
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import org.apache.http.conn.ConnectTimeoutException;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -43,6 +43,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -111,15 +112,24 @@ public class MainActivity extends AppCompatActivity {
 
                     fetchDepoFromUserName();
 
-                    performLogin();
+                    loginButton.setEnabled(false);
 
-                    // Save login state if checkbox is checked
-                    if (rememberLoginCheckBox.isChecked()) {
-                        SharedPreferences.Editor editor = preferences.edit();
-                        editor.putBoolean("remember_login", true);
-                        editor.putString("username", userNameEditText.getText().toString().trim());
-                        editor.putString("password", passwordEditText.getText().toString().trim());
-                        editor.apply();
+                    Log.e("OnClick LoginButton", depo);
+
+                    if (depo.isEmpty()) {
+                        showAlertDialog("Please login again after some time.");
+                        loginButton.setEnabled(true);
+                    } else {
+                        performLogin();
+
+                        // Save login state if checkbox is checked
+                        if (rememberLoginCheckBox.isChecked()) {
+                            SharedPreferences.Editor editor = preferences.edit();
+                            editor.putBoolean("remember_login", true);
+                            editor.putString("username", userNameEditText.getText().toString().trim());
+                            editor.putString("password", passwordEditText.getText().toString().trim());
+                            editor.apply();
+                        }
                     }
                 }
             }
@@ -168,22 +178,17 @@ public class MainActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                if (e instanceof SocketTimeoutException || e instanceof ConnectTimeoutException) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (e instanceof SocketTimeoutException || e instanceof ConnectTimeoutException) {
                             Toast.makeText(MainActivity.this, "Request timed out", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                } else {
-                    e.printStackTrace();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+                        } else {
                             Toast.makeText(MainActivity.this, "Failed to connect to server", Toast.LENGTH_SHORT).show();
                         }
-                    });
-                }
+                        loginButton.setEnabled(true);
+                    }
+                });
             }
 
             @Override
@@ -203,9 +208,10 @@ public class MainActivity extends AppCompatActivity {
                             finish();
                             Toast.makeText(MainActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
                         } else {
-                            Toast.makeText(MainActivity.this, "Login failed: " + responseData, Toast.LENGTH_SHORT).show();
+                            showAlertDialog("Login failed: " + responseData);
+                            //Toast.makeText(MainActivity.this, "Login failed: " + responseData, Toast.LENGTH_SHORT).show();
                         }
-
+                        loginButton.setEnabled(true);
                     }
                 });
             }
@@ -213,8 +219,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void fetchDepoFromUserName() {
-        OkHttpClient client = new OkHttpClient();
-//        Request request = new Request.Builder().url("https://vtc3pl.com/Fetch_DepoCode_PRN_APP.php").build();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).build();
 
         String userName = userNameEditText.getText().toString().trim();
 
@@ -235,38 +240,62 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             Toast.makeText(MainActivity.this, "Failed to connect to server", Toast.LENGTH_SHORT).show();
                         }
+                        loginButton.setEnabled(true);
                     }
                 });
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                final String responseData = response.body().string();
-                Log.d("Response Data", responseData);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            JSONObject jsonObject = new JSONObject(responseData);
-                            if (jsonObject.has("depotCode")) {
-                                Log.d("DepotCodeFromUserName", jsonObject.getString("depotCode"));
-                                depo = jsonObject.getString("depotCode");
-                                Toast.makeText(MainActivity.this, "Depot Code: " + depo, Toast.LENGTH_SHORT).show();
-                            } else if (jsonObject.has("error")) {
-                                String error = jsonObject.getString("error");
-                                Toast.makeText(MainActivity.this, error, Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(MainActivity.this, "Unexpected response format", Toast.LENGTH_SHORT).show();
+                if (response.isSuccessful()) {
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        String responseData = body.string();
+                        Log.d("Response Data", responseData);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    JSONObject jsonObject = new JSONObject(responseData);
+                                    if (jsonObject.has("depotCode")) {
+                                        Log.d("DepotCodeFromUserName", jsonObject.getString("depotCode"));
+                                        depo = jsonObject.getString("depotCode");
+                                        Toast.makeText(MainActivity.this, "Depot Code: " + depo, Toast.LENGTH_SHORT).show();
+                                    } else if (jsonObject.has("error")) {
+                                        String error = jsonObject.getString("error");
+                                        Toast.makeText(MainActivity.this, error, Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(MainActivity.this, "Unexpected response format", Toast.LENGTH_SHORT).show();
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(MainActivity.this, "Error parsing response", Toast.LENGTH_SHORT).show();
+                                }
+                                loginButton.setEnabled(true);
                             }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Toast.makeText(MainActivity.this, "Error parsing response", Toast.LENGTH_SHORT).show();
-                        }
+                        });
+                    } else {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MainActivity.this, "Empty response body", Toast.LENGTH_SHORT).show();
+                                loginButton.setEnabled(true);
+                            }
+                        });
                     }
-                });
+                } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this, "Server error: " + response.code(), Toast.LENGTH_SHORT).show();
+                            loginButton.setEnabled(true);
+                        }
+                    });
+                }
             }
         });
     }
+
 
     private void calculateYear() {
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
@@ -275,6 +304,23 @@ public class MainActivity extends AppCompatActivity {
         Log.e("nextYear", String.valueOf(nextYear));
         year = String.format(Locale.getDefault(), "%02d%02d", currentYear % 100, nextYear);
         Log.e("CalculatedYear", year);
+    }
+
+    private void showAlertDialog(String message) {
+
+        // Get the existing alert icon
+        Drawable alertIcon = ContextCompat.getDrawable(MainActivity.this, android.R.drawable.ic_dialog_alert);
+        // Tint the drawable to yellow
+        if (alertIcon != null) {
+            alertIcon = DrawableCompat.wrap(alertIcon);
+            DrawableCompat.setTint(alertIcon, Color.RED);
+        }
+
+        new AlertDialog.Builder(MainActivity.this).setTitle("Login Error").setMessage(message).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // Dismiss the dialog
+            }
+        }).setIcon(alertIcon).show();
     }
 
 }

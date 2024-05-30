@@ -89,7 +89,6 @@ public class MainActivity3 extends AppCompatActivity {
 
     private String[] parts = {""};
     private String contractParty = "";
-
     private String contractPartyCode = "";
     private TableLayout tableLayout;
 

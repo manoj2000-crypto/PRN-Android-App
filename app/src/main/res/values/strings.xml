@@ -36,5 +36,7 @@
     <string name="prn_number">"PRN Number "</string>
     <string name="date_range">"Date Range "</string>
     <string name="search">Search</string>
+    <string name="enter_contract_party">Enter Contract Party</string>
+    <string name="selected_contract_party">Selected Contract Party</string>
 
 </resources>

@@ -56,18 +56,68 @@
         app:layout_constraintStart_toEndOf="@id/textViewToDateActivityEight"
         app:layout_constraintTop_toTopOf="@id/textViewToDateActivityEight" />
 
+    <TextView
+        android:id="@+id/contractPartyTextViewActivityEight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:text="@string/contract_party"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/editTextToDateActivityEight" />
+
+    <EditText
+        android:id="@+id/contractPartyEditTextActivityEight"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:hint="@string/enter_contract_party"
+        android:inputType="text"
+        app:layout_constraintBottom_toBottomOf="@id/contractPartyTextViewActivityEight"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/contractPartyTextViewActivityEight"
+        app:layout_constraintTop_toTopOf="@id/contractPartyTextViewActivityEight" />
+
+    <EditText
+        android:id="@+id/contractPartyFinalEditTextActivityEight"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:hint="@string/selected_contract_party"
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/contractPartyEditTextActivityEight" />
+
+    <Spinner
+        android:id="@+id/contractPartySpinnerActivityEight"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/contractPartyFinalEditTextActivityEight" />
+
     <Button
         android:id="@+id/searchButtonActivityEight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="@string/search"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editTextToDateActivityEight" />
+        app:layout_constraintTop_toBottomOf="@id/contractPartySpinnerActivityEight" />
 
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -80,8 +130,7 @@
             <TableLayout
                 android:id="@+id/tableLayoutActivityEight"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-            </TableLayout>
+                android:layout_height="wrap_content"></TableLayout>
 
         </ScrollView>
 
