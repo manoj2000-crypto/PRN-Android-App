@@ -47,7 +47,7 @@ import okhttp3.ResponseBody;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final String appVersion = "versionFive";
+    private final String appVersion = "versionSix";
 
     private EditText userNameEditText, passwordEditText;
     //    private Spinner spinnerDepo, spinnerYear;
