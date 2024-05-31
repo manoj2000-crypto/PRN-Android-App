@@ -40,6 +40,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:text="Vehicle No : "
+            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/showUserNameTextView"
             tools:ignore="HardcodedText" />
@@ -65,10 +66,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
-            android:text="Select Godown :"
+            android:text="@string/select_godown"
+            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/vehicleNumberTextView"
-            tools:ignore="HardcodedText" />
+            app:layout_constraintTop_toBottomOf="@id/vehicleNumberTextView" />
 
         <Spinner
             android:id="@+id/goDownSpinner"
@@ -88,10 +89,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
-            android:text="LR No :"
+            android:text="@string/lr_no"
+            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/goDownTextView"
-            tools:ignore="HardcodedText" />
+            app:layout_constraintTop_toBottomOf="@id/goDownTextView" />
 
         <EditText
             android:id="@+id/lrEditText"
@@ -100,13 +101,12 @@
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             android:ems="10"
-            android:hint="Enter LR No"
+            android:hint="@string/enter_lr_no"
             android:inputType="text"
             app:layout_constraintBottom_toBottomOf="@id/lRNumber"
             app:layout_constraintEnd_toStartOf="@id/addButton"
             app:layout_constraintStart_toEndOf="@id/lRNumber"
-            app:layout_constraintTop_toTopOf="@id/lRNumber"
-            tools:ignore="HardcodedText" />
+            app:layout_constraintTop_toTopOf="@id/lRNumber" />
 
         <Button
             android:id="@+id/addButton"
@@ -114,13 +114,12 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="16dp"
-            android:text="+"
+            android:text="@string/add_lr_sign"
             android:textSize="24sp"
             app:layout_constraintBottom_toBottomOf="@id/lrEditText"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/lrEditText"
-            app:layout_constraintTop_toTopOf="@id/lrEditText"
-            tools:ignore="HardcodedText" />
+            app:layout_constraintTop_toTopOf="@id/lrEditText" />
 
         <SurfaceView
             android:id="@+id/showCameraSurfaceView"
@@ -179,9 +178,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
-                        android:text="Total Box Qty:"
-                        android:textStyle="bold"
-                        tools:ignore="HardcodedText" />
+                        android:text="@string/total_box_qty"
+                        android:textStyle="bold" />
 
                     <EditText
                         android:id="@+id/totalBoxQtyEditText"
@@ -206,9 +204,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
-                        android:text="Total Bag Weight:"
-                        android:textStyle="bold"
-                        tools:ignore="HardcodedText" />
+                        android:text="@string/total_bag_weight"
+                        android:textStyle="bold" />
 
                     <EditText
                         android:id="@+id/totalBagWeightEditText"
@@ -230,10 +227,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
-            android:text="Hamali vendor Name:"
+            android:text="@string/hamali_vendor_name"
+            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/scrollViewForTableLayout"
-            tools:ignore="HardcodedText" />
+            app:layout_constraintTop_toBottomOf="@id/scrollViewForTableLayout" />
 
         <Spinner
             android:id="@+id/hamaliVendorNameSpinner"
@@ -252,10 +249,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
-            android:text="Hamali Type :"
+            android:text="@string/hamali_type"
+            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/hamaliVendorNameTextView"
-            tools:ignore="HardcodedText" />
+            app:layout_constraintTop_toBottomOf="@id/hamaliVendorNameTextView" />
 
         <Spinner
             android:id="@+id/hamaliTypeSpinner"
@@ -275,10 +272,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
-            android:text="Hamali Amount:"
+            android:text="@string/hamali_amount"
+            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/hamaliTypeTextView"
-            tools:ignore="HardcodedText" />
+            app:layout_constraintTop_toBottomOf="@id/hamaliTypeTextView" />
 
         <EditText
             android:id="@+id/hamaliAmountEditText"
@@ -301,10 +298,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="32dp"
-            android:text="Deduction Amount:"
+            android:text="@string/deduction_amount"
+            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/hamaliAmountTextView"
-            tools:ignore="HardcodedText" />
+            app:layout_constraintTop_toBottomOf="@id/hamaliAmountTextView" />
 
         <EditText
             android:id="@+id/deductionAmountEditText"
@@ -327,10 +324,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="32dp"
-            android:text="Amount Paid To HVendor:"
+            android:text="@string/amount_paid_to_hvendor"
+            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/deductionAmountTextView"
-            tools:ignore="HardcodedText" />
+            app:layout_constraintTop_toBottomOf="@id/deductionAmountTextView" />
 
         <EditText
             android:id="@+id/amountPaidToHVendorEditText"
@@ -353,12 +350,12 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="16dp"
-            android:text="Submit"
+            android:text="@string/create_prn"
+            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/amountPaidToHVendorTextView"
-            tools:ignore="HardcodedText" />
+            app:layout_constraintTop_toBottomOf="@id/amountPaidToHVendorTextView" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

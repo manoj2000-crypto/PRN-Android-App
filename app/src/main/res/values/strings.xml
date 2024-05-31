@@ -1,17 +1,17 @@
 <resources>
     <string name="app_name">PRN</string>
 
-    <string name="select_godown">Select Godown</string>
+    <string name="select_godown">Select Godown : </string>
     <string name="please_select_vendor">Please Select Vendor</string>
 
     <string name="delete_button_text">Delete</string>
 
     <string-array name="godown_options">
         <item>Select Godown</item>
-        <item>Line 1</item>
-        <item>Line 2</item>
-        <item>Line 3</item>
-        <item>Line 4</item>
+        <item>LINE 1</item>
+        <item>LINE 2</item>
+        <item>LINE 3</item>
+        <item>LINE 4</item>
     </string-array>
 
     <string-array name="hamali_type_options">
@@ -26,7 +26,7 @@
     <string name="prn_list">PRN List</string>
     <string name="lrno_pending_for_prn">LR Pending For PRN</string>
 
-    <string name="user_name_prefix">User name: %s</string>
+    <string name="user_name_prefix">User : %s</string>
 
     <string name="from_date">From Date:</string>
     <string name="to_date">To Date:</string>
@@ -39,5 +39,20 @@
     <string name="enter_contract_party">Enter Contract Party</string>
     <string name="selected_contract_party">Selected Contract Party</string>
     <string name="godown_lr">Godown LR</string>
+    <string name="lr_no">LR No :</string>
+    <string name="enter_lr_no">Enter LR No</string>
+    <string name="add_lr_sign">+</string>
+    <string name="enter_remark">Enter Remark</string>
+    <string name="remark">Remark :</string>
+    <string name="submit">Submit</string>
+    <string name="log_in">Log In</string>
+    <string name="get_lr_numbers">Get LR Numbers</string>
+    <string name="total_box_qty">Total Box Qty:</string>
+    <string name="total_bag_weight">Total Bag Weight:</string>
+    <string name="hamali_vendor_name">Hamali vendor Name:</string>
+    <string name="hamali_type">Hamali Type :</string>
+    <string name="hamali_amount">Hamali Amount:</string>
+    <string name="deduction_amount">Deduction Amount:</string>
+    <string name="amount_paid_to_hvendor">Amount Paid To HVendor:</string>
 
 </resources>

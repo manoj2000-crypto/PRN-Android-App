@@ -1112,7 +1112,7 @@ public class MainActivity3 extends AppCompatActivity {
                                 clipboard.setPrimaryClip(clip);
                                 Toast.makeText(MainActivity3.this, "Response copied to clipboard", Toast.LENGTH_SHORT).show();
                                 clearUIComponents();
-                            }).show();
+                            }).setIcon(android.R.drawable.checkbox_on_background).show();
 
                         });
                     } else {

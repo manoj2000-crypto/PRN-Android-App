@@ -7,4 +7,145 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity10">
 
+    <TextView
+        android:id="@+id/showUserNameTextViewActivityTen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/goDownTextViewActivityTen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:text="@string/select_godown"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/showUserNameTextViewActivityTen" />
+
+    <Spinner
+        android:id="@+id/goDownSpinnerActivityTen"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:entries="@array/godown_options"
+        app:layout_constraintBottom_toBottomOf="@id/goDownTextViewActivityTen"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/goDownTextViewActivityTen"
+        app:layout_constraintTop_toTopOf="@id/goDownTextViewActivityTen" />
+
+    <TextView
+        android:id="@+id/lRNumberTextViewActivityTen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:text="@string/lr_no"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/goDownSpinnerActivityTen" />
+
+    <EditText
+        android:id="@+id/lrEditTextActivityTen"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:ems="10"
+        android:hint="@string/enter_lr_no"
+        android:inputType="text"
+        app:layout_constraintBottom_toBottomOf="@id/lRNumberTextViewActivityTen"
+        app:layout_constraintEnd_toStartOf="@id/addButtonActivityTen"
+        app:layout_constraintStart_toEndOf="@id/lRNumberTextViewActivityTen"
+        app:layout_constraintTop_toTopOf="@id/lRNumberTextViewActivityTen" />
+
+    <Button
+        android:id="@+id/addButtonActivityTen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/add_lr_sign"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toBottomOf="@id/lrEditTextActivityTen"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/lrEditTextActivityTen"
+        app:layout_constraintTop_toTopOf="@id/lrEditTextActivityTen" />
+
+    <TextView
+        android:id="@+id/remarkTextViewActivityTen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:text="@string/remark"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/addButtonActivityTen" />
+
+    <EditText
+        android:id="@+id/remarkEditTextActivityTen"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:ems="10"
+        android:hint="@string/enter_remark"
+        android:inputType="text"
+        app:layout_constraintBottom_toBottomOf="@id/remarkTextViewActivityTen"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/remarkTextViewActivityTen"
+        app:layout_constraintTop_toTopOf="@id/remarkTextViewActivityTen" />
+
+    <HorizontalScrollView
+        android:id="@+id/horizontalScrollViewActivityTen"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintBottom_toTopOf="@id/submitButtonActivityTen"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/remarkEditTextActivityTen">
+
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TableLayout
+                    android:id="@+id/tableLayoutActivityTen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+            </LinearLayout>
+
+        </ScrollView>
+
+    </HorizontalScrollView>
+
+    <Button
+        android:id="@+id/submitButtonActivityTen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/submit"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/horizontalScrollViewActivityTen" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

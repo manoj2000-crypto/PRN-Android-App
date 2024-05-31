@@ -7,6 +7,8 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -34,6 +36,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
@@ -109,7 +112,11 @@ public class MainActivity2 extends AppCompatActivity {
         hamaliTypeSpinner = findViewById(R.id.hamaliTypeSpinner);
 
         totalBoxQtyEditText = findViewById(R.id.totalBoxQtyEditText);
+        totalBoxQtyEditText.setEnabled(false);
+
         totalBagWeightEditText = findViewById(R.id.totalBagWeightEditText);
+        totalBagWeightEditText.setEnabled(false);
+
         deductionAmountEditText = findViewById(R.id.deductionAmountEditText);
         hamaliAmountEditText = findViewById(R.id.hamaliAmountEditText);
         amountPaidToHVendorEditText = findViewById(R.id.amountPaidToHVendorEditText);
@@ -128,7 +135,8 @@ public class MainActivity2 extends AppCompatActivity {
 
             // Set the fetched username to the TextView
             if (username != null) {
-                showUserNameTextView.setText("User name: " + username);
+                String usernameText = getString(R.string.user_name_prefix, username);
+                showUserNameTextView.setText(usernameText);
             }
         }
 
@@ -660,7 +668,7 @@ public class MainActivity2 extends AppCompatActivity {
 
 
         // Check if mandatory fields are filled
-        if (vehicleNo.isEmpty() || lrNumbersSet.isEmpty() || goDown.equals("Select Godown") || hamaliVendor.equals("Please Select Vendor") || amountPaidToHVendor.isEmpty() || deductionAmount.isEmpty() || hamaliAmount.isEmpty()) {
+        if (vehicleNo.isEmpty() || lrNumbersSet.isEmpty() || hamaliVendor.equals("Please Select Vendor") || amountPaidToHVendor.isEmpty() || deductionAmount.isEmpty() || hamaliAmount.isEmpty()) {
             // Show an alert dialog
             new AlertDialog.Builder(this)
                     .setTitle("Error")
@@ -723,6 +731,13 @@ public class MainActivity2 extends AppCompatActivity {
                         Log.e("Response CreatePRN:", responseBody);
                         // Process the response here
                         runOnUiThread(() -> {
+
+//                            Drawable successIcon = ContextCompat.getDrawable(MainActivity2.this, android.R.drawable.checkbox_on_background);
+//                            if (successIcon != null) {
+//                                successIcon = DrawableCompat.wrap(successIcon);
+//                                DrawableCompat.setTint(successIcon, Color.GREEN);
+//                            }
+
                             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity2.this);
                             builder.setTitle("Success").setMessage(responseBody).setPositiveButton("OK", (dialog, which) -> {
                                 dialog.dismiss();
@@ -733,7 +748,7 @@ public class MainActivity2 extends AppCompatActivity {
                                 clipboard.setPrimaryClip(clip);
                                 Toast.makeText(MainActivity2.this, "Response copied to clipboard", Toast.LENGTH_SHORT).show();
                                 clearUIComponents();
-                            }).show();
+                            }).setIcon(android.R.drawable.checkbox_on_background).show();
                         });
                     } else {
                         Log.e("Response CreatePRN:", "Empty response body");
