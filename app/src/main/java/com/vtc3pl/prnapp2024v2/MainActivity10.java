@@ -292,12 +292,6 @@ public class MainActivity10 extends AppCompatActivity {
                         // Process the response here
                         runOnUiThread(() -> {
 
-//                            Drawable successIcon = ContextCompat.getDrawable(MainActivity10.this, android.R.drawable.checkbox_on_background);
-//                            if (successIcon != null) {
-//                                successIcon = DrawableCompat.wrap(successIcon);
-//                                DrawableCompat.setTint(successIcon, Color.GREEN);
-//                            }
-
                             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity10.this);
                             builder.setTitle("Success").setMessage(responseBody).setPositiveButton("OK", (dialog, which) -> {
                                 dialog.dismiss();

@@ -6,16 +6,20 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -33,7 +37,9 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
@@ -116,6 +122,8 @@ public class MainActivity3 extends AppCompatActivity {
         contractPartyFinalEditText.setEnabled(false);
 
         vehicleNumberEditText = findViewById(R.id.vehicleNumberEditText);
+        vehicleNumberEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+
         hamaliAmountEditTextActivityThree = findViewById(R.id.hamaliAmountEditTextActivityThree);
         hamaliAmountEditTextActivityThree.setEnabled(false);
 
@@ -359,7 +367,7 @@ public class MainActivity3 extends AppCompatActivity {
     }
 
     private void fetchContractParties(String input) {
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         RequestBody formBody = new FormBody.Builder().add("depo", depo).add("contractParty", input).build();
 
@@ -442,7 +450,7 @@ public class MainActivity3 extends AppCompatActivity {
 //    }
 
     private void fetchVehicleNumbers(String input) {
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         HttpUrl.Builder urlBuilder = HttpUrl.parse("https://vtc3pl.com/vehnum.php").newBuilder();
         urlBuilder.addQueryParameter("term", input);
@@ -514,17 +522,13 @@ public class MainActivity3 extends AppCompatActivity {
 
         // Validate input values
         if (TextUtils.isEmpty(fromDate)) {
-            // Display a Toast message indicating fromDate is empty
-            Toast.makeText(MainActivity3.this, "Please enter From Date", Toast.LENGTH_SHORT).show();
-            // Focus on the fromDate EditText
+            showWarning("Empty From Date Warning", "Please choose From Date");
             editTextFromDateActivityThree.requestFocus();
             return;
         }
 
         if (TextUtils.isEmpty(toDate)) {
-            // Display a Toast message indicating toDate is empty
-            Toast.makeText(MainActivity3.this, "Please enter To Date", Toast.LENGTH_SHORT).show();
-            // Focus on the toDate EditText
+            showWarning("Empty To Date Warning","Please choose From Date");
             editTextToDateActivityThree.requestFocus();
             return;
         }
@@ -537,7 +541,7 @@ public class MainActivity3 extends AppCompatActivity {
             return;
         }
 
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         // Construct the POST request body
         RequestBody formBody = new FormBody.Builder().add("fromDate", fromDate).add("toDate", toDate).add("consignor", contractParty).add("depo", depo).build();
@@ -832,7 +836,7 @@ public class MainActivity3 extends AppCompatActivity {
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
-                    Toast.makeText(MainActivity3.this, "Failed to fetch Hamali Vendors", Toast.LENGTH_SHORT).show();
+                    showAlert("Connection Failed","Failed to fetch hamali Vendors");
                 });
             }
         });
@@ -850,7 +854,7 @@ public class MainActivity3 extends AppCompatActivity {
 
         selectedHamaliType = hamaliTypeSpinnerActivityThree.getSelectedItem().toString();
 
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         FormBody.Builder formBuilder = new FormBody.Builder();
         formBuilder.add("spinnerDepo", depo);
@@ -863,7 +867,7 @@ public class MainActivity3 extends AppCompatActivity {
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
-                    Toast.makeText(MainActivity3.this, "Failed to fetch hamali rates", Toast.LENGTH_SHORT).show();
+                    showAlert("Connection Failed","Failed to fetch hamali rates");
                 });
             }
 
@@ -981,19 +985,17 @@ public class MainActivity3 extends AppCompatActivity {
                         } catch (JSONException e) {
                             e.printStackTrace();
                             runOnUiThread(() -> {
-                                // Handle JSON parsing error
-                                Toast.makeText(MainActivity3.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
+                                showAlert("Parsing Response Error","Wrong response receive from server");
                             });
                         }
                     } else {
                         runOnUiThread(() -> {
-                            Toast.makeText(MainActivity3.this, "Response body is empty (Hamali rates)", Toast.LENGTH_SHORT).show();
+                            showAlert("Hamali amount Error","Hamali rates received empty");
                         });
                     }
                 } else {
                     runOnUiThread(() -> {
-                        // Handle server error
-                        Toast.makeText(MainActivity3.this, "Server error: " + response.code(), Toast.LENGTH_SHORT).show();
+                        showAlert("Server Error","Server error: " + response.code());
                     });
                 }
             }
@@ -1036,18 +1038,41 @@ public class MainActivity3 extends AppCompatActivity {
         String hamaliAmount = hamaliAmountEditTextActivityThree.getText().toString().trim();
 
 
-        if (vehicleNo.isEmpty() || fromDate.isEmpty() || toDate.isEmpty() || contractPartyFinal.isEmpty() ||
-                totalBoxQty.isEmpty() || totalBagWeight.isEmpty() || amountPaidToHVendor.isEmpty() || deductionAmount.isEmpty() || hamaliAmount.isEmpty() ||
-                selectedHamaliVendor.equals(getString(R.string.please_select_vendor))) {
-            // Show a message to the user
-            new AlertDialog.Builder(this)
-                    .setTitle("Error")
-                    .setMessage("Please fill all the details")
-                    .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                    .show();
-            return; // Exit the method
+        if (fromDate.isEmpty() || toDate.isEmpty() ) {
+            showWarning("Empty Date Warning" , "Please select a date");
+            return;
         }
 
+        if(vehicleNo.isEmpty()){
+            showWarning("Empty Field Warning", "Please give vehicle number");
+            vehicleNumberEditText.requestFocus();
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(vehicleNumberEditText, InputMethodManager.SHOW_IMPLICIT);
+            return;
+        }
+
+        if(contractPartyFinal.isEmpty()){
+            showWarning("Empty Field Warning", "Please enter and select contract party.");
+            contractPartyFinalEditText.requestFocus();
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(contractPartyFinalEditText, InputMethodManager.SHOW_IMPLICIT);
+            return;
+        }
+
+        if(totalBoxQty.isEmpty() || totalBagWeight.isEmpty() ) {
+            showWarning("Empty Field Warning", "Please select at least on LRNO.");
+            return;
+        }
+
+        if( selectedHamaliVendor.equals(getString(R.string.please_select_vendor))) {
+            showWarning("Unselected Field Warning", "Please select hamali vendor name.");
+            return;
+        }
+
+        if(amountPaidToHVendor.isEmpty() || hamaliAmount.isEmpty()){
+            showWarning("Empty Amount Warning","Choose hamali type or name to get the amount recalculate.");
+            return;
+        }
 
         List<String> lrNumbers = new ArrayList<>();
         for (String lrNumber : selectedLRNOs) {
@@ -1062,7 +1087,7 @@ public class MainActivity3 extends AppCompatActivity {
         String arrayListOfLR = jsonArray.toString();
 
         // Make HTTP request
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
         FormBody.Builder formBuilder = new FormBody.Builder();
         formBuilder.add("UserName", username);
         formBuilder.add("spinnerDepo", depo);
@@ -1078,17 +1103,14 @@ public class MainActivity3 extends AppCompatActivity {
         formBuilder.add("selectedHamaliType", selectedHamaliType);
         formBuilder.add("deductionAmount", String.valueOf(deductionAmount));
 
-        Log.e("After POST depo data", depo);
-
         Request request = new Request.Builder().url("https://vtc3pl.com/create_prn_prn_app.php").post(formBuilder.build()).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 e.printStackTrace();
-                Log.e("MainActivity3(submit)", "Failed to connect to server", e);
                 runOnUiThread(() -> {
-                    Toast.makeText(MainActivity3.this, "Failed to connect to server", Toast.LENGTH_SHORT).show();
+                    showAlert("Connection Failed","Failed to connect to server");
                 });
             }
 
@@ -1101,7 +1123,6 @@ public class MainActivity3 extends AppCompatActivity {
                         Log.e("Response CreatePRN:", responseBody);
                         // Process the response here
                         runOnUiThread(() -> {
-
                             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity3.this);
                             builder.setTitle("Success").setMessage(responseBody).setPositiveButton("OK", (dialog, which) -> {
                                 dialog.dismiss();
@@ -1113,20 +1134,48 @@ public class MainActivity3 extends AppCompatActivity {
                                 Toast.makeText(MainActivity3.this, "Response copied to clipboard", Toast.LENGTH_SHORT).show();
                                 clearUIComponents();
                             }).setIcon(android.R.drawable.checkbox_on_background).show();
-
                         });
                     } else {
-                        Log.e("Response CreatePRN:", "Empty response body");
                         runOnUiThread(() -> {
-                            Toast.makeText(MainActivity3.this, "Empty response", Toast.LENGTH_SHORT).show();
+                            showAlert("Response Error","Empty response from server");
                         });
                     }
                 } else {
                     runOnUiThread(() -> {
-                        Toast.makeText(MainActivity3.this, "Server error: " + response.code(), Toast.LENGTH_SHORT).show();
+                        showAlert("Server Error","Server error: " + response.code());
                     });
                 }
             }
         });
+    }
+
+    private void showAlert(String title, String message) {
+        Drawable alertIcon = ContextCompat.getDrawable(MainActivity3.this, android.R.drawable.ic_delete);
+        if (alertIcon != null) {
+            alertIcon = DrawableCompat.wrap(alertIcon);
+            DrawableCompat.setTint(alertIcon, Color.RED);
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                .setIcon(alertIcon)
+                .show();
+    }
+
+    private void showWarning(String title, String message) {
+        Drawable warningIcon = ContextCompat.getDrawable(MainActivity3.this, android.R.drawable.stat_notify_error);
+        if (warningIcon != null) {
+            warningIcon = DrawableCompat.wrap(warningIcon);
+            DrawableCompat.setTint(warningIcon, Color.YELLOW);
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                .setIcon(warningIcon)
+                .show();
     }
 }
