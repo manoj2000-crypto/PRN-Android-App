@@ -15,6 +15,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp"
         android:text="@string/from_date"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -25,6 +26,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
         android:text="@string/to_date"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textViewFromDate" />
 
@@ -60,7 +62,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Check"
+        android:text="@string/check"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -85,10 +88,9 @@
 
             <TableLayout
                 android:id="@+id/tableLayout"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp">
-            </TableLayout>
+                android:layout_marginTop="16dp" />
 
         </HorizontalScrollView>
 

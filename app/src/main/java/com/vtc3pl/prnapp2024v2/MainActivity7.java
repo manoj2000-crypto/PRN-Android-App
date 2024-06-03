@@ -294,7 +294,7 @@ public class MainActivity7 extends AppCompatActivity {
 
         selectedHamaliType = hamaliTypeSpinnerActivitySeven.getSelectedItem().toString();
 
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         FormBody.Builder formBuilder = new FormBody.Builder();
         formBuilder.add("spinnerDepo", depo);

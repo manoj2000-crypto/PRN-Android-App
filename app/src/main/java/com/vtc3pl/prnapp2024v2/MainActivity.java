@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
         Request request = new Request.Builder().url(loginUrl).post(formBody).build();
 
         // Create OkHttpClient instance with a timeout
-        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         // Execute the request asynchronously
         client.newCall(request).enqueue(new Callback() {
@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void fetchDepoFromUserName() {
-        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).build();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         String userName = userNameEditText.getText().toString().trim();
 

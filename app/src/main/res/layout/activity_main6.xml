@@ -20,13 +20,15 @@
             android:id="@+id/radioButtonDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/date_range" />
+            android:text="@string/date_range"
+            android:textStyle="bold" />
 
         <RadioButton
             android:id="@+id/radioButtonPRN"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/prn_number" />
+            android:text="@string/prn_number"
+            android:textStyle="bold" />
     </RadioGroup>
 
     <TextView
@@ -37,6 +39,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp"
         android:text="@string/from_date"
+        android:textStyle="bold"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/radioGroup" />
@@ -63,6 +66,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
         android:text="@string/to_date"
+        android:textStyle="bold"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/editTextFromDateActivitySix" />
@@ -89,6 +93,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
         android:text="@string/prn_number"
+        android:textStyle="bold"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/radioGroup" />
@@ -111,6 +116,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/search"
+        android:textStyle="bold"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -131,8 +137,7 @@
             <TableLayout
                 android:id="@+id/tableLayoutActivitySix"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-            </TableLayout>
+                android:layout_height="wrap_content" />
 
         </ScrollView>
 

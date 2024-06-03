@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -105,7 +106,7 @@ public class MainActivity6 extends AppCompatActivity {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                OkHttpClient client = new OkHttpClient();
+                OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
                 String url = "https://vtc3pl.com/arrival_prn_search_prn_app.php";
                 String fromDate = editTextFromDateActivitySix.getText().toString().trim();
@@ -314,7 +315,7 @@ public class MainActivity6 extends AppCompatActivity {
                         Request request = new Request.Builder().url("https://vtc3pl.com/get_all_lrno_from_prn_number.php").post(requestBody).build();
 
                         // Create an OkHttpClient to execute the request asynchronously
-                        OkHttpClient client = new OkHttpClient();
+                        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
                         client.newCall(request).enqueue(new Callback() {
                             @Override
                             public void onFailure(@NonNull Call call, @NonNull IOException e) {

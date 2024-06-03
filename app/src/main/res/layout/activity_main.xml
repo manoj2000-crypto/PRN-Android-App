@@ -14,12 +14,12 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="16dp"
-        android:contentDescription="VTC3PL SERVICES PVT. LTD."
+        android:contentDescription="@string/vtc3pl_services_ltd"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/new_vtc_logo"
-        tools:ignore="HardcodedText" />
+        />
 
     <EditText
         android:id="@+id/userName"
@@ -29,12 +29,12 @@
         android:layout_marginTop="32dp"
         android:layout_marginEnd="16dp"
         android:autofillHints="username"
-        android:hint="Username"
+        android:hint="@string/username"
         android:inputType="text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView"
-        tools:ignore="HardcodedText" />
+        />
 
     <EditText
         android:id="@+id/userPassword"
@@ -44,34 +44,34 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:autofillHints="password"
-        android:hint="Password"
+        android:hint="@string/password"
         android:inputType="textPassword"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/userName"
-        tools:ignore="HardcodedText" />
+        />
 
-<!--    <Spinner-->
-<!--        android:id="@+id/spinnerDepo"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginStart="16dp"-->
-<!--        android:layout_marginTop="16dp"-->
-<!--        android:layout_marginEnd="16dp"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/userPassword" />-->
+    <!--    <Spinner-->
+    <!--        android:id="@+id/spinnerDepo"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginStart="16dp"-->
+    <!--        android:layout_marginTop="16dp"-->
+    <!--        android:layout_marginEnd="16dp"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/userPassword" />-->
 
-<!--    <Spinner-->
-<!--        android:id="@+id/spinnerYear"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginStart="16dp"-->
-<!--        android:layout_marginTop="16dp"-->
-<!--        android:layout_marginEnd="16dp"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/spinnerDepo" />-->
+    <!--    <Spinner-->
+    <!--        android:id="@+id/spinnerYear"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginStart="16dp"-->
+    <!--        android:layout_marginTop="16dp"-->
+    <!--        android:layout_marginEnd="16dp"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/spinnerDepo" />-->
 
     <Button
         android:id="@+id/loginButton"
@@ -84,28 +84,27 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/userPassword"
-        />
+        app:layout_constraintTop_toBottomOf="@+id/userPassword" />
 
     <CheckBox
         android:id="@+id/rememberLoginCheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Remember Login"
+        android:text="@string/remember_login"
         app:layout_constraintStart_toStartOf="@id/loginButton"
         app:layout_constraintTop_toBottomOf="@id/loginButton"
-        tools:ignore="HardcodedText" />
+        />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="PRN APP"
+        android:text="@string/prn_app"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="HardcodedText" />
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

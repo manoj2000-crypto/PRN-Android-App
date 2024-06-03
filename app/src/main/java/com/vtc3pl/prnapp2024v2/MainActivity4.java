@@ -21,6 +21,7 @@ import org.json.JSONObject;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -75,7 +76,7 @@ public class MainActivity4 extends AppCompatActivity {
     }
 
     private void fetchPageAccess(String username) {
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         FormBody.Builder formBuilder = new FormBody.Builder();
         formBuilder.add("userName", username);

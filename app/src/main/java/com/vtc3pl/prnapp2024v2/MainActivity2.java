@@ -19,6 +19,7 @@ import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -70,10 +71,6 @@ public class MainActivity2 extends AppCompatActivity {
 
     private static final Pattern LR_NUMBER_PATTERN = Pattern.compile("[A-Z]{3,4}[0-9]{10}+");
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
-    //    final double[] totalBoxWeight = {0};
-//    final double[] totalBoxQty = {0};
-//    final double[] totalBagWeight = {0};
-//    final double[] totalBagQty = {0};
     private final Set<String> lrNumbersSet = new HashSet<>();
     private double totalBoxWeightFromAllLRNO = 0, totalBoxQtyFromAllLRNO = 0, totalBagWeightFromAllLRNO = 0, totalBagQtyFromAllLRNO = 0;
     private TableLayout tableLayout;
@@ -84,12 +81,9 @@ public class MainActivity2 extends AppCompatActivity {
     private TextView showUserNameTextView;
     private Spinner goDownSpinner, hamaliVendorNameSpinner, hamaliTypeSpinner;
     private String username = "", depo = "", year = "";
-    // Define a flag to indicate whether an LR number is being processed
     private boolean isProcessing = false;
-
     private String selectedHamaliVendor = "";
     private String selectedHamaliType = "";
-
     private double amountPaidToHVendor, deductionAmount;
 
     @Override
@@ -139,19 +133,6 @@ public class MainActivity2 extends AppCompatActivity {
                 showUserNameTextView.setText(usernameText);
             }
         }
-
-//        Button companyWiseButton = findViewById(R.id.companyWiseButton);
-//        companyWiseButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                // Start MainActivity2 and pass values as extras
-//                Intent intent = new Intent(MainActivity2.this, MainActivity3.class);
-//                intent.putExtra("username", username);
-//                intent.putExtra("depo", depo);
-//                intent.putExtra("year", year);
-//                startActivity(intent);
-//            }
-//        });
 
         cameraView = findViewById(R.id.showCameraSurfaceView);
         barcodeDetector = new BarcodeDetector.Builder(this).setBarcodeFormats(Barcode.ALL_FORMATS).build();
@@ -253,8 +234,7 @@ public class MainActivity2 extends AppCompatActivity {
         if (LR_NUMBER_PATTERN.matcher(lrNumber).matches() && !lrNumber.isEmpty() && !lrNumbersSet.contains(lrNumber)) {
             checkLRNumberOnServer(lrNumber);
         } else {
-            // Show Toast message if LR number format is invalid or duplicate
-            Toast.makeText(this, "LR number format is invalid or duplicate", Toast.LENGTH_SHORT).show();
+            showWarning("Warning", "LR number format is invalid or duplicate");
         }
     }
 
@@ -264,12 +244,12 @@ public class MainActivity2 extends AppCompatActivity {
         } else {
             // Show Toast message if LR number format is invalid or duplicate
             isProcessing = false;
-            Toast.makeText(this, "LR number format is invalid or duplicate", Toast.LENGTH_SHORT).show();
+            showWarning("Warning", "LR number format is invalid or duplicate");
         }
     }
 
     private void checkLRNumberOnServer(String lrNumber) {
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         FormBody.Builder formBuilder = new FormBody.Builder();
         formBuilder.add("lrNumber", lrNumber);
@@ -282,7 +262,7 @@ public class MainActivity2 extends AppCompatActivity {
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
-                    Toast.makeText(MainActivity2.this, "Failed to connect to server", Toast.LENGTH_SHORT).show();
+                    showAlert("Connection Failed", "Failed to connect to server");
                 });
             }
 
@@ -294,11 +274,7 @@ public class MainActivity2 extends AppCompatActivity {
                         String responseBody = body.string();
                         if (responseBody.equals("0")) {
                             runOnUiThread(() -> {
-                                Toast.makeText(MainActivity2.this, "This LR Number not available for PRN", Toast.LENGTH_SHORT).show();
-                            });
-                        } else if (responseBody.equals("PRN already generated")) {
-                            runOnUiThread(() -> {
-                                Toast.makeText(MainActivity2.this, "PRN already generated", Toast.LENGTH_SHORT).show();
+                                showWarning("Warning", "This LR Number not available for PRN");
                             });
                         } else if (responseBody.equals(lrNumber)) {
                             Log.d("LR NUMBER : ", String.valueOf(response));
@@ -306,13 +282,13 @@ public class MainActivity2 extends AppCompatActivity {
                         }
                     } else {
                         runOnUiThread(() -> {
-                            Toast.makeText(MainActivity2.this, "Response body is null", Toast.LENGTH_SHORT).show();
+                            showAlert("Empty Response", "Empty response is received from server");
                         });
                     }
                 } else {
                     runOnUiThread(() -> {
                         Log.d("Server Error : ", String.valueOf(response));
-                        Toast.makeText(MainActivity2.this, "Server error: " + response.code(), Toast.LENGTH_SHORT).show();
+                        showAlert("Server Error", "Server error: " + response.code());
                     });
                 }
             }
@@ -383,7 +359,7 @@ public class MainActivity2 extends AppCompatActivity {
                                 }
                             } else {
                                 runOnUiThread(() -> {
-                                    Toast.makeText(MainActivity2.this, "No hamali vendors found", Toast.LENGTH_SHORT).show();
+                                    showAlert("Error", "hamali vendors not found.");
                                 });
                             }
                         } catch (JSONException e) {
@@ -398,7 +374,7 @@ public class MainActivity2 extends AppCompatActivity {
                         });
                     } else {
                         runOnUiThread(() -> {
-                            Toast.makeText(MainActivity2.this, "Response body is null (fetch vendors)", Toast.LENGTH_SHORT).show();
+                            showAlert("Empty Response Error", "Empty response received from server for vendors.");
                         });
                     }
                 } else {
@@ -410,7 +386,7 @@ public class MainActivity2 extends AppCompatActivity {
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
-                    Toast.makeText(MainActivity2.this, "Failed to fetch Hamali Vendors", Toast.LENGTH_SHORT).show();
+                    showAlert("Connection Failed", "Failed to fetch Hamali Vendors");
                 });
             }
         });
@@ -429,7 +405,7 @@ public class MainActivity2 extends AppCompatActivity {
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
-                    Toast.makeText(MainActivity2.this, "Failed to fetch weights from server", Toast.LENGTH_SHORT).show();
+                    showAlert("Connection Failed Error", "Failed to fetch Box Quantity and Box Weight from server");
                 });
             }
 
@@ -478,12 +454,12 @@ public class MainActivity2 extends AppCompatActivity {
                         } catch (JSONException e) {
                             e.printStackTrace();
                             runOnUiThread(() -> {
-                                Toast.makeText(MainActivity2.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
+                                showAlert("Wrong Response Error", "Wrong response received from server.");
                             });
                         }
                     } else {
                         runOnUiThread(() -> {
-                            Toast.makeText(MainActivity2.this, "Response body is null(Box Qty and Bag Weight)", Toast.LENGTH_SHORT).show();
+                            showAlert("Empty Response Error", "Response body is null for(Box Qty and Bag Weight) received.");
                         });
                     }
                 } else {
@@ -505,7 +481,7 @@ public class MainActivity2 extends AppCompatActivity {
 
         selectedHamaliType = hamaliTypeSpinner.getSelectedItem().toString();
 
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         FormBody.Builder formBuilder = new FormBody.Builder();
         formBuilder.add("spinnerDepo", depo);
@@ -518,7 +494,7 @@ public class MainActivity2 extends AppCompatActivity {
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
-                    Toast.makeText(MainActivity2.this, "Failed to fetch hamali rates", Toast.LENGTH_SHORT).show();
+                    showAlert("Connection Failed Error", "Failed to fetch hamali rates from server");
                 });
             }
 
@@ -554,7 +530,7 @@ public class MainActivity2 extends AppCompatActivity {
                                 }
                             } else {
                                 runOnUiThread(() -> {
-                                    Toast.makeText(MainActivity2.this, "Unknown hamali type", Toast.LENGTH_SHORT).show();
+                                    showAlert("Unknown hamali Type Error", "Unknown hamali type selected.");
                                 });
                                 return;
                             }
@@ -636,19 +612,17 @@ public class MainActivity2 extends AppCompatActivity {
                         } catch (JSONException e) {
                             e.printStackTrace();
                             runOnUiThread(() -> {
-                                // Handle JSON parsing error
-                                Toast.makeText(MainActivity2.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
+                                showAlert("Response Error", "Wrong response received.");
                             });
                         }
                     } else {
                         runOnUiThread(() -> {
-                            Toast.makeText(MainActivity2.this, "Response body is empty (Hamali rates)", Toast.LENGTH_SHORT).show();
+                            showAlert("Empty Response Error", "Response body is empty for hamali rates.");
                         });
                     }
                 } else {
                     runOnUiThread(() -> {
-                        // Handle server error
-                        Toast.makeText(MainActivity2.this, "Server error: " + response.code(), Toast.LENGTH_SHORT).show();
+                        showAlert("Server Error", "Server error: " + response.code());
                     });
                 }
             }
@@ -666,22 +640,35 @@ public class MainActivity2 extends AppCompatActivity {
         String deductionAmount = deductionAmountEditText.getText().toString().trim();
         String hamaliAmount = hamaliAmountEditText.getText().toString().trim();
 
+        if (lrNumbersSet.isEmpty()) {
+            showWarning("LR Number Not Found", "At least one LR Number require to create PRN");
+            lrEditText.requestFocus();
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(lrEditText, InputMethodManager.SHOW_IMPLICIT);
+            return;
+        }
 
-        // Check if mandatory fields are filled
-        if (vehicleNo.isEmpty() || lrNumbersSet.isEmpty() || hamaliVendor.equals("Please Select Vendor") || amountPaidToHVendor.isEmpty() || deductionAmount.isEmpty() || hamaliAmount.isEmpty()) {
-            // Show an alert dialog
-            new AlertDialog.Builder(this)
-                    .setTitle("Error")
-                    .setMessage("Fill all the details")
-                    .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                    .show();
-            return; // Exit the method
+        if (vehicleNo.isEmpty()) {
+            showWarning("Empty Field Warning", "Please enter vehicle Number");
+            vehicleNumberEditText.requestFocus();
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(vehicleNumberEditText, InputMethodManager.SHOW_IMPLICIT);
+            return;
+        }
+
+        if (hamaliVendor.equals("Please Select Vendor")) {
+            showWarning("Unselected Field Warning", "Please select hamali vendor name.");
+            return;
+        }
+
+        if (amountPaidToHVendor.isEmpty() || hamaliAmount.isEmpty()) {
+            showWarning("Empty Field Warning", "Amount is empty.");
+            return;
         }
 
         if (goDown.equals("Select Godown")) {
-            // Show a message to the user
-            Toast.makeText(this, "Please select a Godown", Toast.LENGTH_SHORT).show();
-            return; // Exit the method
+            showWarning("Unselected Field Warning", "Please select any Godown line.");
+            return;
         }
 
         List<String> lrNumbers = new ArrayList<>();
@@ -697,7 +684,7 @@ public class MainActivity2 extends AppCompatActivity {
         String arrayListOfLR = jsonArray.toString();
 
         // Make HTTP request
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
         FormBody.Builder formBuilder = new FormBody.Builder();
         formBuilder.add("UserName", username);
         formBuilder.add("spinnerDepo", depo);
@@ -718,7 +705,7 @@ public class MainActivity2 extends AppCompatActivity {
                 e.printStackTrace();
                 Log.e("MainActivity2(submit)", "Failed to connect to server", e);
                 runOnUiThread(() -> {
-                    Toast.makeText(MainActivity2.this, "Failed to connect to server", Toast.LENGTH_SHORT).show();
+                    showAlert("Connection Failed Error", "Failed to connect to server");
                 });
             }
 
@@ -729,15 +716,7 @@ public class MainActivity2 extends AppCompatActivity {
                     if (body != null) {
                         String responseBody = body.string();
                         Log.e("Response CreatePRN:", responseBody);
-                        // Process the response here
                         runOnUiThread(() -> {
-
-//                            Drawable successIcon = ContextCompat.getDrawable(MainActivity2.this, android.R.drawable.checkbox_on_background);
-//                            if (successIcon != null) {
-//                                successIcon = DrawableCompat.wrap(successIcon);
-//                                DrawableCompat.setTint(successIcon, Color.GREEN);
-//                            }
-
                             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity2.this);
                             builder.setTitle("Success").setMessage(responseBody).setPositiveButton("OK", (dialog, which) -> {
                                 dialog.dismiss();
@@ -753,12 +732,12 @@ public class MainActivity2 extends AppCompatActivity {
                     } else {
                         Log.e("Response CreatePRN:", "Empty response body");
                         runOnUiThread(() -> {
-                            Toast.makeText(MainActivity2.this, "Empty response", Toast.LENGTH_SHORT).show();
+                            showAlert("Empty Response Error", "Empty response received from server");
                         });
                     }
                 } else {
                     runOnUiThread(() -> {
-                        Toast.makeText(MainActivity2.this, "Server error: " + response.code(), Toast.LENGTH_SHORT).show();
+                        showAlert("Server Error", "Server error: " + response.code());
                     });
                 }
             }
@@ -793,7 +772,7 @@ public class MainActivity2 extends AppCompatActivity {
                 e.printStackTrace();
             }
         } else {
-            Toast.makeText(this, "Camera permission was denied", Toast.LENGTH_SHORT).show();
+            showAlert("Permission Denied Error", "Please give camera permission to scan the LR Number.");
         }
     }
 
@@ -803,5 +782,25 @@ public class MainActivity2 extends AppCompatActivity {
         if (cameraSource != null) {
             cameraSource.release();
         }
+    }
+
+    private void showAlert(String title, String message) {
+        Drawable alertIcon = ContextCompat.getDrawable(MainActivity2.this, android.R.drawable.ic_delete);
+        if (alertIcon != null) {
+            alertIcon = DrawableCompat.wrap(alertIcon);
+            DrawableCompat.setTint(alertIcon, Color.RED);
+        }
+
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(alertIcon).show();
+    }
+
+    private void showWarning(String title, String message) {
+        Drawable warningIcon = ContextCompat.getDrawable(MainActivity2.this, android.R.drawable.stat_notify_error);
+        if (warningIcon != null) {
+            warningIcon = DrawableCompat.wrap(warningIcon);
+            DrawableCompat.setTint(warningIcon, Color.YELLOW);
+        }
+
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(warningIcon).show();
     }
 }

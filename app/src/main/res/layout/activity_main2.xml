@@ -186,9 +186,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:hint="Calculated Values"
-                        android:inputType="none"
-                        tools:ignore="HardcodedText" />
+                        android:hint="@string/calculated_values"
+                        android:inputType="none" />
 
                 </TableRow>
 
@@ -212,9 +211,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:hint="Calculated Values"
-                        android:inputType="none"
-                        tools:ignore="HardcodedText" />
+                        android:hint="@string/calculated_values"
+                        android:inputType="none" />
 
                 </TableRow>
 

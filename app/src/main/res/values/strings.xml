@@ -54,5 +54,16 @@
     <string name="hamali_amount">Hamali Amount:</string>
     <string name="deduction_amount">Deduction Amount:</string>
     <string name="amount_paid_to_hvendor">Amount Paid To HVendor:</string>
+    <string name="check">Check</string>
+    <string name="select_one_option">Select One Option :</string>
+    <string name="unloading">UnLoading</string>
+    <string name="without_unloading">Without UnLoading</string>
+    <string name="freight">Freight :</string>
+    <string name="calculated_values">Calculated Values</string>
+    <string name="prn_app">PRN APP</string>
+    <string name="remember_login">Remember Login</string>
+    <string name="password">Password</string>
+    <string name="username">Username</string>
+    <string name="vtc3pl_services_ltd">VTC3PL SERVICES LTD.</string>
 
 </resources>

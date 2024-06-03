@@ -528,16 +528,16 @@ public class MainActivity3 extends AppCompatActivity {
         }
 
         if (TextUtils.isEmpty(toDate)) {
-            showWarning("Empty To Date Warning","Please choose From Date");
+            showWarning("Empty To Date Warning", "Please choose From Date");
             editTextToDateActivityThree.requestFocus();
             return;
         }
 
         if (TextUtils.isEmpty(contractParty)) {
-            // Display a Toast message indicating contractParty is empty
-            Toast.makeText(MainActivity3.this, "Please enter Contract Party", Toast.LENGTH_SHORT).show();
-            // Focus on the contractParty EditText
+            showWarning("Field Empty Warning", "Please enter Contract Party");
             contractPartyEditText.requestFocus();
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(vehicleNumberEditText, InputMethodManager.SHOW_IMPLICIT);
             return;
         }
 
@@ -836,7 +836,7 @@ public class MainActivity3 extends AppCompatActivity {
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
-                    showAlert("Connection Failed","Failed to fetch hamali Vendors");
+                    showAlert("Connection Failed", "Failed to fetch hamali Vendors");
                 });
             }
         });
@@ -867,7 +867,7 @@ public class MainActivity3 extends AppCompatActivity {
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
-                    showAlert("Connection Failed","Failed to fetch hamali rates");
+                    showAlert("Connection Failed", "Failed to fetch hamali rates");
                 });
             }
 
@@ -985,17 +985,17 @@ public class MainActivity3 extends AppCompatActivity {
                         } catch (JSONException e) {
                             e.printStackTrace();
                             runOnUiThread(() -> {
-                                showAlert("Parsing Response Error","Wrong response receive from server");
+                                showAlert("Parsing Response Error", "Wrong response receive from server");
                             });
                         }
                     } else {
                         runOnUiThread(() -> {
-                            showAlert("Hamali amount Error","Hamali rates received empty");
+                            showAlert("Hamali amount Error", "Hamali rates received empty");
                         });
                     }
                 } else {
                     runOnUiThread(() -> {
-                        showAlert("Server Error","Server error: " + response.code());
+                        showAlert("Server Error", "Server error: " + response.code());
                     });
                 }
             }
@@ -1038,12 +1038,12 @@ public class MainActivity3 extends AppCompatActivity {
         String hamaliAmount = hamaliAmountEditTextActivityThree.getText().toString().trim();
 
 
-        if (fromDate.isEmpty() || toDate.isEmpty() ) {
-            showWarning("Empty Date Warning" , "Please select a date");
+        if (fromDate.isEmpty() || toDate.isEmpty()) {
+            showWarning("Empty Date Warning", "Please select a date");
             return;
         }
 
-        if(vehicleNo.isEmpty()){
+        if (vehicleNo.isEmpty()) {
             showWarning("Empty Field Warning", "Please give vehicle number");
             vehicleNumberEditText.requestFocus();
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -1051,7 +1051,7 @@ public class MainActivity3 extends AppCompatActivity {
             return;
         }
 
-        if(contractPartyFinal.isEmpty()){
+        if (contractPartyFinal.isEmpty()) {
             showWarning("Empty Field Warning", "Please enter and select contract party.");
             contractPartyFinalEditText.requestFocus();
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -1059,18 +1059,18 @@ public class MainActivity3 extends AppCompatActivity {
             return;
         }
 
-        if(totalBoxQty.isEmpty() || totalBagWeight.isEmpty() ) {
+        if (totalBoxQty.isEmpty() || totalBagWeight.isEmpty()) {
             showWarning("Empty Field Warning", "Please select at least on LRNO.");
             return;
         }
 
-        if( selectedHamaliVendor.equals(getString(R.string.please_select_vendor))) {
+        if (selectedHamaliVendor.equals(getString(R.string.please_select_vendor))) {
             showWarning("Unselected Field Warning", "Please select hamali vendor name.");
             return;
         }
 
-        if(amountPaidToHVendor.isEmpty() || hamaliAmount.isEmpty()){
-            showWarning("Empty Amount Warning","Choose hamali type or name to get the amount recalculate.");
+        if (amountPaidToHVendor.isEmpty() || hamaliAmount.isEmpty()) {
+            showWarning("Empty Amount Warning", "Choose hamali type or name to get the amount recalculate.");
             return;
         }
 
@@ -1110,7 +1110,7 @@ public class MainActivity3 extends AppCompatActivity {
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
-                    showAlert("Connection Failed","Failed to connect to server");
+                    showAlert("Connection Failed", "Failed to connect to server");
                 });
             }
 
@@ -1137,12 +1137,12 @@ public class MainActivity3 extends AppCompatActivity {
                         });
                     } else {
                         runOnUiThread(() -> {
-                            showAlert("Response Error","Empty response from server");
+                            showAlert("Response Error", "Empty response from server");
                         });
                     }
                 } else {
                     runOnUiThread(() -> {
-                        showAlert("Server Error","Server error: " + response.code());
+                        showAlert("Server Error", "Server error: " + response.code());
                     });
                 }
             }

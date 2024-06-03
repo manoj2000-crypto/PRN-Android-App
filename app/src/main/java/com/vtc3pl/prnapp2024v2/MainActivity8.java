@@ -184,7 +184,7 @@ public class MainActivity8 extends AppCompatActivity {
         searchButtonActivityEight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                OkHttpClient client = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
+                OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
                 String url = "https://vtc3pl.com/fetch_pending_lrno_for_prn.php";
                 String fromDate = editTextFromDateActivityEight.getText().toString().trim();
@@ -284,7 +284,7 @@ public class MainActivity8 extends AppCompatActivity {
     }
 
     private void fetchContractParties(String input) {
-        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         RequestBody formBody = new FormBody.Builder().add("depo", depo).add("contractParty", input).build();
 

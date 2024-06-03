@@ -12,7 +12,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
-        android:text="Select One Option : "
+        android:text="@string/select_one_option"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -31,14 +32,16 @@
             android:id="@+id/radioButtonUnLoading"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="UnLoading" />
+            android:text="@string/unloading"
+            android:textStyle="bold" />
 
         <RadioButton
             android:id="@+id/radioButtonWithoutUnLoading"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Without UnLoading" />
+            android:text="@string/without_unloading"
+            android:textStyle="bold" />
 
     </RadioGroup>
 
@@ -48,10 +51,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:text="Hamali vendor Name:"
+        android:text="@string/hamali_vendor_name"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/radioGroupOptions"
-        tools:ignore="HardcodedText" />
+        app:layout_constraintTop_toBottomOf="@id/radioGroupOptions" />
 
     <Spinner
         android:id="@+id/hamaliVendorNameSpinnerActivitySeven"
@@ -70,10 +73,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
-        android:text="Hamali Type :"
+        android:text="@string/hamali_type"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/hamaliVendorNameTextViewActivitySeven"
-        tools:ignore="HardcodedText" />
+        app:layout_constraintTop_toBottomOf="@id/hamaliVendorNameTextViewActivitySeven" />
 
     <Spinner
         android:id="@+id/hamaliTypeSpinnerActivitySeven"
@@ -93,10 +96,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
-        android:text="Hamali Amount:"
+        android:text="@string/hamali_amount"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/hamaliTypeTextViewActivitySeven"
-        tools:ignore="HardcodedText" />
+        app:layout_constraintTop_toBottomOf="@id/hamaliTypeTextViewActivitySeven" />
 
     <EditText
         android:id="@+id/hamaliAmountEditTextActivitySeven"
@@ -119,10 +122,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="32dp"
-        android:text="Deduction Amount:"
+        android:text="@string/deduction_amount"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/hamaliAmountTextViewActivitySeven"
-        tools:ignore="HardcodedText" />
+        app:layout_constraintTop_toBottomOf="@id/hamaliAmountTextViewActivitySeven" />
 
     <EditText
         android:id="@+id/deductionAmountEditTextActivitySeven"
@@ -145,10 +148,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="36dp"
-        android:text="Amount Paid To HVendor:"
+        android:text="@string/amount_paid_to_hvendor"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/deductionAmountTextViewActivitySeven"
-        tools:ignore="HardcodedText" />
+        app:layout_constraintTop_toBottomOf="@id/deductionAmountTextViewActivitySeven" />
 
     <EditText
         android:id="@+id/amountPaidToHVendorEditTextActivitySeven"
@@ -173,10 +176,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="32dp"
-        android:text="Freight : "
+        android:text="@string/freight"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/amountPaidToHVendorTextViewActivitySeven"
-        tools:ignore="HardcodedText" />
+        app:layout_constraintTop_toBottomOf="@id/amountPaidToHVendorTextViewActivitySeven" />
 
     <EditText
         android:id="@+id/freightEditText"
@@ -211,9 +214,7 @@
             <TableLayout
                 android:id="@+id/tableLayoutActivitySeven"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
-            </TableLayout>
+                android:layout_height="wrap_content" />
 
         </ScrollView>
 
@@ -224,7 +225,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="submit"
+        android:text="@string/submit"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

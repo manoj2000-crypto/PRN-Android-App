@@ -27,6 +27,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -127,7 +128,7 @@ public class MainActivity5 extends AppCompatActivity {
     }
 
     private void sendPostData(final String fromDate, final String toDate) {
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         // Build request body
         RequestBody requestBody = new FormBody.Builder().add("fromDate", fromDate).add("toDate", toDate).add("username", username).build();
