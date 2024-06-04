@@ -226,8 +226,8 @@ public class MainActivity10 extends AppCompatActivity {
 
     private void submitDataToServer() {
         // Retrieve data from UI components
-        String goDown = goDownSpinnerActivityTen.getSelectedItem().toString();
-        String remark = remarkEditTextActivityTen.getText().toString();
+        String goDown = goDownSpinnerActivityTen.getSelectedItem().toString().trim();
+        String remark = remarkEditTextActivityTen.getText().toString().trim();
 
         // Check if mandatory fields are filled
         if (lrNumbersSet.isEmpty()) {
@@ -237,6 +237,7 @@ public class MainActivity10 extends AppCompatActivity {
 
         if (remark.isEmpty()) {
             showWarning("Warning", "Please give remark");
+            remarkEditTextActivityTen.setText("");
             remarkEditTextActivityTen.requestFocus();
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.showSoftInput(remarkEditTextActivityTen, InputMethodManager.SHOW_IMPLICIT);

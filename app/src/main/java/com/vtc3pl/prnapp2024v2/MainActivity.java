@@ -48,7 +48,6 @@ import okhttp3.ResponseBody;
 public class MainActivity extends AppCompatActivity {
 
     private final String appVersion = "versionSix";
-
     private EditText userNameEditText, passwordEditText;
     //    private Spinner spinnerDepo, spinnerYear;
     private Button loginButton;
@@ -117,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("OnClick LoginButton", depo);
 
                     if (depo.isEmpty()) {
-                        showAlertDialog("Please login again after some time.");
+                        showWarning("Empty Depot Warning", "Please login again.");
                         loginButton.setEnabled(true);
                     } else {
                         performLogin();
@@ -182,9 +181,9 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         if (e instanceof SocketTimeoutException || e instanceof ConnectTimeoutException) {
-                            Toast.makeText(MainActivity.this, "Request timed out", Toast.LENGTH_SHORT).show();
+                            showAlert("Time Out Error", "Request timed out due to slow network connection.");
                         } else {
-                            Toast.makeText(MainActivity.this, "Failed to connect to server", Toast.LENGTH_SHORT).show();
+                            showAlert("Connection Failed", "Failed to connect to server");
                         }
                         loginButton.setEnabled(true);
                     }
@@ -204,12 +203,16 @@ public class MainActivity extends AppCompatActivity {
                             intent.putExtra("username", username);
                             intent.putExtra("depo", depo);
                             intent.putExtra("year", year);
-                            startActivity(intent);
-                            finish();
-                            Toast.makeText(MainActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
+
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                            builder.setTitle("Success").setMessage("Login successful").setPositiveButton("OK", (dialog, which) -> {
+                                dialog.dismiss();
+                                startActivity(intent);
+                                finish();
+                            }).setIcon(android.R.drawable.checkbox_on_background).show();
                         } else {
-                            showAlertDialog("Login failed: " + responseData);
-                            //Toast.makeText(MainActivity.this, "Login failed: " + responseData, Toast.LENGTH_SHORT).show();
+                            showAlert("Login Failed", "Login failed : " + responseData);
                         }
                         loginButton.setEnabled(true);
                     }
@@ -236,9 +239,9 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         if (e instanceof UnknownHostException) {
-                            Toast.makeText(MainActivity.this, "Unable to connect to server. Please check your internet connection.", Toast.LENGTH_SHORT).show();
+                            showAlert("Connection Failed", "Unable to connect to server. Please check your internet connection.");
                         } else {
-                            Toast.makeText(MainActivity.this, "Failed to connect to server", Toast.LENGTH_SHORT).show();
+                            showAlert("Connection Failed", "Failed to connect to server");
                         }
                         loginButton.setEnabled(true);
                     }
@@ -265,11 +268,11 @@ public class MainActivity extends AppCompatActivity {
                                         String error = jsonObject.getString("error");
                                         Toast.makeText(MainActivity.this, error, Toast.LENGTH_SHORT).show();
                                     } else {
-                                        Toast.makeText(MainActivity.this, "Unexpected response format", Toast.LENGTH_SHORT).show();
+                                        showAlert("Response Error", "Unexpected response format");
                                     }
                                 } catch (JSONException e) {
                                     e.printStackTrace();
-                                    Toast.makeText(MainActivity.this, "Error parsing response", Toast.LENGTH_SHORT).show();
+                                    showAlert("Error", "Wrong response received from server");
                                 }
                                 loginButton.setEnabled(true);
                             }
@@ -278,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(MainActivity.this, "Empty response body", Toast.LENGTH_SHORT).show();
+                                showAlert("Empty Response Error", "Empty response received from server");
                                 loginButton.setEnabled(true);
                             }
                         });
@@ -287,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(MainActivity.this, "Server error: " + response.code(), Toast.LENGTH_SHORT).show();
+                            showAlert("Server Error", "Server error: " + response.code());
                             loginButton.setEnabled(true);
                         }
                     });
@@ -295,7 +298,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
 
     private void calculateYear() {
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
@@ -306,21 +308,34 @@ public class MainActivity extends AppCompatActivity {
         Log.e("CalculatedYear", year);
     }
 
-    private void showAlertDialog(String message) {
-
-        // Get the existing alert icon
-        Drawable alertIcon = ContextCompat.getDrawable(MainActivity.this, android.R.drawable.ic_dialog_alert);
-        // Tint the drawable to yellow
+    private void showAlert(String title, String message) {
+        Drawable alertIcon = ContextCompat.getDrawable(MainActivity.this, android.R.drawable.ic_delete);
         if (alertIcon != null) {
             alertIcon = DrawableCompat.wrap(alertIcon);
             DrawableCompat.setTint(alertIcon, Color.RED);
         }
 
-        new AlertDialog.Builder(MainActivity.this).setTitle("Login Error").setMessage(message).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                // Dismiss the dialog
-            }
-        }).setIcon(alertIcon).show();
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                .setIcon(alertIcon)
+                .show();
+    }
+
+    private void showWarning(String title, String message) {
+        Drawable warningIcon = ContextCompat.getDrawable(MainActivity.this, android.R.drawable.stat_notify_error);
+        if (warningIcon != null) {
+            warningIcon = DrawableCompat.wrap(warningIcon);
+            DrawableCompat.setTint(warningIcon, Color.YELLOW);
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                .setIcon(warningIcon)
+                .show();
     }
 
 }

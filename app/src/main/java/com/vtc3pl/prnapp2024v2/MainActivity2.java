@@ -634,7 +634,16 @@ public class MainActivity2 extends AppCompatActivity {
         // Retrieve data from UI components
         String vehicleNo = vehicleNumberEditText.getText().toString();
         String goDown = goDownSpinner.getSelectedItem().toString();
-        String hamaliVendor = hamaliVendorNameSpinner.getSelectedItem().toString();
+//        String hamaliVendor = hamaliVendorNameSpinner.getSelectedItem().toString(); //giving null that why it is commented
+
+        Object selectedItem = hamaliVendorNameSpinner.getSelectedItem();
+        if (selectedItem == null) {
+            showWarning("Unselected Field Warning", "Please select hamali vendor name.");
+            return;
+        }
+
+        String hamaliVendor = selectedItem.toString();
+
         String amountPaidToHVendor = amountPaidToHVendorEditText.getText().toString().trim();
 //        String hamaliType = hamaliTypeSpinner.getSelectedItem().toString();
         String deductionAmount = deductionAmountEditText.getText().toString().trim();
@@ -667,7 +676,7 @@ public class MainActivity2 extends AppCompatActivity {
         }
 
         if (goDown.equals("Select Godown")) {
-            showWarning("Unselected Field Warning", "Please select any Godown line.");
+            showWarning("Unselected Field Warning", "Please select Godown line.");
             return;
         }
 
