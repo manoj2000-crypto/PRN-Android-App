@@ -4,7 +4,10 @@ package com.vtc3pl.prnapp2024v2;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -204,13 +207,42 @@ public class MainActivity extends AppCompatActivity {
                             intent.putExtra("depo", depo);
                             intent.putExtra("year", year);
 
+                            // Load the original image
+                            Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                            builder.setTitle("Success").setMessage("Login successful").setPositiveButton("OK", (dialog, which) -> {
-                                dialog.dismiss();
-                                startActivity(intent);
-                                finish();
-                            }).setIcon(android.R.drawable.checkbox_on_background).show();
+                            // Scale the image to the desired size
+                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+
+                            // Create a Drawable from the scaled Bitmap
+                            Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
+
+//                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+//                            builder.setTitle("Success").setMessage("Login successful").setPositiveButton("OK", (dialog, which) -> {
+//                                dialog.dismiss();
+//                                startActivity(intent);
+//                                finish();
+//                            }).setIcon(successIcon).show();
+
+                            final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle("Success")
+                                    .setMessage("Login successful")
+                                    .setPositiveButton("OK", (dialog, which) -> {
+                                        dialog.dismiss();
+                                        startActivity(intent);
+                                        finish();
+                                    })
+                                    .setIcon(successIcon)
+                                    .create();
+                            alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialog) {
+                                    dialog.dismiss();
+                                    startActivity(intent);
+                                    finish();
+                                }
+                            });
+
+                            alertDialog.show();
                         } else {
                             showAlert("Login Failed", "Login failed : " + responseData);
                         }
@@ -309,33 +341,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showAlert(String title, String message) {
-        Drawable alertIcon = ContextCompat.getDrawable(MainActivity.this, android.R.drawable.ic_delete);
-        if (alertIcon != null) {
-            alertIcon = DrawableCompat.wrap(alertIcon);
-            DrawableCompat.setTint(alertIcon, Color.RED);
-        }
+        // Load the original image
+        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.declined);
 
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                .setIcon(alertIcon)
-                .show();
+        // Scale the image to the desired size
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+
+        // Create a Drawable from the scaled Bitmap
+        Drawable alertIcon = new BitmapDrawable(getResources(), scaledBitmap);
+
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(alertIcon).show();
     }
 
     private void showWarning(String title, String message) {
-        Drawable warningIcon = ContextCompat.getDrawable(MainActivity.this, android.R.drawable.stat_notify_error);
-        if (warningIcon != null) {
-            warningIcon = DrawableCompat.wrap(warningIcon);
-            DrawableCompat.setTint(warningIcon, Color.YELLOW);
-        }
+        // Load the original image
+        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.caution);
 
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                .setIcon(warningIcon)
-                .show();
+        // Scale the image to the desired size
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+
+        // Create a Drawable from the scaled Bitmap
+        Drawable warningIcon = new BitmapDrawable(getResources(), scaledBitmap);
+
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(warningIcon).show();
     }
 
 }

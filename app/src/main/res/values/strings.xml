@@ -8,10 +8,10 @@
 
     <string-array name="godown_options">
         <item>Select Godown</item>
-        <item>LINE 1</item>
-        <item>LINE 2</item>
-        <item>LINE 3</item>
-        <item>LINE 4</item>
+        <item>LANE 1</item>
+        <item>LANE 2</item>
+        <item>LANE 3</item>
+        <item>LANE 4</item>
     </string-array>
 
     <string-array name="hamali_type_options">
@@ -23,6 +23,7 @@
     <string name="auto_create_prn">Auto</string>
     <string name="companywise_create_prn">Company Wise</string>
     <string name="arrival_prn">Arrival PRN</string>
+    <string name="arrival"> Arrival </string>
     <string name="prn_list">PRN List</string>
     <string name="lrno_pending_for_prn">LR Pending For PRN</string>
 

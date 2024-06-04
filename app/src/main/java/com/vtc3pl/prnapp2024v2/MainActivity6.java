@@ -1,7 +1,10 @@
 package com.vtc3pl.prnapp2024v2;
 //Arrival Page Part 1
+
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,9 +19,12 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
@@ -49,7 +55,6 @@ public class MainActivity6 extends AppCompatActivity {
     private DatePickerDialog.OnDateSetListener fromDateSetListener, toDateSetListener;
     private Button searchButton;
     private String selectedRadioButton = "", username = "", depo = "", year = "";
-
     private TableLayout tableLayout;
 
     @Override
@@ -136,7 +141,7 @@ public class MainActivity6 extends AppCompatActivity {
                 client.newCall(request).enqueue(new Callback() {
                     @Override
                     public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                        Log.e("onFailure", String.valueOf(e));
+                        showAlert("Connection Failed", "Failed to connect to server.");
                         e.printStackTrace();
                     }
 
@@ -157,19 +162,16 @@ public class MainActivity6 extends AppCompatActivity {
                                     }
                                 });
                             } catch (JSONException e) {
-                                Log.e("onResponse Expetion : ", String.valueOf(e));
-                                Log.d("Response : ", responseData);
+                                showAlert("Response Error", "Wrong response received from server");
                                 e.printStackTrace();
                             }
                         } else {
-                            // Handle unsuccessful response
-                            Log.e("Error", "Unsuccessful response: " + response);
+                            showAlert("Response Error", "Unsuccessful response: " + response);
                         }
                     }
                 });
             }
         });
-
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -300,7 +302,7 @@ public class MainActivity6 extends AppCompatActivity {
                 row.addView(location);
 
                 Button updateButton = new Button(MainActivity6.this);
-                updateButton.setText("Update");
+                updateButton.setText(R.string.arrival);
                 updateButton.setPadding(10, 5, 10, 5);
 
                 // Set OnClickListener for the update button
@@ -354,12 +356,11 @@ public class MainActivity6 extends AppCompatActivity {
                                         startActivity(intent);
 
                                     } catch (JSONException e) {
-                                        Log.e("JSON Parse Error", e.getMessage());
+                                        showAlert("Response Error", "Wrong response received from server");
                                         e.printStackTrace();
                                     }
                                 } else {
-                                    // Handle unsuccessful response
-                                    Log.e("Error", "Unsuccessful response: " + response);
+                                    showAlert("Response Error", "Unsuccessful response: " + response);
                                 }
                             }
                         });
@@ -392,5 +393,14 @@ public class MainActivity6 extends AppCompatActivity {
         return textView;
     }
 
+    private void showAlert(String title, String message) {
+        Drawable alertIcon = ContextCompat.getDrawable(MainActivity6.this, android.R.drawable.ic_delete);
+        if (alertIcon != null) {
+            alertIcon = DrawableCompat.wrap(alertIcon);
+            DrawableCompat.setTint(alertIcon, Color.RED);
+        }
+
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(alertIcon).show();
+    }
 
 }
