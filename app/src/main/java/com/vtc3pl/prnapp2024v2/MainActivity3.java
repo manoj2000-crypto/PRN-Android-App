@@ -286,7 +286,6 @@ public class MainActivity3 extends AppCompatActivity {
                     hamaliAmountEditTextActivityThree.setEnabled(false);
 
                     deductionAmountEditTextActivityThree.setText("0.0");
-                    deductionAmountEditTextActivityThree.setEnabled(false);
 
                     amountPaidToHVendorEditTextActivityThree.setText("0.0");
                     amountPaidToHVendorEditTextActivityThree.setEnabled(false);

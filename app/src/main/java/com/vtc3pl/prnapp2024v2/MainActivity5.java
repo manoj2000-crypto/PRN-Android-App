@@ -66,6 +66,10 @@ public class MainActivity5 extends AppCompatActivity {
         fromCalendar = Calendar.getInstance();
         toCalendar = Calendar.getInstance();
 
+        //Setting the current date as soon as activity loads.
+        updateFromDate();
+        updateToDate();
+
         Intent intent = getIntent();
         if (intent != null) {
             username = intent.getStringExtra("username");
@@ -168,7 +172,7 @@ public class MainActivity5 extends AppCompatActivity {
                 Log.e("Response Body PRN LIST:", String.valueOf(responseBody));
                 if (responseBody != null) {
                     final String responseData = response.body().string();
-                    Log.e("Response PRN LIST : " , responseData);
+                    Log.e("Response PRN LIST : ", responseData);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -180,7 +184,7 @@ public class MainActivity5 extends AppCompatActivity {
                             if ("0 Result".equals(responseData)) {
                                 showAlert("No Records Found", "No records found for " + username);
 //                                tableLayout.removeAllViews();
-                            }else {
+                            } else {
                                 processJSONResponse(responseData);
                             }
                         }

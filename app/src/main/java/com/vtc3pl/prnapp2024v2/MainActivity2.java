@@ -117,7 +117,10 @@ public class MainActivity2 extends AppCompatActivity {
 
         deductionAmountEditText = findViewById(R.id.deductionAmountEditText);
         hamaliAmountEditText = findViewById(R.id.hamaliAmountEditText);
+        hamaliAmountEditText.setEnabled(false);
+
         amountPaidToHVendorEditText = findViewById(R.id.amountPaidToHVendorEditText);
+        amountPaidToHVendorEditText.setEnabled(false);
 
         Button addButton = findViewById(R.id.addButton);
         addButton.setOnClickListener(v -> addRowToTable());
@@ -198,7 +201,6 @@ public class MainActivity2 extends AppCompatActivity {
                     hamaliAmountEditText.setEnabled(false);
 
                     deductionAmountEditText.setText("0.0");
-                    deductionAmountEditText.setEnabled(false);
 
                     amountPaidToHVendorEditText.setText("0.0");
                     amountPaidToHVendorEditText.setEnabled(false);

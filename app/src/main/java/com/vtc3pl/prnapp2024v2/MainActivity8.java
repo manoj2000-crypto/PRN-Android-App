@@ -99,6 +99,10 @@ public class MainActivity8 extends AppCompatActivity {
         fromCalendar = Calendar.getInstance();
         toCalendar = Calendar.getInstance();
 
+        //Setting the current date as soon as activity loads.
+        updateFromDate();
+        updateToDate();
+
         Intent intent = getIntent();
         if (intent != null) {
             username = intent.getStringExtra("username");
