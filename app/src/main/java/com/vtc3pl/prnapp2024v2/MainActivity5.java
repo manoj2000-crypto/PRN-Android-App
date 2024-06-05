@@ -21,6 +21,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.airbnb.lottie.LottieAnimationView;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,6 +45,7 @@ public class MainActivity5 extends AppCompatActivity {
     private EditText editTextFromDate, editTextToDate;
     private Button checkButton;
     private TableLayout tableLayout;
+    private LottieAnimationView lottieAnimationView;
     private Calendar fromCalendar, toCalendar;
     private DatePickerDialog.OnDateSetListener fromDateSetListener, toDateSetListener;
     private String username = "", depo = "", year = "";
@@ -58,6 +61,7 @@ public class MainActivity5 extends AppCompatActivity {
         editTextToDate = findViewById(R.id.editTextToDate);
         checkButton = findViewById(R.id.checkButton);
         tableLayout = findViewById(R.id.tableLayout);
+        lottieAnimationView = findViewById(R.id.lottieAnimationView);
 
         fromCalendar = Calendar.getInstance();
         toCalendar = Calendar.getInstance();
@@ -97,6 +101,10 @@ public class MainActivity5 extends AppCompatActivity {
                 // Get fromDate and toDate values
                 String fromDate = editTextFromDate.getText().toString();
                 String toDate = editTextToDate.getText().toString();
+
+                // Show the Lottie animation
+                lottieAnimationView.setVisibility(View.VISIBLE);
+                lottieAnimationView.playAnimation();
 
                 sendPostData(fromDate, toDate);
             }
@@ -141,6 +149,14 @@ public class MainActivity5 extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 e.printStackTrace();
+                // Hide the Lottie animation
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+                    }
+                });
             }
 
             @Override
@@ -156,8 +172,14 @@ public class MainActivity5 extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
+                            // Hide the Lottie animation
+                            lottieAnimationView.setVisibility(View.GONE);
+                            lottieAnimationView.cancelAnimation();
+
                             if ("0 Result".equals(responseData)) {
                                 showAlert("No Records Found", "No records found for " + username);
+//                                tableLayout.removeAllViews();
                             }else {
                                 processJSONResponse(responseData);
                             }
@@ -165,6 +187,14 @@ public class MainActivity5 extends AppCompatActivity {
                     });
                 } else {
                     Log.e("Response Error", "Response body is null");
+                    // Hide the Lottie animation
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            lottieAnimationView.setVisibility(View.GONE);
+                            lottieAnimationView.cancelAnimation();
+                        }
+                    });
                 }
             }
         });

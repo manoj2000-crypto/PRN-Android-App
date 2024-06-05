@@ -34,7 +34,6 @@ android {
 }
 
 dependencies {
-
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity
@@ -45,4 +44,5 @@ dependencies {
     androidTestImplementation libs.espresso.core
     implementation libs.okhttp
     implementation libs.play.services.vision
+    implementation libs.lottie
 }

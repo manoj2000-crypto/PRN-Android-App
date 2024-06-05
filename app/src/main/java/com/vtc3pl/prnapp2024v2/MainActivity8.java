@@ -29,6 +29,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.airbnb.lottie.LottieAnimationView;
+
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -60,6 +62,7 @@ public class MainActivity8 extends AppCompatActivity {
     private Button searchButtonActivityEight;
     private String username = "", depo = "", year = "";
     private TableLayout tableLayoutActivityEight;
+    private LottieAnimationView lottieAnimationView;
     private List<String> contractPartiesList;
     private ArrayAdapter<String> spinnerAdapter;
     private Handler handlerSecond = new Handler();
@@ -91,6 +94,7 @@ public class MainActivity8 extends AppCompatActivity {
         searchButtonActivityEight = findViewById(R.id.searchButtonActivityEight);
 
         tableLayoutActivityEight = findViewById(R.id.tableLayoutActivityEight);
+        lottieAnimationView = findViewById(R.id.lottieAnimationView);
 
         fromCalendar = Calendar.getInstance();
         toCalendar = Calendar.getInstance();
@@ -184,6 +188,11 @@ public class MainActivity8 extends AppCompatActivity {
         searchButtonActivityEight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                // Show the Lottie animation
+                lottieAnimationView.setVisibility(View.VISIBLE);
+                lottieAnimationView.playAnimation();
+
                 OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
                 String url = "https://vtc3pl.com/fetch_pending_lrno_for_prn.php";
@@ -218,6 +227,13 @@ public class MainActivity8 extends AppCompatActivity {
                     public void onFailure(@NonNull Call call, @NonNull IOException e) {
                         Log.e("onFailure", String.valueOf(e));
                         e.printStackTrace();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                lottieAnimationView.setVisibility(View.GONE);
+                                lottieAnimationView.cancelAnimation();
+                            }
+                        });
                     }
 
                     @Override
@@ -234,6 +250,9 @@ public class MainActivity8 extends AppCompatActivity {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
+                                            // Hide the Lottie animation
+                                            lottieAnimationView.setVisibility(View.GONE);
+                                            lottieAnimationView.cancelAnimation();
                                             // Process JSON array and display data in table format
                                             displayDataInTable(jsonArray);
                                         }
@@ -242,16 +261,32 @@ public class MainActivity8 extends AppCompatActivity {
                                     Log.e("onResponse Expetion : ", String.valueOf(e));
                                     Log.d("Response : ", responseData);
                                     e.printStackTrace();
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            lottieAnimationView.setVisibility(View.GONE);
+                                            lottieAnimationView.cancelAnimation();
+                                        }
+                                    });
                                 }
                             } else {
                                 Log.e("Response Error", "Response body is null");
                                 runOnUiThread(() -> {
                                     Toast.makeText(MainActivity8.this, "Empty response body", Toast.LENGTH_SHORT).show();
+                                    lottieAnimationView.setVisibility(View.GONE);
+                                    lottieAnimationView.cancelAnimation();
                                 });
                             }
                         } else {
                             // Handle unsuccessful response
                             Log.e("Error", "Unsuccessful response: " + response);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    lottieAnimationView.setVisibility(View.GONE);
+                                    lottieAnimationView.cancelAnimation();
+                                }
+                            });
                         }
                     }
                 });
