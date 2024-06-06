@@ -4,6 +4,7 @@ package com.vtc3pl.prnapp2024v2;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,6 +29,8 @@ import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.airbnb.lottie.LottieAnimationView;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,6 +49,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class MainActivity6 extends AppCompatActivity {
 
@@ -56,6 +60,7 @@ public class MainActivity6 extends AppCompatActivity {
     private Button searchButton;
     private String selectedRadioButton = "", username = "", depo = "", year = "";
     private TableLayout tableLayout;
+    private LottieAnimationView lottieAnimationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,9 +80,12 @@ public class MainActivity6 extends AppCompatActivity {
         searchButton = findViewById(R.id.searchButton);
 
         tableLayout = findViewById(R.id.tableLayoutActivitySix);
+        lottieAnimationView = findViewById(R.id.lottieAnimationView);
 
         fromCalendar = Calendar.getInstance();
+        Log.e("fromCalendar at Start", String.valueOf(fromCalendar));
         toCalendar = Calendar.getInstance();
+        Log.e("toCalendar at Start", String.valueOf(toCalendar));
 
         Intent intent = getIntent();
         if (intent != null) {
@@ -111,6 +119,11 @@ public class MainActivity6 extends AppCompatActivity {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                // Show the Lottie animation
+                lottieAnimationView.setVisibility(View.VISIBLE);
+                lottieAnimationView.playAnimation();
+
                 OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
                 String url = "https://vtc3pl.com/arrival_prn_search_prn_app.php";
@@ -141,32 +154,66 @@ public class MainActivity6 extends AppCompatActivity {
                 client.newCall(request).enqueue(new Callback() {
                     @Override
                     public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                        showAlert("Connection Failed", "Failed to connect to server.");
                         e.printStackTrace();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                showAlert("Connection Failed", "Failed to connect to server.");
+                                lottieAnimationView.setVisibility(View.GONE);
+                                lottieAnimationView.cancelAnimation();
+                            }
+                        });
                     }
 
                     @Override
                     public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                         if (response.isSuccessful()) {
-                            // Parse the response and display it in a table format
-                            String responseData = response.body().string();
-                            try {
-                                JSONArray jsonArray = new JSONArray(responseData);
-                                Log.e("response on success", String.valueOf(jsonArray));
-                                // Process JSON array and display data in table format
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        // Process JSON array and display data in table format
-                                        displayDataInTable(jsonArray);
-                                    }
+                            ResponseBody body = response.body();
+                            if (body != null) {
+                                String responseData = body.string();
+                                try {
+                                    JSONArray jsonArray = new JSONArray(responseData);
+                                    Log.e("response on success", String.valueOf(jsonArray));
+                                    // Process JSON array and display data in table format
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+
+                                            // Hide the Lottie animation
+                                            lottieAnimationView.setVisibility(View.GONE);
+                                            lottieAnimationView.cancelAnimation();
+
+                                            // Process JSON array and display data in table format
+                                            displayDataInTable(jsonArray);
+                                        }
+                                    });
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            lottieAnimationView.setVisibility(View.GONE);
+                                            lottieAnimationView.cancelAnimation();
+                                            showAlert("Response Error", "Wrong response received from server");
+                                        }
+                                    });
+                                }
+                            } else {
+                                runOnUiThread(() -> {
+                                    lottieAnimationView.setVisibility(View.GONE);
+                                    lottieAnimationView.cancelAnimation();
+                                    showAlert("Empty Response", "Empty response is received from server");
                                 });
-                            } catch (JSONException e) {
-                                showAlert("Response Error", "Wrong response received from server");
-                                e.printStackTrace();
                             }
                         } else {
-                            showAlert("Response Error", "Unsuccessful response: " + response);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    lottieAnimationView.setVisibility(View.GONE);
+                                    lottieAnimationView.cancelAnimation();
+                                    showAlert("Response Error", "Unsuccessful response: " + response);
+                                }
+                            });
                         }
                     }
                 });
@@ -219,6 +266,8 @@ public class MainActivity6 extends AppCompatActivity {
     }
 
     private void showDateRangeViews() {
+        updateFromDate();
+        updateToDate();
         textViewFromDateActivitySix.setVisibility(View.VISIBLE);
         editTextFromDateActivitySix.setVisibility(View.VISIBLE);
         textViewToDateActivitySix.setVisibility(View.VISIBLE);
@@ -271,7 +320,7 @@ public class MainActivity6 extends AppCompatActivity {
         TextView updateStockHeader = createHeaderTextView("Update Stock");
         headerRow.addView(updateStockHeader);
 
-        tableLayout.addView(headerRow);
+        tableLayout.addView(headerRow, 0);
 
         // Iterate through JSON array and add rows to the table
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -380,8 +429,8 @@ public class MainActivity6 extends AppCompatActivity {
     private TextView createHeaderTextView(String text) {
         TextView textView = new TextView(MainActivity6.this);
         textView.setText(text);
+        textView.setTypeface(null, Typeface.BOLD); // Set text to bold
         textView.setPadding(10, 10, 10, 10); // Padding
-//        textView.setBackgroundResource(R.drawable.cell_border); // Border
         return textView;
     }
 
@@ -389,7 +438,6 @@ public class MainActivity6 extends AppCompatActivity {
         TextView textView = new TextView(MainActivity6.this);
         textView.setText(text);
         textView.setPadding(10, 10, 10, 10); // Padding
-//        textView.setBackgroundResource(R.drawable.cell_border); // Border
         return textView;
     }
 

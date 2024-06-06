@@ -1,5 +1,7 @@
 package com.vtc3pl.prnapp2024v2;
 //Arrival Page Part 2
+
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -8,6 +10,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -98,8 +101,13 @@ public class MainActivity7 extends AppCompatActivity {
         tableLayoutActivitySeven = findViewById(R.id.tableLayoutActivitySeven);
 
         hamaliAmountEditTextActivitySeven = findViewById(R.id.hamaliAmountEditTextActivitySeven);
+        hamaliAmountEditTextActivitySeven.setEnabled(false);
+
         deductionAmountEditTextActivitySeven = findViewById(R.id.deductionAmountEditTextActivitySeven);
+
         amountPaidToHVendorEditTextActivitySeven = findViewById(R.id.amountPaidToHVendorEditTextActivitySeven);
+        amountPaidToHVendorEditTextActivitySeven.setEnabled(false);
+
         freightEditText = findViewById(R.id.freightEditText);
 
         fetchHvendors();
@@ -113,7 +121,6 @@ public class MainActivity7 extends AppCompatActivity {
                     hamaliAmountEditTextActivitySeven.setEnabled(false);
 
                     deductionAmountEditTextActivitySeven.setText("0.0");
-                    deductionAmountEditTextActivitySeven.setEnabled(false);
 
                     amountPaidToHVendorEditTextActivitySeven.setText("0.0");
                     amountPaidToHVendorEditTextActivitySeven.setEnabled(false);
@@ -451,6 +458,9 @@ public class MainActivity7 extends AppCompatActivity {
         TableRow headerRow = new TableRow(MainActivity7.this);
         headerRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
 
+        TextView selectHeader = createHeaderTextView("Select");
+        headerRow.addView(selectHeader);
+
         TextView lrNOHeader = createHeaderTextView("LRNO");
         headerRow.addView(lrNOHeader);
 
@@ -466,6 +476,9 @@ public class MainActivity7 extends AppCompatActivity {
         TextView recievedQtyHeader = createHeaderTextView("Recieved Qty");
         headerRow.addView(recievedQtyHeader);
 
+        TextView differentQtyHeader = createHeaderTextView("Difference  Qty");
+        headerRow.addView(differentQtyHeader);
+
         TextView reasonHeader = createHeaderTextView("Reason");
         headerRow.addView(reasonHeader);
 
@@ -473,6 +486,7 @@ public class MainActivity7 extends AppCompatActivity {
 
         try {
             JSONArray jsonArray = new JSONArray(response);
+            Log.e("JSON Array: ", String.valueOf(jsonArray));
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
 
@@ -481,35 +495,74 @@ public class MainActivity7 extends AppCompatActivity {
                 TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT);
                 row.setLayoutParams(layoutParams);
 
+                // Create a CheckBox for the row
+                CheckBox rowCheckBox = new CheckBox(MainActivity7.this);
+                rowCheckBox.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+
                 // Create TextViews for each column
                 TextView lrNoTextView = createTextView(jsonObject.getString("LRNO"));
                 TextView lrDateTextView = createTextView(jsonObject.getString("LRDate"));
                 TextView toPlaceTextView = createTextView(jsonObject.getString("ToPlace"));
                 TextView pkgsNoTextView = createTextView(jsonObject.getString("PkgsNo"));
-                //TextView receivedQtyTextView = createTextView(jsonObject.getString("RecievedQty"));
-                //TextView reasonTextView = createTextView(jsonObject.getString("Reason"));
 
                 EditText receivedQtyEditText = new EditText(MainActivity7.this);
                 receivedQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-                receivedQtyEditText.setText(jsonObject.getString("RecievedQty"));
+//                receivedQtyEditText.setText(jsonObject.getString("RecievedQty"));
+                receivedQtyEditText.setText(jsonObject.getString("PkgsNo"));
+                receivedQtyEditText.setEnabled(false);
+
+                EditText differentQtyEditText = new EditText(MainActivity7.this);
+                differentQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                differentQtyEditText.setEnabled(false);
+                differentQtyEditText.setText("0");
 
                 // Create an EditText for reason column
                 EditText reasonEditText = new EditText(MainActivity7.this);
                 reasonEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-                reasonEditText.setText(jsonObject.getString("Reason"));
+//                reasonEditText.setText(jsonObject.getString("Reason"));
+                reasonEditText.setText("OK");
+                reasonEditText.setEnabled(false);
 
+                // Add a listener to the CheckBox to enable/disable EditTexts
+                rowCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    receivedQtyEditText.setEnabled(isChecked);
+                    reasonEditText.setEnabled(isChecked);
+                });
+
+                // Add a TextWatcher to receivedQtyEditText to update differentQtyEditText
+                receivedQtyEditText.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        try {
+                            int pkgsNo = Integer.parseInt(pkgsNoTextView.getText().toString());
+                            int receivedQty = Integer.parseInt(s.toString());
+                            int differenceQty = (pkgsNo - receivedQty);
+                            differentQtyEditText.setText(String.valueOf(differenceQty));
+                        } catch (NumberFormatException e) {
+                            differentQtyEditText.setText("0");
+                        }
+                    }
+                });
+
+                // Add the CheckBox and TextViews to the row
+                row.addView(rowCheckBox);
                 // Add TextViews to the row
                 row.addView(lrNoTextView);
                 row.addView(lrDateTextView);
                 row.addView(toPlaceTextView);
                 row.addView(pkgsNoTextView);
-                //row.addView(receivedQtyTextView);
-                //row.addView(reasonTextView);
                 row.addView(receivedQtyEditText);
+                row.addView(differentQtyEditText);
                 row.addView(reasonEditText);
 
-
-                // Add the row to the TableLayout
                 tableLayoutActivitySeven.addView(row);
             }
         } catch (JSONException e) {
@@ -520,6 +573,7 @@ public class MainActivity7 extends AppCompatActivity {
     private TextView createHeaderTextView(String text) {
         TextView textView = new TextView(MainActivity7.this);
         textView.setText(text);
+        textView.setTypeface(null, Typeface.BOLD); // Set text to bold
         textView.setPadding(10, 10, 10, 10); // Padding
         return textView;
     }

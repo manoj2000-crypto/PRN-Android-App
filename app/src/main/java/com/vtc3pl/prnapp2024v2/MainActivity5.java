@@ -157,6 +157,7 @@ public class MainActivity5 extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        showAlert("Connection Failed", "Failed to connect to server.");
                         lottieAnimationView.setVisibility(View.GONE);
                         lottieAnimationView.cancelAnimation();
                     }
