@@ -183,8 +183,13 @@ public class MainActivity6 extends AppCompatActivity {
                                             lottieAnimationView.setVisibility(View.GONE);
                                             lottieAnimationView.cancelAnimation();
 
-                                            // Process JSON array and display data in table format
-                                            displayDataInTable(jsonArray);
+                                            if (jsonArray.length() > 0) {
+                                                // Process JSON array and display data in table format
+                                                displayDataInTable(jsonArray);
+                                            } else {
+                                                // Handle empty array
+                                                showAlert("Empty Response", "No data available");
+                                            }
                                         }
                                     });
                                 } catch (JSONException e) {

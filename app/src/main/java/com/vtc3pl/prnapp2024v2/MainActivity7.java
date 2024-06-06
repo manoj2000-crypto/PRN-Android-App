@@ -50,11 +50,12 @@ import okhttp3.ResponseBody;
 
 public class MainActivity7 extends AppCompatActivity {
 
-    final double[] totalBoxWeight = {0};
-    final double[] totalBoxQty = {0};
-    final double[] totalBagWeight = {0};
-    final double[] totalBagQty = {0};
+    //    final double[] totalBoxWeight = {0};
+//    final double[] totalBoxQty = {0};
+//    final double[] totalBagWeight = {0};
+//    final double[] totalBagQty = {0};
     private final Set<String> lrNumbersSet = new HashSet<>();
+    private double totalBoxWeightFromAllLRNO = 0, totalBoxQtyFromAllLRNO = 0, totalBagWeightFromAllLRNO = 0, totalBagQtyFromAllLRNO = 0;
     private String prnId = "", depo = "", username = "", response = "";
     private String[] lrnoArray;
     private Spinner hamaliVendorNameSpinnerActivitySeven, hamaliTypeSpinnerActivitySeven;
@@ -249,28 +250,32 @@ public class MainActivity7 extends AppCompatActivity {
                         // Parse the JSON response
                         try {
                             JSONArray jsonArray = new JSONArray(responseBody);
+                            double totalBoxWeight = 0;
+                            double totalBoxQty = 0;
+                            double totalBagWeight = 0;
+                            double totalBagQty = 0;
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                                 String lrNumber = jsonObject.getString("LRNO");
                                 if (lrNumbersSet.contains(lrNumber)) {
-                                    totalBoxWeight[0] += jsonObject.getDouble("TotalWeightBox");
-                                    totalBagWeight[0] += jsonObject.getDouble("TotalWeightBag");
-                                    totalBoxQty[0] += jsonObject.getDouble("TotalBoxQty");
-                                    totalBagQty[0] += jsonObject.getDouble("TotalBagQty");
+                                    totalBoxWeight += jsonObject.getDouble("TotalWeightBox");
+                                    totalBagWeight += jsonObject.getDouble("TotalWeightBag");
+                                    totalBoxQty += jsonObject.getDouble("TotalBoxQty");
+                                    totalBagQty += jsonObject.getDouble("TotalBagQty");
                                 }
                             }
 
-                            // Update the UI on the main thread
-                            runOnUiThread(() -> {
-//                                totalBoxQtyEditText.setText(String.valueOf(totalBoxQty[0]));
-//                                totalBagWeightEditText.setText(String.valueOf(totalBagWeight[0]));
+                            totalBoxWeightFromAllLRNO = totalBoxWeight;
+                            totalBagWeightFromAllLRNO = totalBagWeight;
+                            totalBoxQtyFromAllLRNO = totalBoxQty;
+                            totalBagQtyFromAllLRNO = totalBagQty;
 
-                                Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeight[0]));
-                                Log.d("totalBagWeight : ", String.valueOf(totalBagWeight[0]));
+                            Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeightFromAllLRNO));
+                            Log.d("totalBagWeight : ", String.valueOf(totalBagWeightFromAllLRNO));
 
-                                Log.d("totalBoxQty : ", String.valueOf(totalBoxQty[0]));
-                                Log.d("totalBagQty : ", String.valueOf(totalBagQty[0]));
-                            });
+                            Log.d("totalBoxQty : ", String.valueOf(totalBoxQtyFromAllLRNO));
+                            Log.d("totalBagQty : ", String.valueOf(totalBagQtyFromAllLRNO));
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                             runOnUiThread(() -> {
@@ -359,14 +364,14 @@ public class MainActivity7 extends AppCompatActivity {
                             }
 
                             // Perform calculations
-                            double hamaliBoxValue = boxRate * totalBoxQty[0];
+                            double hamaliBoxValue = (boxRate * totalBoxQtyFromAllLRNO);
                             Log.d("hamaliBoxValue : ", String.valueOf(hamaliBoxValue));
                             double ratePerTon = bagRate;
-                            double weightInTons = totalBagWeight[0] / 1000;
+                            double weightInTons = (totalBagWeightFromAllLRNO / 1000);
                             Log.d("weightInTons : ", String.valueOf(weightInTons));
-                            double hamaliBagValue = weightInTons * ratePerTon;
+                            double hamaliBagValue = (weightInTons * ratePerTon);
                             Log.d("hamaliBagValue : ", String.valueOf(hamaliBagValue));
-                            double totalHamaliAmount = hamaliBoxValue + hamaliBagValue;
+                            double totalHamaliAmount = (hamaliBoxValue + hamaliBagValue);
                             Log.d("totalHamaliAmount : ", String.valueOf(totalHamaliAmount));
 
                             runOnUiThread(() -> {
