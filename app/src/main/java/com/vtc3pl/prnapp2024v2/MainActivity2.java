@@ -19,6 +19,7 @@ import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseArray;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -322,7 +323,7 @@ public class MainActivity2 extends AppCompatActivity {
         });
         newRow.addView(deleteButton);
 
-        tableLayout.addView(newRow);
+        tableLayout.addView(newRow, 0);
 
         // Add LR number to the set
         lrNumbersSet.add(lrNumber);
