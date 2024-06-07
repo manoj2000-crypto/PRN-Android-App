@@ -112,6 +112,8 @@ public class MainActivity7 extends AppCompatActivity {
         freightEditText = findViewById(R.id.freightEditText);
 
         fetchHvendors();
+        Log.d("onCreate fetch Weight", "fetchWeightsFromServer() called after fetchvendor");
+        fetchWeightsFromServer();
 
         hamaliVendorNameSpinnerActivitySeven.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -247,6 +249,7 @@ public class MainActivity7 extends AppCompatActivity {
                     ResponseBody body = response.body();
                     if (body != null) {
                         String responseBody = body.string();
+                        Log.e("Response : ", responseBody);
                         // Parse the JSON response
                         try {
                             JSONArray jsonArray = new JSONArray(responseBody);
@@ -256,8 +259,10 @@ public class MainActivity7 extends AppCompatActivity {
                             double totalBagQty = 0;
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                String lrNumber = jsonObject.getString("LRNO");
+                                String lrNumber = jsonObject.getString("LRNO").trim();
                                 if (lrNumbersSet.contains(lrNumber)) {
+                                    Log.d("lrNumbersSet", "Inside if condition lrNumbersSet contains lrNumber");
+                                    Log.d("LRNO", lrNumber);
                                     totalBoxWeight += jsonObject.getDouble("TotalWeightBox");
                                     totalBagWeight += jsonObject.getDouble("TotalWeightBag");
                                     totalBoxQty += jsonObject.getDouble("TotalBoxQty");
@@ -270,11 +275,12 @@ public class MainActivity7 extends AppCompatActivity {
                             totalBoxQtyFromAllLRNO = totalBoxQty;
                             totalBagQtyFromAllLRNO = totalBagQty;
 
-                            Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeightFromAllLRNO));
-                            Log.d("totalBagWeight : ", String.valueOf(totalBagWeightFromAllLRNO));
-
-                            Log.d("totalBoxQty : ", String.valueOf(totalBoxQtyFromAllLRNO));
-                            Log.d("totalBagQty : ", String.valueOf(totalBagQtyFromAllLRNO));
+                            runOnUiThread(() -> {
+                                Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeightFromAllLRNO));
+                                Log.d("totalBagWeight : ", String.valueOf(totalBagWeightFromAllLRNO));
+                                Log.d("totalBoxQty : ", String.valueOf(totalBoxQtyFromAllLRNO));
+                                Log.d("totalBagQty : ", String.valueOf(totalBagQtyFromAllLRNO));
+                            });
 
                         } catch (JSONException e) {
                             e.printStackTrace();

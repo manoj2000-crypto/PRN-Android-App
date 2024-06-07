@@ -392,7 +392,7 @@ public class MainActivity6 extends AppCompatActivity {
                                         ArrayList<String> lrnoList = new ArrayList<>();
                                         for (int i = 0; i < jsonArray.length(); i++) {
                                             JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                            String lrno = jsonObject.getString("LRNO");
+                                            String lrno = jsonObject.getString("LRNO").trim();
                                             lrnoList.add(lrno);
                                         }
 
