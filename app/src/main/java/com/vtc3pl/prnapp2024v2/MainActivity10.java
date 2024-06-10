@@ -7,8 +7,12 @@ import static android.view.Gravity.CENTER_HORIZONTAL;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -293,17 +297,52 @@ public class MainActivity10 extends AppCompatActivity {
                         // Process the response here
                         runOnUiThread(() -> {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity10.this);
-                            builder.setTitle("Success").setMessage(responseBody).setPositiveButton("OK", (dialog, which) -> {
-                                dialog.dismiss();
-                                clearUIComponents();
-                            }).setNeutralButton("Copy", (dialog, which) -> {
-                                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                                ClipData clip = ClipData.newPlainText("Response", responseBody);
-                                clipboard.setPrimaryClip(clip);
-                                Toast.makeText(MainActivity10.this, "Response copied to clipboard", Toast.LENGTH_SHORT).show();
-                                clearUIComponents();
-                            }).setIcon(android.R.drawable.checkbox_on_background).show();
+//                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity10.this);
+//                            builder.setTitle("Success").setMessage(responseBody).setPositiveButton("OK", (dialog, which) -> {
+//                                dialog.dismiss();
+//                                clearUIComponents();
+//                            }).setNeutralButton("Copy", (dialog, which) -> {
+//                                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+//                                ClipData clip = ClipData.newPlainText("Response", responseBody);
+//                                clipboard.setPrimaryClip(clip);
+//                                Toast.makeText(MainActivity10.this, "Response copied to clipboard", Toast.LENGTH_SHORT).show();
+//                                clearUIComponents();
+//                            }).setIcon(android.R.drawable.checkbox_on_background).show();
+
+                            // Load the original image
+                            Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
+
+                            // Scale the image to the desired size
+                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+
+                            // Create a Drawable from the scaled Bitmap
+                            Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
+
+                            final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity10.this)
+                                    .setTitle("Success")
+                                    .setMessage(responseBody)
+                                    .setPositiveButton("OK", (dialog, which) -> {
+                                        dialog.dismiss();
+                                        clearUIComponents();
+                                    }).setNeutralButton("Copy", (dialog, which) -> {
+                                        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                                        ClipData clip = ClipData.newPlainText("Response", responseBody);
+                                        clipboard.setPrimaryClip(clip);
+                                        Toast.makeText(MainActivity10.this, "Response copied to clipboard", Toast.LENGTH_SHORT).show();
+                                        clearUIComponents();
+                                    })
+                                    .setIcon(successIcon)
+                                    .create();
+                            alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialog) {
+                                    dialog.dismiss();
+                                    clearUIComponents();
+                                }
+                            });
+
+                            alertDialog.show();
+
                         });
                     } else {
                         runOnUiThread(() -> {

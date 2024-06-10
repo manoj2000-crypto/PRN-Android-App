@@ -50,7 +50,7 @@ import okhttp3.ResponseBody;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final String appVersion = "versionSix";
+    private final String appVersion = "versionNine";
     private EditText userNameEditText, passwordEditText;
     //    private Spinner spinnerDepo, spinnerYear;
     private Button loginButton;
@@ -336,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
         Log.e("CurrentYear", String.valueOf(currentYear));
         int nextYear = (currentYear % 100) + 1;
         Log.e("nextYear", String.valueOf(nextYear));
-        year = String.format(Locale.getDefault(), "%02d%02d", currentYear % 100, nextYear);
+        year = String.format(Locale.US, "%02d%02d", currentYear % 100, nextYear);
         Log.e("CalculatedYear", year);
     }
 

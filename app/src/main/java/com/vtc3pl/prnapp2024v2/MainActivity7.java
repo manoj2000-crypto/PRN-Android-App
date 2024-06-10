@@ -49,11 +49,6 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 public class MainActivity7 extends AppCompatActivity {
-
-    //    final double[] totalBoxWeight = {0};
-//    final double[] totalBoxQty = {0};
-//    final double[] totalBagWeight = {0};
-//    final double[] totalBagQty = {0};
     private final Set<String> lrNumbersSet = new HashSet<>();
     private double totalBoxWeightFromAllLRNO = 0, totalBoxQtyFromAllLRNO = 0, totalBagWeightFromAllLRNO = 0, totalBagQtyFromAllLRNO = 0;
     private String prnId = "", depo = "", username = "", response = "";
@@ -79,22 +74,13 @@ public class MainActivity7 extends AppCompatActivity {
         response = getIntent().getStringExtra("response");
         lrnoArray = getIntent().getStringArrayExtra("lrnoArray");
 
-        Log.e("lrnoArray from Avt 7 :", Arrays.toString(lrnoArray));
-
-        Log.d("response:", response);
-
         if (prnId != null) {
-            Log.d("PRN ID MAIN ACTIVITY6", prnId);
-            Log.d("depo", depo);
-            Log.d("username", username);
-
             Toast.makeText(this, "PRN ID: " + prnId, Toast.LENGTH_LONG).show();
         }
 
         // Insert "lrnoArray" into lrNumbersSet
         if (lrnoArray != null) {
             lrNumbersSet.addAll(Arrays.asList(lrnoArray));
-            Log.d("lrNumbersSet", lrNumbersSet.toString());
         }
 
         hamaliVendorNameSpinnerActivitySeven = findViewById(R.id.hamaliVendorNameSpinnerActivitySeven);
@@ -129,7 +115,7 @@ public class MainActivity7 extends AppCompatActivity {
                     amountPaidToHVendorEditTextActivitySeven.setEnabled(false);
                 } else {
                     fetchWeightsFromServer();
-                    // If user select any pother value then calculate,
+                    // If user select any another value then calculate,
                     calculateHamali();
                 }
             }
@@ -253,16 +239,11 @@ public class MainActivity7 extends AppCompatActivity {
                         // Parse the JSON response
                         try {
                             JSONArray jsonArray = new JSONArray(responseBody);
-                            double totalBoxWeight = 0;
-                            double totalBoxQty = 0;
-                            double totalBagWeight = 0;
-                            double totalBagQty = 0;
+                            double totalBoxWeight = 0, totalBoxQty = 0, totalBagWeight = 0, totalBagQty = 0;
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                                 String lrNumber = jsonObject.getString("LRNO").trim();
                                 if (lrNumbersSet.contains(lrNumber)) {
-                                    Log.d("lrNumbersSet", "Inside if condition lrNumbersSet contains lrNumber");
-                                    Log.d("LRNO", lrNumber);
                                     totalBoxWeight += jsonObject.getDouble("TotalWeightBox");
                                     totalBagWeight += jsonObject.getDouble("TotalWeightBag");
                                     totalBoxQty += jsonObject.getDouble("TotalBoxQty");
