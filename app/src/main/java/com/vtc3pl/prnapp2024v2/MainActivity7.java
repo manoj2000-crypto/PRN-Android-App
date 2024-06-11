@@ -1,13 +1,22 @@
 package com.vtc3pl.prnapp2024v2;
 //Arrival Page Part 2
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
@@ -22,6 +31,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -51,7 +61,7 @@ import okhttp3.ResponseBody;
 public class MainActivity7 extends AppCompatActivity {
     private final Set<String> lrNumbersSet = new HashSet<>();
     private double totalBoxWeightFromAllLRNO = 0, totalBoxQtyFromAllLRNO = 0, totalBagWeightFromAllLRNO = 0, totalBagQtyFromAllLRNO = 0;
-    private String prnId = "", depo = "", username = "", response = "";
+    private String selectedRadioButton = "", prnId = "", depo = "", username = "", response = "";
     private String[] lrnoArray;
     private Spinner hamaliVendorNameSpinnerActivitySeven, hamaliTypeSpinnerActivitySeven;
     private EditText hamaliAmountEditTextActivitySeven, deductionAmountEditTextActivitySeven, amountPaidToHVendorEditTextActivitySeven, freightEditText;
@@ -576,6 +586,169 @@ public class MainActivity7 extends AppCompatActivity {
         textView.setPadding(10, 10, 10, 10);
         textView.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
         return textView;
+    }
+
+    private void submitDataToServer() {
+
+        Object selectedItem = hamaliVendorNameSpinnerActivitySeven.getSelectedItem();
+        if (selectedItem == null) {
+            showWarning("Unselected Field Warning", "Please select hamali vendor name.");
+            return;
+        }
+
+        String hamaliVendor = selectedItem.toString().trim();
+        String hamaliType = hamaliTypeSpinnerActivitySeven.getSelectedItem().toString().trim();
+        String deductionAmount = deductionAmountEditTextActivitySeven.getText().toString().trim();
+        String hamaliAmount = hamaliAmountEditTextActivitySeven.getText().toString().trim();
+        String amountPaidToHVendor = amountPaidToHVendorEditTextActivitySeven.getText().toString().trim();
+        String freightAmount = freightEditText.getText().toString().trim();
+
+        radioGroupOptions = findViewById(R.id.radioGroupOptions);
+        radioButtonWithoutUnLoading = findViewById(R.id.radioButtonWithoutUnLoading);
+        radioButtonUnLoading = findViewById(R.id.radioButtonUnLoading);
+
+        radioGroupOptions.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == radioButtonWithoutUnLoading.getId()) {
+                selectedRadioButton = "WithoutUnLoading";
+                Log.d("If RadioButton Value:", selectedRadioButton + " , checkId = " + checkedId);
+            } else if (checkedId == radioButtonUnLoading.getId()) {
+                selectedRadioButton = "UnLoading";
+                Log.d("else RadioButton Value:", selectedRadioButton + " , checkId = " + checkedId);
+            }
+        });
+
+//        if (lrNumbersSet.isEmpty()) {
+//            showWarning("LR Number Not Found", "At least one LR Number require to arriaval PRN");
+//            return;
+//        }
+
+        if (hamaliVendor.equals("Please Select Vendor")) {
+            showWarning("Unselected Field Warning", "Please select hamali vendor name.");
+            return;
+        }
+
+        if (amountPaidToHVendor.isEmpty() || hamaliAmount.isEmpty()) {
+            showWarning("Empty Field Warning", "Amount is empty.");
+            return;
+        }
+
+        List<String> lrNumbers = new ArrayList<>();
+        for (String lrNumber : lrNumbersSet) {
+            lrNumbers.add(lrNumber);
+        }
+
+        // Convert lrNumbers list to JSON array
+        JSONArray jsonArray = new JSONArray();
+        for (String lrNumber : lrNumbers) {
+            jsonArray.put(lrNumber);
+        }
+        String arrayListOfLR = jsonArray.toString();
+
+        // Make HTTP request
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).writeTimeout(30, TimeUnit.SECONDS).build();
+        FormBody.Builder formBuilder = new FormBody.Builder();
+        formBuilder.add("UserName", username);
+        formBuilder.add("spinnerDepo", depo);
+        formBuilder.add("freightAmount", freightAmount);
+        formBuilder.add("arrayListOfLR", arrayListOfLR);
+        formBuilder.add("selectedHamaliVendor", selectedHamaliVendor);
+        formBuilder.add("finalHamliAmount", String.valueOf(amountPaidToHVendor));
+        formBuilder.add("selectedHamaliType", selectedHamaliType);
+        formBuilder.add("deductionAmount", String.valueOf(deductionAmount));
+
+        Request request = new Request.Builder().url("https://vtc3pl.com/ADD_URL_HERE.php").post(formBuilder.build()).build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                e.printStackTrace();
+                Log.e("MainActivity7(submit)", "Failed to connect to server", e);
+                runOnUiThread(() -> {
+                    showAlert("Connection Failed Error", "Failed to connect to server");
+                });
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        String responseBody = body.string();
+                        Log.e("Response CreatePRN:", responseBody);
+                        runOnUiThread(() -> {
+                            Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
+                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+                            Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
+
+                            final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity7.this)
+                                    .setTitle("Success")
+                                    .setMessage(responseBody)
+                                    .setPositiveButton("OK", (dialog, which) -> {
+                                        dialog.dismiss();
+                                        clearUIComponents();
+                                    }).setIcon(successIcon).create();
+                            alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialog) {
+                                    dialog.dismiss();
+                                    clearUIComponents();
+                                }
+                            });
+
+                            alertDialog.show();
+                        });
+                    } else {
+                        Log.e("Response CreatePRN:", "Empty response body");
+                        runOnUiThread(() -> {
+                            showAlert("Empty Response Error", "Empty response received from server");
+                        });
+                    }
+                } else {
+                    runOnUiThread(() -> {
+                        showAlert("Server Error", "Server error: " + response.code());
+                    });
+                }
+            }
+        });
+    }
+
+    private void clearUIComponents() {
+        radioGroupOptions.clearCheck();
+        freightEditText.setText("");
+        tableLayoutActivitySeven.removeAllViews();
+        lrNumbersSet.clear();
+        hamaliVendorNameSpinnerActivitySeven.setSelection(0);
+        amountPaidToHVendorEditTextActivitySeven.setText("");
+        hamaliTypeSpinnerActivitySeven.setSelection(0);
+        deductionAmountEditTextActivitySeven.setText("");
+        hamaliAmountEditTextActivitySeven.setText("");
+        finish();
+    }
+
+    private void showAlert(String title, String message) {
+        // Load the original image
+        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.declined);
+
+        // Scale the image to the desired size
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+
+        // Create a Drawable from the scaled Bitmap
+        Drawable alertIcon = new BitmapDrawable(getResources(), scaledBitmap);
+
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(alertIcon).show();
+    }
+
+    private void showWarning(String title, String message) {
+        // Load the original image
+        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.caution);
+
+        // Scale the image to the desired size
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+
+        // Create a Drawable from the scaled Bitmap
+        Drawable warningIcon = new BitmapDrawable(getResources(), scaledBitmap);
+
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(warningIcon).show();
     }
 
 }
