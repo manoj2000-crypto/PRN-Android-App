@@ -404,6 +404,7 @@ public class MainActivity6 extends AppCompatActivity {
                                         Intent intent = new Intent(MainActivity6.this, MainActivity7.class);
                                         intent.putExtra("prnId", prnId);
                                         intent.putExtra("depo", depo);
+                                        intent.putExtra("year", year);
                                         intent.putExtra("username", username);
                                         intent.putExtra("response", responseData);
                                         intent.putExtra("lrnoArray", lrnoArray);

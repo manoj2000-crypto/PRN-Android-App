@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -61,7 +62,7 @@ import okhttp3.ResponseBody;
 public class MainActivity7 extends AppCompatActivity {
     private final Set<String> lrNumbersSet = new HashSet<>();
     private double totalBoxWeightFromAllLRNO = 0, totalBoxQtyFromAllLRNO = 0, totalBagWeightFromAllLRNO = 0, totalBagQtyFromAllLRNO = 0;
-    private String selectedRadioButton = "", prnId = "", depo = "", username = "", response = "";
+    private String selectedRadioButton = "", prnId = "", depo = "", username = "", response = "", year = "";
     private String[] lrnoArray;
     private Spinner hamaliVendorNameSpinnerActivitySeven, hamaliTypeSpinnerActivitySeven;
     private EditText hamaliAmountEditTextActivitySeven, deductionAmountEditTextActivitySeven, amountPaidToHVendorEditTextActivitySeven, freightEditText;
@@ -83,6 +84,7 @@ public class MainActivity7 extends AppCompatActivity {
         username = getIntent().getStringExtra("username");
         response = getIntent().getStringExtra("response");
         lrnoArray = getIntent().getStringArrayExtra("lrnoArray");
+        year = getIntent().getStringExtra("year");
 
         if (prnId != null) {
             Toast.makeText(this, "PRN ID: " + prnId, Toast.LENGTH_LONG).show();
@@ -149,6 +151,9 @@ public class MainActivity7 extends AppCompatActivity {
         });
 
         displayDataInTable(response);
+
+        Button submitButtonArrivalPRN = findViewById(R.id.submitButtonArrivalPRN);
+        submitButtonArrivalPRN.setOnClickListener(v -> submitDataToServer());
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -226,7 +231,7 @@ public class MainActivity7 extends AppCompatActivity {
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         // URL for fetching weights
-        String url = "https://vtc3pl.com/hamali_bag_box_weight_prn_app.php";
+        String url = "https://vtc3pl.com/hamali_bag_box_weight_prn_app_arrival.php";
 
         Request request = new Request.Builder().url(url).build();
 
@@ -528,6 +533,11 @@ public class MainActivity7 extends AppCompatActivity {
                 // Add a listener to the CheckBox to enable/disable EditTexts
                 rowCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     receivedQtyEditText.setEnabled(isChecked);
+                    if (!isChecked) {
+                        reasonEditText.setText("OK");
+                    } else {
+                        reasonEditText.setText("");
+                    }
                     reasonEditText.setEnabled(isChecked);
                 });
 
@@ -590,6 +600,83 @@ public class MainActivity7 extends AppCompatActivity {
 
     private void submitDataToServer() {
 
+        // Initialize a list to store the data from each row
+        List<JSONObject> rowDataList = new ArrayList<>();
+
+        // Iterate through each row in the TableLayout
+        for (int i = 1; i < tableLayoutActivitySeven.getChildCount(); i++) { // Start from 1 to skip header row
+            TableRow row = (TableRow) tableLayoutActivitySeven.getChildAt(i);
+
+            // Initialize variables to store data for each row
+            String lrNo = "";
+            String lrDate = "";
+            String toPlace = "";
+            String pkgsNo = "";
+            String receivedQty = "";
+            String differentQty = "";
+            String reason = "";
+
+            // Iterate through each cell in the row
+            for (int j = 0; j < row.getChildCount(); j++) {
+                View view = row.getChildAt(j);
+                if (view instanceof TextView) {
+                    // Extract data from TextViews
+                    TextView textView = (TextView) view;
+                    String text = textView.getText().toString().trim();
+                    Log.d("Extracting TextView", "Index: " + j + " Text: " + text);
+                    switch (j) {
+                        case 1: // lrNoTextView
+                            lrNo = text;
+                            break;
+                        case 2: // lrDateTextView
+                            lrDate = text;
+                            break;
+                        case 3: // toPlaceTextView
+                            toPlace = text;
+                            break;
+                        case 4: // pkgsNoTextView
+                            pkgsNo = text;
+                            break;
+                        case 5: // receivedQtyTextView
+                            receivedQty = text;
+                            break;
+                        case 6: // differentQtyTextView
+                            differentQty = text;
+                            break;
+                        case 7: // reasonTextView
+                            reason = text;
+                            break;
+                    }
+                }
+            }
+
+            // Validate data before storing
+            if (!lrNo.isEmpty() && !lrDate.isEmpty() && !toPlace.isEmpty() && !pkgsNo.isEmpty() && !receivedQty.isEmpty() && !differentQty.isEmpty() && !reason.isEmpty()) {
+                // Create a JSON object to store row data
+                JSONObject rowData = new JSONObject();
+                try {
+                    rowData.put("LRNO", lrNo);
+                    rowData.put("LRDate", lrDate);
+                    rowData.put("ToPlace", toPlace);
+                    rowData.put("PkgsNo", pkgsNo);
+                    rowData.put("ReceivedQty", receivedQty);
+                    rowData.put("DifferentQty", differentQty);
+                    rowData.put("Reason", reason);
+
+                    // Add the JSON object to the list
+                    rowDataList.add(rowData);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                // Handle empty fields or show a message
+                Log.d("Empty Field", "One or more fields are empty for LRNO: " + lrNo);
+            }
+        }
+
+        //print the table data in list :
+        Log.d("TablLayoutData : ", rowDataList.toString());
+
         Object selectedItem = hamaliVendorNameSpinnerActivitySeven.getSelectedItem();
         if (selectedItem == null) {
             showWarning("Unselected Field Warning", "Please select hamali vendor name.");
@@ -597,11 +684,17 @@ public class MainActivity7 extends AppCompatActivity {
         }
 
         String hamaliVendor = selectedItem.toString().trim();
+        Log.d("hamaliVendor", hamaliVendor);
         String hamaliType = hamaliTypeSpinnerActivitySeven.getSelectedItem().toString().trim();
+        Log.d("hamaliType", hamaliType);
         String deductionAmount = deductionAmountEditTextActivitySeven.getText().toString().trim();
+        Log.d("deductionAmount", deductionAmount);
         String hamaliAmount = hamaliAmountEditTextActivitySeven.getText().toString().trim();
+        Log.d("hamaliAmount", hamaliAmount);
         String amountPaidToHVendor = amountPaidToHVendorEditTextActivitySeven.getText().toString().trim();
+        Log.d("amountPaidToHVendor", amountPaidToHVendor);
         String freightAmount = freightEditText.getText().toString().trim();
+        Log.d("freightAmount", freightAmount);
 
         radioGroupOptions = findViewById(R.id.radioGroupOptions);
         radioButtonWithoutUnLoading = findViewById(R.id.radioButtonWithoutUnLoading);
@@ -617,11 +710,6 @@ public class MainActivity7 extends AppCompatActivity {
             }
         });
 
-//        if (lrNumbersSet.isEmpty()) {
-//            showWarning("LR Number Not Found", "At least one LR Number require to arriaval PRN");
-//            return;
-//        }
-
         if (hamaliVendor.equals("Please Select Vendor")) {
             showWarning("Unselected Field Warning", "Please select hamali vendor name.");
             return;
@@ -632,84 +720,73 @@ public class MainActivity7 extends AppCompatActivity {
             return;
         }
 
-        List<String> lrNumbers = new ArrayList<>();
-        for (String lrNumber : lrNumbersSet) {
-            lrNumbers.add(lrNumber);
-        }
-
-        // Convert lrNumbers list to JSON array
-        JSONArray jsonArray = new JSONArray();
-        for (String lrNumber : lrNumbers) {
-            jsonArray.put(lrNumber);
-        }
-        String arrayListOfLR = jsonArray.toString();
-
         // Make HTTP request
-        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).writeTimeout(30, TimeUnit.SECONDS).build();
-        FormBody.Builder formBuilder = new FormBody.Builder();
-        formBuilder.add("UserName", username);
-        formBuilder.add("spinnerDepo", depo);
-        formBuilder.add("freightAmount", freightAmount);
-        formBuilder.add("arrayListOfLR", arrayListOfLR);
-        formBuilder.add("selectedHamaliVendor", selectedHamaliVendor);
-        formBuilder.add("finalHamliAmount", String.valueOf(amountPaidToHVendor));
-        formBuilder.add("selectedHamaliType", selectedHamaliType);
-        formBuilder.add("deductionAmount", String.valueOf(deductionAmount));
-
-        Request request = new Request.Builder().url("https://vtc3pl.com/ADD_URL_HERE.php").post(formBuilder.build()).build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                e.printStackTrace();
-                Log.e("MainActivity7(submit)", "Failed to connect to server", e);
-                runOnUiThread(() -> {
-                    showAlert("Connection Failed Error", "Failed to connect to server");
-                });
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    ResponseBody body = response.body();
-                    if (body != null) {
-                        String responseBody = body.string();
-                        Log.e("Response CreatePRN:", responseBody);
-                        runOnUiThread(() -> {
-                            Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
-                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
-                            Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
-
-                            final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity7.this)
-                                    .setTitle("Success")
-                                    .setMessage(responseBody)
-                                    .setPositiveButton("OK", (dialog, which) -> {
-                                        dialog.dismiss();
-                                        clearUIComponents();
-                                    }).setIcon(successIcon).create();
-                            alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                @Override
-                                public void onDismiss(DialogInterface dialog) {
-                                    dialog.dismiss();
-                                    clearUIComponents();
-                                }
-                            });
-
-                            alertDialog.show();
-                        });
-                    } else {
-                        Log.e("Response CreatePRN:", "Empty response body");
-                        runOnUiThread(() -> {
-                            showAlert("Empty Response Error", "Empty response received from server");
-                        });
-                    }
-                } else {
-                    runOnUiThread(() -> {
-                        showAlert("Server Error", "Server error: " + response.code());
-                    });
-                }
-            }
-        });
+//        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).writeTimeout(30, TimeUnit.SECONDS).build();
+//        FormBody.Builder formBuilder = new FormBody.Builder();
+//        formBuilder.add("UserName", username);
+//        formBuilder.add("spinnerDepo", depo);
+//        formBuilder.add("year", year);
+//        formBuilder.add("freightAmount", freightAmount);
+//        formBuilder.add("selectedHamaliVendor", selectedHamaliVendor);
+//        formBuilder.add("finalHamliAmount", String.valueOf(amountPaidToHVendor));
+//        formBuilder.add("selectedHamaliType", hamaliType);
+//        formBuilder.add("deductionAmount", String.valueOf(deductionAmount));
+//        formBuilder.add("selectedRadioButton", selectedRadioButton);
+//
+//        Request request = new Request.Builder().url("https://vtc3pl.com/ADD_URL_HERE.php").post(formBuilder.build()).build();
+//
+//        client.newCall(request).enqueue(new Callback() {
+//            @Override
+//            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+//                e.printStackTrace();
+//                Log.e("MainActivity7(submit)", "Failed to connect to server", e);
+//                runOnUiThread(() -> {
+//                    showAlert("Connection Failed Error", "Failed to connect to server");
+//                });
+//            }
+//
+//            @Override
+//            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+//                if (response.isSuccessful()) {
+//                    ResponseBody body = response.body();
+//                    if (body != null) {
+//                        String responseBody = body.string();
+//                        Log.e("Response CreatePRN:", responseBody);
+//                        runOnUiThread(() -> {
+//                            Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
+//                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+//                            Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
+//
+//                            final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity7.this)
+//                                    .setTitle("Success")
+//                                    .setMessage(responseBody)
+//                                    .setPositiveButton("OK", (dialog, which) -> {
+//                                        dialog.dismiss();
+//                                        clearUIComponents();
+//                                    }).setIcon(successIcon).create();
+//                            alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+//                                @Override
+//                                public void onDismiss(DialogInterface dialog) {
+//                                    dialog.dismiss();
+//                                    clearUIComponents();
+//                                }
+//                            });
+//
+//                            alertDialog.show();
+//                        });
+//                    } else {
+//                        Log.e("Response CreatePRN:", "Empty response body");
+//                        runOnUiThread(() -> {
+//                            showAlert("Empty Response Error", "Empty response received from server");
+//                        });
+//                    }
+//                } else {
+//                    runOnUiThread(() -> {
+//                        showAlert("Server Error", "Server error: " + response.code());
+//                    });
+//                }
+//            }
+//        });
     }
 
     private void clearUIComponents() {
