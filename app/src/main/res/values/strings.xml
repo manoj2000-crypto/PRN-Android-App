@@ -56,6 +56,7 @@
     <string name="deduction_amount">Deduction Amount:</string>
     <string name="amount_paid_to_hvendor">Amount Paid To HVendor:</string>
     <string name="check">Check</string>
+    <string name="show_report">Show Missmatch Report</string>
     <string name="select_one_option">Select One Option :</string>
     <string name="unloading">UnLoading</string>
     <string name="without_unloading">Without UnLoading</string>
@@ -66,5 +67,6 @@
     <string name="password">Password</string>
     <string name="username">Username</string>
     <string name="vtc3pl_services_ltd">VTC3PL SERVICES LTD.</string>
+    <string name="lr_missmatch_report">LR Missmatch Report</string>
 
 </resources>

@@ -37,7 +37,7 @@ public class MainActivity4 extends AppCompatActivity {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private String username = "", depo = "", year = "";
     private TextView showUserNameActivityFourTextView;
-    private Button createPrnButton, arrivalPrnButton, prnListButton, lrNoPendingForPRNButton;
+    private Button createPrnButton, arrivalPrnButton, prnListButton, lrNoPendingForPRNButton, lrNoMissmatchReportPRNButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +50,7 @@ public class MainActivity4 extends AppCompatActivity {
         arrivalPrnButton = findViewById(R.id.arrivalPrnButton);
         prnListButton = findViewById(R.id.prnListButton);
         lrNoPendingForPRNButton = findViewById(R.id.lrNoPendingForPRNButton);
+        lrNoMissmatchReportPRNButton = findViewById(R.id.lrNoMissmatchReportPRNButton);
 
         Intent intent = getIntent();
         if (intent != null) {
@@ -129,6 +130,7 @@ public class MainActivity4 extends AppCompatActivity {
             final boolean arrivalPRNAccess = accessData.getInt("arrivalPRN") == 1;
             final boolean prnListAccess = accessData.getInt("prnList") == 1;
             final boolean lrPendingForPRNAccess = accessData.getInt("lrPendingForPRN") == 1;
+            final boolean lrNoMissmatchReportAccess = accessData.getInt("LrMissmatchReport") == 1;
 
             createPrnButton.setOnClickListener(v -> {
                 if (createPRNAccess) {
@@ -176,6 +178,18 @@ public class MainActivity4 extends AppCompatActivity {
             lrNoPendingForPRNButton.setOnClickListener(v -> {
                 if (lrPendingForPRNAccess) {
                     Intent intent = new Intent(MainActivity4.this, MainActivity8.class);
+                    intent.putExtra("username", username);
+                    intent.putExtra("depo", depo);
+                    intent.putExtra("year", year);
+                    startActivity(intent);
+                } else {
+                    showAccessDeniedAlert();
+                }
+            });
+
+            lrNoMissmatchReportPRNButton.setOnClickListener(v -> {
+                if (lrNoMissmatchReportAccess) {
+                    Intent intent = new Intent(MainActivity4.this, MainActivity11.class);
                     intent.putExtra("username", username);
                     intent.putExtra("depo", depo);
                     intent.putExtra("year", year);

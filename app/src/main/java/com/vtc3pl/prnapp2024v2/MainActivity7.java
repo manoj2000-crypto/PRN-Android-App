@@ -670,7 +670,8 @@ public class MainActivity7 extends AppCompatActivity {
                 }
             } else {
                 // Handle empty fields or show a message
-                Log.d("Empty Field", "One or more fields are empty for LRNO: " + lrNo);
+                showWarning("Empty Field Warning", "One or more fields are empty for LRNO: " + lrNo);
+                return;
             }
         }
 
@@ -721,72 +722,73 @@ public class MainActivity7 extends AppCompatActivity {
         }
 
         // Make HTTP request
-//        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).writeTimeout(30, TimeUnit.SECONDS).build();
-//        FormBody.Builder formBuilder = new FormBody.Builder();
-//        formBuilder.add("UserName", username);
-//        formBuilder.add("spinnerDepo", depo);
-//        formBuilder.add("year", year);
-//        formBuilder.add("freightAmount", freightAmount);
-//        formBuilder.add("selectedHamaliVendor", selectedHamaliVendor);
-//        formBuilder.add("finalHamliAmount", String.valueOf(amountPaidToHVendor));
-//        formBuilder.add("selectedHamaliType", hamaliType);
-//        formBuilder.add("deductionAmount", String.valueOf(deductionAmount));
-//        formBuilder.add("selectedRadioButton", selectedRadioButton);
-//
-//        Request request = new Request.Builder().url("https://vtc3pl.com/ADD_URL_HERE.php").post(formBuilder.build()).build();
-//
-//        client.newCall(request).enqueue(new Callback() {
-//            @Override
-//            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-//                e.printStackTrace();
-//                Log.e("MainActivity7(submit)", "Failed to connect to server", e);
-//                runOnUiThread(() -> {
-//                    showAlert("Connection Failed Error", "Failed to connect to server");
-//                });
-//            }
-//
-//            @Override
-//            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-//                if (response.isSuccessful()) {
-//                    ResponseBody body = response.body();
-//                    if (body != null) {
-//                        String responseBody = body.string();
-//                        Log.e("Response CreatePRN:", responseBody);
-//                        runOnUiThread(() -> {
-//                            Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
-//                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
-//                            Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
-//
-//                            final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity7.this)
-//                                    .setTitle("Success")
-//                                    .setMessage(responseBody)
-//                                    .setPositiveButton("OK", (dialog, which) -> {
-//                                        dialog.dismiss();
-//                                        clearUIComponents();
-//                                    }).setIcon(successIcon).create();
-//                            alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-//                                @Override
-//                                public void onDismiss(DialogInterface dialog) {
-//                                    dialog.dismiss();
-//                                    clearUIComponents();
-//                                }
-//                            });
-//
-//                            alertDialog.show();
-//                        });
-//                    } else {
-//                        Log.e("Response CreatePRN:", "Empty response body");
-//                        runOnUiThread(() -> {
-//                            showAlert("Empty Response Error", "Empty response received from server");
-//                        });
-//                    }
-//                } else {
-//                    runOnUiThread(() -> {
-//                        showAlert("Server Error", "Server error: " + response.code());
-//                    });
-//                }
-//            }
-//        });
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).writeTimeout(30, TimeUnit.SECONDS).build();
+        FormBody.Builder formBuilder = new FormBody.Builder();
+        formBuilder.add("UserName", username);
+        formBuilder.add("spinnerDepo", depo);
+        formBuilder.add("spinnerYear", year);
+        formBuilder.add("freightAmount", freightAmount);
+        formBuilder.add("selectedHamaliVendor", selectedHamaliVendor);
+        formBuilder.add("finalHamliAmount", String.valueOf(amountPaidToHVendor));
+        formBuilder.add("selectedHamaliType", hamaliType);
+        formBuilder.add("deductionAmount", String.valueOf(deductionAmount));
+        formBuilder.add("selectedRadioButton", selectedRadioButton);
+        formBuilder.add("rowDataList", rowDataList.toString());
+
+        Request request = new Request.Builder().url("https://vtc3pl.com/insert_arrival_data_prn_app.php").post(formBuilder.build()).build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                e.printStackTrace();
+                Log.e("MainActivity7(submit)", "Failed to connect to server", e);
+                runOnUiThread(() -> {
+                    showAlert("Connection Failed Error", "Failed to connect to server");
+                });
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        String responseBody = body.string();
+                        Log.e("Response CreatePRN:", responseBody);
+                        runOnUiThread(() -> {
+                            Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
+                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+                            Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
+
+                            final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity7.this)
+                                    .setTitle("Success")
+                                    .setMessage(responseBody)
+                                    .setPositiveButton("OK", (dialog, which) -> {
+                                        dialog.dismiss();
+                                        clearUIComponents();
+                                    }).setIcon(successIcon).create();
+                            alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialog) {
+                                    dialog.dismiss();
+                                    clearUIComponents();
+                                }
+                            });
+
+                            alertDialog.show();
+                        });
+                    } else {
+                        Log.e("Response CreatePRN:", "Empty response body");
+                        runOnUiThread(() -> {
+                            showAlert("Empty Response Error", "Empty response received from server");
+                        });
+                    }
+                } else {
+                    runOnUiThread(() -> {
+                        showAlert("Server Error", "Server error: " + response.code());
+                    });
+                }
+            }
+        });
     }
 
     private void clearUIComponents() {
