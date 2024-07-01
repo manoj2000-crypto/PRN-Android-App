@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private Button loginButton;
     private CheckBox rememberLoginCheckBox;
     private String depo = "", year = "";
+    private boolean isDepoFetched = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +107,8 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
+        fetchDepoFromUserName();
+
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -114,14 +117,10 @@ public class MainActivity extends AppCompatActivity {
 
                     fetchDepoFromUserName();
 
-                    loginButton.setEnabled(false);
+                    if (isDepoFetched) {
 
-                    Log.e("OnClick LoginButton", depo);
+                        loginButton.setEnabled(false);
 
-                    if (depo.isEmpty()) {
-                        showWarning("Empty Depot Warning", "Please login again.");
-                        loginButton.setEnabled(true);
-                    } else {
                         performLogin();
 
                         // Save login state if checkbox is checked
@@ -132,7 +131,33 @@ public class MainActivity extends AppCompatActivity {
                             editor.putString("password", passwordEditText.getText().toString().trim());
                             editor.apply();
                         }
+                    } else {
+                        showWarning("Empty Depot Warning", "Please login again.");
+                        loginButton.setEnabled(true);
                     }
+
+
+//                    fetchDepoFromUserName();
+//
+//                    loginButton.setEnabled(false);
+//
+//                    Log.e("OnClick LoginButton", depo);
+//
+//                    if (depo.isEmpty()) {
+//                        showWarning("Empty Depot Warning", "Please login again.");
+//                        loginButton.setEnabled(true);
+//                    } else {
+//                        performLogin();
+//
+//                        // Save login state if checkbox is checked
+//                        if (rememberLoginCheckBox.isChecked()) {
+//                            SharedPreferences.Editor editor = preferences.edit();
+//                            editor.putBoolean("remember_login", true);
+//                            editor.putString("username", userNameEditText.getText().toString().trim());
+//                            editor.putString("password", passwordEditText.getText().toString().trim());
+//                            editor.apply();
+//                        }
+//                    }
                 }
             }
         });
@@ -296,6 +321,7 @@ public class MainActivity extends AppCompatActivity {
                                         Log.d("DepotCodeFromUserName", jsonObject.getString("depotCode"));
                                         depo = jsonObject.getString("depotCode");
                                         Toast.makeText(MainActivity.this, "Depot Code: " + depo, Toast.LENGTH_SHORT).show();
+                                        isDepoFetched = true;
                                     } else if (jsonObject.has("error")) {
                                         String error = jsonObject.getString("error");
                                         Toast.makeText(MainActivity.this, error, Toast.LENGTH_SHORT).show();
