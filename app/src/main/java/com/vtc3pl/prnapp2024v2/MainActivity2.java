@@ -86,6 +86,7 @@ public class MainActivity2 extends AppCompatActivity {
     private TextView showUserNameTextView;
     private Spinner goDownSpinner, hamaliVendorNameSpinner, hamaliTypeSpinner;
     private String username = "", depo = "", year = "";
+    private char firstLetter = 'A'; //this is for CP
     private boolean isProcessing = false;
     private String selectedHamaliVendor = "";
     private String selectedHamaliType = "";
@@ -129,15 +130,20 @@ public class MainActivity2 extends AppCompatActivity {
         Button submitButton = findViewById(R.id.submit);
         submitButton.setOnClickListener(v -> submitDataToServer());
 
+        Log.d("First letter Before : ", String.valueOf(firstLetter));
+
         Intent intent = getIntent();
         if (intent != null) {
             username = intent.getStringExtra("username");
             depo = intent.getStringExtra("depo");
             year = intent.getStringExtra("year");
 
+            firstLetter = username.charAt(0);
+            Log.d("First Letter After : ", String.valueOf(firstLetter));
+
             // Set the fetched username to the TextView
             if (username != null) {
-                String usernameText = getString(R.string.user_name_prefix, username);
+                String usernameText = getString(R.string.user_name_prefix, username + " | Depot : " + depo);
                 showUserNameTextView.setText(usernameText);
             }
         }
@@ -262,7 +268,9 @@ public class MainActivity2 extends AppCompatActivity {
         formBuilder.add("lrNumber", lrNumber);
         formBuilder.add("depo", depo);
 
-        Request request = new Request.Builder().url("https://vtc3pl.com/prn_app_get_lrno.php").post(formBuilder.build()).build();
+        String url = (firstLetter == 'C' || firstLetter == 'c') ? "https://vtc3pl.com/cp_prn_app_get_lrno.php" : "https://vtc3pl.com/prn_app_get_lrno.php";
+
+        Request request = new Request.Builder().url(url).post(formBuilder.build()).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -338,7 +346,7 @@ public class MainActivity2 extends AppCompatActivity {
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         // URL for fetching Hvendors
-        String url = "https://vtc3pl.com/fetch_hamalivendor_only_prn_app.php";
+        String url = (firstLetter == 'C' || firstLetter == 'c') ? "https://vtc3pl.com/cp_fetch_hamalivendor_only_prn_app.php" : "https://vtc3pl.com/fetch_hamalivendor_only_prn_app.php";
 
         // Create a form body with spinnerDepo as a parameter
         FormBody formBody = new FormBody.Builder().add("spinnerDepo", depo).build();
@@ -403,7 +411,7 @@ public class MainActivity2 extends AppCompatActivity {
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         // URL for fetching weights
-        String url = "https://vtc3pl.com/hamali_bag_box_weight_prn_app.php";
+        String url = (firstLetter == 'C' || firstLetter == 'c') ? "https://vtc3pl.com/cp_hamali_bag_box_weight_prn_app.php" : "https://vtc3pl.com/hamali_bag_box_weight_prn_app.php";
 
         Request request = new Request.Builder().url(url).build();
 
@@ -494,7 +502,9 @@ public class MainActivity2 extends AppCompatActivity {
         formBuilder.add("spinnerDepo", depo);
         formBuilder.add("Hvendor", selectedHamaliVendor);
 
-        Request request = new Request.Builder().url("https://vtc3pl.com/fetch_hamali_rates_calculation_prn_app.php").post(formBuilder.build()).build();
+        String url = (firstLetter == 'C' || firstLetter == 'c') ? "https://vtc3pl.com/cp_fetch_hamali_rates_calculation_prn_app.php" : "https://vtc3pl.com/fetch_hamali_rates_calculation_prn_app.php";
+
+        Request request = new Request.Builder().url(url).post(formBuilder.build()).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -713,7 +723,9 @@ public class MainActivity2 extends AppCompatActivity {
         formBuilder.add("selectedHamaliType", selectedHamaliType);
         formBuilder.add("deductionAmount", String.valueOf(deductionAmount));
 
-        Request request = new Request.Builder().url("https://vtc3pl.com/insert_prn_app.php").post(formBuilder.build()).build();
+        String url = (firstLetter == 'C' || firstLetter == 'c') ? "https://vtc3pl.com/cp_insert_prn_app.php" : "https://vtc3pl.com/insert_prn_app.php";
+
+        Request request = new Request.Builder().url(url).post(formBuilder.build()).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override

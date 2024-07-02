@@ -58,6 +58,7 @@ public class MainActivity10 extends AppCompatActivity {
     private static final Pattern LR_NUMBER_PATTERN = Pattern.compile("[A-Z]{3,4}[0-9]{10}+");
     private final Set<String> lrNumbersSet = new HashSet<>();
     private String username = "", depo = "", year = "";
+    private char firstLetter = 'A'; //this is for CP
     private TextView showUserNameTextViewActivityTen, lRNumberTextViewActivityTen, goDownTextViewActivityTen, remarkTextViewActivityTen;
     private EditText lrEditTextActivityTen, remarkEditTextActivityTen;
     private Button addButtonActivityTen, submitButtonActivityTen;
@@ -91,15 +92,20 @@ public class MainActivity10 extends AppCompatActivity {
 
         tableLayoutActivityTen = findViewById(R.id.tableLayoutActivityTen);
 
+        Log.d("First letter Before : ", String.valueOf(firstLetter));
+
         Intent intent = getIntent();
         if (intent != null) {
             username = intent.getStringExtra("username");
             depo = intent.getStringExtra("depo");
             year = intent.getStringExtra("year");
 
+            firstLetter = username.charAt(0);
+            Log.d("First Letter After : ", String.valueOf(firstLetter));
+
             // Set the fetched username to the TextView
             if (username != null) {
-                String usernameText = getString(R.string.user_name_prefix, username);
+                String usernameText = getString(R.string.user_name_prefix, username + " | Depot : " + depo);
                 showUserNameTextViewActivityTen.setText(usernameText);
             }
         }
@@ -132,7 +138,9 @@ public class MainActivity10 extends AppCompatActivity {
         formBuilder.add("lrNumber", lrNumber);
         formBuilder.add("depo", depo);
 
-        Request request = new Request.Builder().url("https://vtc3pl.com/prn_app_get_lrno_for_godown.php").post(formBuilder.build()).build();
+        String url = (firstLetter == 'C' || firstLetter == 'c') ? "https://vtc3pl.com/cp_prn_app_get_lrno_for_godown.php" : "https://vtc3pl.com/prn_app_get_lrno_for_godown.php";
+
+        Request request = new Request.Builder().url(url).post(formBuilder.build()).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -276,7 +284,9 @@ public class MainActivity10 extends AppCompatActivity {
         formBuilder.add("goDown", goDown);
         formBuilder.add("arrayListOfLR", arrayListOfLR);
 
-        Request request = new Request.Builder().url("https://vtc3pl.com/godown_lr_submit_from_prn_app.php").post(formBuilder.build()).build();
+        String url = (firstLetter == 'C' || firstLetter == 'c') ? "https://vtc3pl.com/cp_godown_lr_submit_from_prn_app.php" : "https://vtc3pl.com/godown_lr_submit_from_prn_app.php";
+
+        Request request = new Request.Builder().url(url).post(formBuilder.build()).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
