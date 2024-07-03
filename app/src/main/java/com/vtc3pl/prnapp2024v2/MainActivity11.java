@@ -48,6 +48,7 @@ public class MainActivity11 extends AppCompatActivity {
     private Calendar fromCalendar, toCalendar;
     private DatePickerDialog.OnDateSetListener fromDateSetListener, toDateSetListener;
     private String username = "", depo = "", year = "";
+    private char firstLetter = 'A'; //this is for CP
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +75,9 @@ public class MainActivity11 extends AppCompatActivity {
             username = intent.getStringExtra("username");
             depo = intent.getStringExtra("depo");
             year = intent.getStringExtra("year");
+
+            firstLetter = username.charAt(0);
+            Log.d("First Letter After : ", String.valueOf(firstLetter));
         }
 
         // Initialize date set listeners
@@ -144,8 +148,10 @@ public class MainActivity11 extends AppCompatActivity {
         // Build request body
         RequestBody requestBody = new FormBody.Builder().add("fromDate", fromDate).add("toDate", toDate).add("username", username).build();
 
+        String url = (firstLetter == 'C' || firstLetter == 'c') ? "https://vtc3pl.com/cp_prn_missmatch_report_for_prn_app.php" : "https://vtc3pl.com/prn_missmatch_report_for_prn_app.php";
+
         // Build request
-        Request request = new Request.Builder().url("https://vtc3pl.com/prn_missmatch_report_for_prn_app.php").post(requestBody).build();
+        Request request = new Request.Builder().url(url).post(requestBody).build();
 
         // Make asynchronous call
         client.newCall(request).enqueue(new Callback() {

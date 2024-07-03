@@ -320,7 +320,7 @@ public class MainActivity extends AppCompatActivity {
                                     if (jsonObject.has("depotCode")) {
                                         Log.d("DepotCodeFromUserName", jsonObject.getString("depotCode"));
                                         depo = jsonObject.getString("depotCode");
-                                        Toast.makeText(MainActivity.this, "Depot Code: " + depo, Toast.LENGTH_SHORT).show();
+//                                        Toast.makeText(MainActivity.this, "Depot Code: " + depo, Toast.LENGTH_SHORT).show();
                                         isDepoFetched = true;
                                     } else if (jsonObject.has("error")) {
                                         String error = jsonObject.getString("error");
