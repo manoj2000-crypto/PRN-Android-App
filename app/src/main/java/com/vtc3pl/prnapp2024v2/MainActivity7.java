@@ -12,6 +12,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -22,6 +23,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
@@ -54,8 +56,10 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
@@ -480,10 +484,10 @@ public class MainActivity7 extends AppCompatActivity {
         TextView qtyHeader = createHeaderTextView("Qty");
         headerRow.addView(qtyHeader);
 
-        TextView recievedQtyHeader = createHeaderTextView("Recieved Qty");
+        TextView recievedQtyHeader = createHeaderTextView("Received Qty");
         headerRow.addView(recievedQtyHeader);
 
-        TextView differentQtyHeader = createHeaderTextView("Difference  Qty");
+        TextView differentQtyHeader = createHeaderTextView("Difference Qty");
         headerRow.addView(differentQtyHeader);
 
         TextView reasonHeader = createHeaderTextView("Reason");
@@ -539,6 +543,19 @@ public class MainActivity7 extends AppCompatActivity {
                         reasonEditText.setText("");
                     }
                     reasonEditText.setEnabled(isChecked);
+
+                    // Log message when checkbox is selected
+                    if (isChecked) {
+                        try {
+                            JSONObject logJson = new JSONObject();
+                            logJson.put("LRNO", lrNoTextView.getText().toString());
+                            logJson.put("Received Qty", receivedQtyEditText.getText().toString());
+                            Log.d("SelectedItem", logJson.toString());
+                            sendJsonToServer(logJson, row, receivedQtyEditText); // Send JSON to server with the current row and previous EditText
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 });
 
                 // Add a TextWatcher to receivedQtyEditText to update differentQtyEditText
@@ -581,6 +598,226 @@ public class MainActivity7 extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+    private void sendJsonToServer(JSONObject json, TableRow row, EditText previousReceivedQtyEditText) {
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
+
+        RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json; charset=utf-8"));
+        Request request = new Request.Builder()
+                .url("https://vtc3pl.com/fetch_lrno_details_prn_arrival_prn_app.php")
+                .post(body)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    Log.d("ServerResponse", responseBody);
+
+                    runOnUiThread(() -> {
+                        try {
+                            JSONObject responseJson = new JSONObject(responseBody);
+                            Log.d("Inside server() ", "OK");
+                            Log.d("checkAndAddEditText ","Calling method checkAndAddEditText() ");
+                            checkAndAddEditText(responseJson, row, previousReceivedQtyEditText);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                } else {
+                    Log.e("ServerResponse", "Request failed: " + response.code());
+                }
+            }
+        });
+    }
+
+    private void checkAndAddEditText(JSONObject responseJson, TableRow row, EditText previousReceivedQtyEditText) {
+        try {
+//            Log.d("LRNO: " , "LRNO IN checkAndAddEditText : " + responseJson);
+            JSONObject bags = responseJson.getJSONObject("BAGS");
+            JSONObject box = responseJson.getJSONObject("BOX");
+
+            int bagsReceivedQty = bags.getInt("receivedQty");
+            int boxReceivedQty = box.getInt("receivedQty");
+
+            // Get LRNO from responseJson
+            String lrNo = responseJson.getString("LRNO");
+
+            if (bagsReceivedQty > 0 && boxReceivedQty > 0) {
+
+                //responseJson = {"LRNO":"PNA0000925705","BAGS":{"receivedWeight":74,"receivedQty":17},"BOX":{"receivedWeight":225,"receivedQty":25}}
+                //Here we have to subtract values from variables from response values
+
+                // Subtract values from global variables
+                totalBagWeightFromAllLRNO -= bags.getInt("receivedWeight");
+                totalBagQtyFromAllLRNO -= bagsReceivedQty;
+
+                totalBoxWeightFromAllLRNO -= box.getInt("receivedWeight");
+                totalBoxQtyFromAllLRNO -= boxReceivedQty;
+
+                // Log the updated global variables
+                Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
+                Log.d("Global Variables", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
+                Log.d("Global Variables", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
+                Log.d("Global Variables", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
+
+                // Hide the previous EditText
+                previousReceivedQtyEditText.setVisibility(View.GONE);
+
+                LinearLayout receivedQtyLayout = new LinearLayout(MainActivity7.this);
+                receivedQtyLayout.setOrientation(LinearLayout.HORIZONTAL);
+                receivedQtyLayout.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+
+                TextView bagsLabel = new TextView(MainActivity7.this);
+                bagsLabel.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                bagsLabel.setText("BAGS:");
+
+                EditText bagsReceivedQtyEditText = new EditText(MainActivity7.this);
+                bagsReceivedQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                bagsReceivedQtyEditText.setText(String.valueOf(bagsReceivedQty));
+                bagsReceivedQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+                TextView boxLabel = new TextView(MainActivity7.this);
+                boxLabel.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                boxLabel.setText("BOX:");
+
+                EditText boxReceivedQtyEditText = new EditText(MainActivity7.this);
+                boxReceivedQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                boxReceivedQtyEditText.setText(String.valueOf(boxReceivedQty));
+                boxReceivedQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+                bagsReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        try {
+                            JSONObject updateJson = new JSONObject();
+                            updateJson.put("LRNO", lrNo);
+                            updateJson.put("BAGS", s.toString());
+                            updateJson.put("BOX", boxReceivedQtyEditText.getText().toString());
+                            sendUpdatedValueToServer(updateJson);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+                boxReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        try {
+                            JSONObject updateJson = new JSONObject();
+                            updateJson.put("LRNO", lrNo);
+                            updateJson.put("BOX", s.toString());
+                            updateJson.put("BAGS", bagsReceivedQtyEditText.getText().toString());
+                            sendUpdatedValueToServer(updateJson);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+                receivedQtyLayout.addView(bagsLabel);
+                receivedQtyLayout.addView(bagsReceivedQtyEditText);
+                receivedQtyLayout.addView(boxLabel);
+                receivedQtyLayout.addView(boxReceivedQtyEditText);
+
+                // Add new EditTexts in place of the previous one
+                int receivedQtyIndex = row.indexOfChild(previousReceivedQtyEditText);
+                if (receivedQtyIndex != -1) {
+                    row.removeViewAt(receivedQtyIndex);
+                    row.addView(receivedQtyLayout, receivedQtyIndex);
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendUpdatedValueToServer(JSONObject json) {
+        Log.d("JSON RESPONSE : " , "sendUpdatedValueToServer JSON response after change value in BAGS OR BOX Value: " + json);
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
+
+        RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json; charset=utf-8"));
+        Request request = new Request.Builder()
+                .url("https://vtc3pl.com/fetch_lrno_details_for_single_lrno_prn_arrival_prn_app.php")
+                .post(body)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    Log.d("ServerResponse", responseBody);
+                    try {
+                        JSONObject responseJson = new JSONObject(responseBody);
+
+                        // Extract BAGS and BOX data
+                        JSONObject bags = responseJson.getJSONObject("BAGS");
+                        JSONObject box = responseJson.getJSONObject("BOX");
+
+                        int bagsReceivedWeight = bags.getInt("receivedWeight");
+                        int bagsReceivedQty = bags.getInt("receivedQty");
+
+                        int boxReceivedWeight = box.getInt("receivedWeight");
+                        int boxReceivedQty = box.getInt("receivedQty");
+
+                        // Add values to global variables
+                        totalBagWeightFromAllLRNO += bagsReceivedWeight;
+                        totalBagQtyFromAllLRNO += bagsReceivedQty;
+
+                        totalBoxWeightFromAllLRNO += boxReceivedWeight;
+                        totalBoxQtyFromAllLRNO += boxReceivedQty;
+
+                        // Log the updated global variables
+                        Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
+                        Log.d("Global Variables", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
+                        Log.d("Global Variables", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
+                        Log.d("Global Variables", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                } else {
+                    Log.e("ServerResponse", "Request failed: " + response.code());
+                }
+            }
+        });
+    }
+
+//    private int getIndexOfReceivedQty(TableRow row) {
+//        for (int i = 0; i < row.getChildCount(); i++) {
+//            View view = row.getChildAt(i);
+//            if (view instanceof EditText && ((EditText) view).getHint() != null && ((EditText) view).getHint().toString().equals("Received Qty")) {
+//                return i;
+//            }
+//        }
+//        return -1;
+//    }
 
     private TextView createHeaderTextView(String text) {
         TextView textView = new TextView(MainActivity7.this);
