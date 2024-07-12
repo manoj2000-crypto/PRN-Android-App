@@ -68,5 +68,6 @@
     <string name="username">Username</string>
     <string name="vtc3pl_services_ltd">VTC3PL SERVICES LTD.</string>
     <string name="lr_missmatch_report">LR Missmatch Report</string>
+    <string name="godown_keeper_name">Godown Keeper Name:</string>
 
 </resources>

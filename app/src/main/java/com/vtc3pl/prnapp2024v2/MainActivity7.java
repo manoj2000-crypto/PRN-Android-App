@@ -12,6 +12,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -39,6 +40,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.airbnb.lottie.LottieAnimationView;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -69,12 +72,21 @@ public class MainActivity7 extends AppCompatActivity {
     private String selectedRadioButton = "", prnId = "", depo = "", username = "", response = "", year = "";
     private String[] lrnoArray;
     private Spinner hamaliVendorNameSpinnerActivitySeven, hamaliTypeSpinnerActivitySeven;
-    private EditText hamaliAmountEditTextActivitySeven, deductionAmountEditTextActivitySeven, amountPaidToHVendorEditTextActivitySeven, freightEditText;
+    private EditText hamaliAmountEditTextActivitySeven, deductionAmountEditTextActivitySeven, amountPaidToHVendorEditTextActivitySeven, freightEditText, godownKeeperNameEditText;
     private RadioGroup radioGroupOptions;
     private RadioButton radioButtonUnLoading, radioButtonWithoutUnLoading;
     private String selectedHamaliVendor = "", selectedHamaliType = "";
     private double amountPaidToHVendor, deductionAmount;
     private TableLayout tableLayoutActivitySeven;
+
+    private double previousBoxReceivedWeight = 0;
+    private double previousBoxReceivedQty = 0;
+    private double previousBagReceivedWeight = 0;
+    private double previousBagReceivedQty = 0;
+
+    private int previousReceivedQty = 0;
+
+    private LottieAnimationView lottieAnimationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,6 +124,12 @@ public class MainActivity7 extends AppCompatActivity {
         amountPaidToHVendorEditTextActivitySeven.setEnabled(false);
 
         freightEditText = findViewById(R.id.freightEditText);
+        freightEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+        godownKeeperNameEditText = findViewById(R.id.godownKeeperNameEditText);
+        godownKeeperNameEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+
+        lottieAnimationView = findViewById(R.id.lottieAnimationView);
 
         fetchHvendors();
         Log.d("onCreate fetch Weight", "fetchWeightsFromServer() called after fetchvendor");
@@ -157,7 +175,22 @@ public class MainActivity7 extends AppCompatActivity {
         displayDataInTable(response);
 
         Button submitButtonArrivalPRN = findViewById(R.id.submitButtonArrivalPRN);
-        submitButtonArrivalPRN.setOnClickListener(v -> submitDataToServer());
+        submitButtonArrivalPRN.setOnClickListener(v -> {
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+
+            if (radioGroupOptions.getCheckedRadioButtonId() == -1) {
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
+
+                showWarning("Unselected Radio Button Warning", "Please select any one radio button.");
+                return;
+            }
+
+            submitDataToServer();
+        });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -520,6 +553,7 @@ public class MainActivity7 extends AppCompatActivity {
                 receivedQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
 //                receivedQtyEditText.setText(jsonObject.getString("RecievedQty"));
                 receivedQtyEditText.setText(jsonObject.getString("PkgsNo"));
+                receivedQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
                 receivedQtyEditText.setEnabled(false);
 
                 EditText differentQtyEditText = new EditText(MainActivity7.this);
@@ -531,6 +565,7 @@ public class MainActivity7 extends AppCompatActivity {
                 EditText reasonEditText = new EditText(MainActivity7.this);
                 reasonEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
 //                reasonEditText.setText(jsonObject.getString("Reason"));
+                reasonEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
                 reasonEditText.setText("OK");
                 reasonEditText.setEnabled(false);
 
@@ -575,8 +610,15 @@ public class MainActivity7 extends AppCompatActivity {
                             int receivedQty = Integer.parseInt(s.toString());
                             int differenceQty = (pkgsNo - receivedQty);
                             differentQtyEditText.setText(String.valueOf(differenceQty));
+
+                            JSONObject updateJson = new JSONObject();
+                            updateJson.put("LRNO", lrNoTextView.getText().toString());
+                            updateJson.put("ReceivedQty", s.toString());
+                            sendUpdatedValueToServer(updateJson);
                         } catch (NumberFormatException e) {
                             differentQtyEditText.setText("0");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
                     }
                 });
@@ -600,6 +642,11 @@ public class MainActivity7 extends AppCompatActivity {
     }
 
     private void sendJsonToServer(JSONObject json, TableRow row, EditText previousReceivedQtyEditText) {
+
+        // Show the Lottie animation
+        lottieAnimationView.setVisibility(View.VISIBLE);
+        lottieAnimationView.playAnimation();
+
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json; charset=utf-8"));
@@ -611,6 +658,10 @@ public class MainActivity7 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
                 e.printStackTrace();
             }
 
@@ -621,16 +672,26 @@ public class MainActivity7 extends AppCompatActivity {
                     Log.d("ServerResponse", responseBody);
 
                     runOnUiThread(() -> {
+
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+
                         try {
                             JSONObject responseJson = new JSONObject(responseBody);
                             Log.d("Inside server() ", "OK");
-                            Log.d("checkAndAddEditText ","Calling method checkAndAddEditText() ");
+                            Log.d("checkAndAddEditText ", "Calling method checkAndAddEditText() ");
                             checkAndAddEditText(responseJson, row, previousReceivedQtyEditText);
                         } catch (JSONException e) {
+                            lottieAnimationView.setVisibility(View.GONE);
+                            lottieAnimationView.cancelAnimation();
                             e.printStackTrace();
                         }
                     });
                 } else {
+                    runOnUiThread(() -> {
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+                    });
                     Log.e("ServerResponse", "Request failed: " + response.code());
                 }
             }
@@ -645,6 +706,8 @@ public class MainActivity7 extends AppCompatActivity {
 
             int bagsReceivedQty = bags.getInt("receivedQty");
             int boxReceivedQty = box.getInt("receivedQty");
+            int bagsReceivedWeight = bags.getInt("receivedWeight");
+            int boxReceivedWeight = box.getInt("receivedWeight");
 
             // Get LRNO from responseJson
             String lrNo = responseJson.getString("LRNO");
@@ -694,10 +757,12 @@ public class MainActivity7 extends AppCompatActivity {
 
                 bagsReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
                     @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    }
 
                     @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {}
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    }
 
                     @Override
                     public void afterTextChanged(Editable s) {
@@ -715,10 +780,12 @@ public class MainActivity7 extends AppCompatActivity {
 
                 boxReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
                     @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    }
 
                     @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {}
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    }
 
                     @Override
                     public void afterTextChanged(Editable s) {
@@ -745,6 +812,68 @@ public class MainActivity7 extends AppCompatActivity {
                     row.removeViewAt(receivedQtyIndex);
                     row.addView(receivedQtyLayout, receivedQtyIndex);
                 }
+            } else if (bagsReceivedQty > 0 && boxReceivedQty == 0) {
+                // Subtract values from global variables
+                totalBagWeightFromAllLRNO -= bagsReceivedWeight;
+                totalBagQtyFromAllLRNO -= bagsReceivedQty;
+
+                // Log the updated global variables
+                Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
+                Log.d("Global Variables", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
+
+                // Add TextWatcher to the existing previousReceivedQtyEditText
+                previousReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        try {
+                            JSONObject updateJson = new JSONObject();
+                            updateJson.put("LRNO", lrNo);
+                            updateJson.put("BAGS", s.toString());
+                            sendUpdatedValueToServer(updateJson);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            } else if (bagsReceivedQty == 0 && boxReceivedQty > 0) {
+                // Subtract values from global variables
+                totalBoxWeightFromAllLRNO -= boxReceivedWeight;
+                totalBoxQtyFromAllLRNO -= boxReceivedQty;
+
+                // Log the updated global variables
+                Log.d("Global Variables", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
+                Log.d("Global Variables", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
+
+                // Add TextWatcher to the existing previousReceivedQtyEditText
+                previousReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        try {
+                            JSONObject updateJson = new JSONObject();
+                            updateJson.put("LRNO", lrNo);
+                            updateJson.put("BOX", s.toString());
+                            sendUpdatedValueToServer(updateJson);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -752,7 +881,11 @@ public class MainActivity7 extends AppCompatActivity {
     }
 
     private void sendUpdatedValueToServer(JSONObject json) {
-        Log.d("JSON RESPONSE : " , "sendUpdatedValueToServer JSON response after change value in BAGS OR BOX Value: " + json);
+        Log.d("JSON RESPONSE : ", "sendUpdatedValueToServer JSON response after change value in BAGS OR BOX Value: " + json);
+
+        lottieAnimationView.setVisibility(View.VISIBLE);
+        lottieAnimationView.playAnimation();
+
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json; charset=utf-8"));
@@ -764,6 +897,10 @@ public class MainActivity7 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
                 e.printStackTrace();
             }
 
@@ -772,6 +909,12 @@ public class MainActivity7 extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     String responseBody = response.body().string();
                     Log.d("ServerResponse", responseBody);
+
+                    runOnUiThread(() -> {
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+                    });
+
                     try {
                         JSONObject responseJson = new JSONObject(responseBody);
 
@@ -785,12 +928,32 @@ public class MainActivity7 extends AppCompatActivity {
                         int boxReceivedWeight = box.getInt("receivedWeight");
                         int boxReceivedQty = box.getInt("receivedQty");
 
-                        // Add values to global variables
+                        int receivedQty = responseJson.optInt("ReceivedQty", 0);
+
+                        // Subtract the previous values
+                        totalBagWeightFromAllLRNO -= previousBagReceivedWeight;
+                        totalBagQtyFromAllLRNO -= previousBagReceivedQty;
+
+                        totalBoxWeightFromAllLRNO -= previousBoxReceivedWeight;
+                        totalBoxQtyFromAllLRNO -= previousBoxReceivedQty;
+
+                        totalBoxQtyFromAllLRNO -= previousReceivedQty;
+
+                        // Add the new values
                         totalBagWeightFromAllLRNO += bagsReceivedWeight;
                         totalBagQtyFromAllLRNO += bagsReceivedQty;
 
                         totalBoxWeightFromAllLRNO += boxReceivedWeight;
                         totalBoxQtyFromAllLRNO += boxReceivedQty;
+
+                        totalBoxQtyFromAllLRNO += receivedQty;
+
+                        // Update the previous values
+                        previousBagReceivedWeight = bagsReceivedWeight;
+                        previousBagReceivedQty = bagsReceivedQty;
+                        previousBoxReceivedWeight = boxReceivedWeight;
+                        previousBoxReceivedQty = boxReceivedQty;
+                        previousReceivedQty = receivedQty;
 
                         // Log the updated global variables
                         Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
@@ -799,10 +962,18 @@ public class MainActivity7 extends AppCompatActivity {
                         Log.d("Global Variables", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
 
                     } catch (JSONException e) {
+                        runOnUiThread(() -> {
+                            lottieAnimationView.setVisibility(View.GONE);
+                            lottieAnimationView.cancelAnimation();
+                        });
                         e.printStackTrace();
                     }
 
                 } else {
+                    runOnUiThread(() -> {
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+                    });
                     Log.e("ServerResponse", "Request failed: " + response.code());
                 }
             }
@@ -903,9 +1074,17 @@ public class MainActivity7 extends AppCompatActivity {
                     // Add the JSON object to the list
                     rowDataList.add(rowData);
                 } catch (JSONException e) {
+                    runOnUiThread(() -> {
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+                    });
                     e.printStackTrace();
                 }
             } else {
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
                 // Handle empty fields or show a message
                 showWarning("Empty Field Warning", "One or more fields are empty for LRNO: " + lrNo);
                 return;
@@ -917,6 +1096,11 @@ public class MainActivity7 extends AppCompatActivity {
 
         Object selectedItem = hamaliVendorNameSpinnerActivitySeven.getSelectedItem();
         if (selectedItem == null) {
+            runOnUiThread(() -> {
+                lottieAnimationView.setVisibility(View.GONE);
+                lottieAnimationView.cancelAnimation();
+            });
+
             showWarning("Unselected Field Warning", "Please select hamali vendor name.");
             return;
         }
@@ -933,6 +1117,8 @@ public class MainActivity7 extends AppCompatActivity {
         Log.d("amountPaidToHVendor", amountPaidToHVendor);
         String freightAmount = freightEditText.getText().toString().trim();
         Log.d("freightAmount", freightAmount);
+        String godownKeeperName = godownKeeperNameEditText.getText().toString().trim();
+        Log.d("godownKeeperName", godownKeeperName);
 
         radioGroupOptions = findViewById(R.id.radioGroupOptions);
         radioButtonWithoutUnLoading = findViewById(R.id.radioButtonWithoutUnLoading);
@@ -948,12 +1134,57 @@ public class MainActivity7 extends AppCompatActivity {
             }
         });
 
+        if (selectedRadioButton == null || selectedRadioButton.isEmpty()) {
+            showWarning("Unselected Radio Button Warning", "Please select any one radio button.");
+            return;
+        }
+
+        if (freightAmount.isEmpty()) {
+
+            runOnUiThread(() -> {
+                lottieAnimationView.setVisibility(View.GONE);
+                lottieAnimationView.cancelAnimation();
+            });
+
+            showWarning("Empty Field Warning", "Please enter freight amount.");
+            freightEditText.requestFocus();
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(freightEditText, InputMethodManager.SHOW_IMPLICIT);
+            return;
+        }
+
+        if (godownKeeperName.isEmpty()) {
+
+            runOnUiThread(() -> {
+                lottieAnimationView.setVisibility(View.GONE);
+                lottieAnimationView.cancelAnimation();
+            });
+
+            showWarning("Empty Field Warning", "Please enter godown keeper name.");
+            godownKeeperNameEditText.requestFocus();
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(godownKeeperNameEditText, InputMethodManager.SHOW_IMPLICIT);
+            return;
+        }
+
         if (hamaliVendor.equals("Please Select Vendor")) {
+
+            runOnUiThread(() -> {
+                lottieAnimationView.setVisibility(View.GONE);
+                lottieAnimationView.cancelAnimation();
+            });
+
             showWarning("Unselected Field Warning", "Please select hamali vendor name.");
             return;
         }
 
         if (amountPaidToHVendor.isEmpty() || hamaliAmount.isEmpty()) {
+
+            runOnUiThread(() -> {
+                lottieAnimationView.setVisibility(View.GONE);
+                lottieAnimationView.cancelAnimation();
+            });
+
             showWarning("Empty Field Warning", "Amount is empty.");
             return;
         }
@@ -965,12 +1196,14 @@ public class MainActivity7 extends AppCompatActivity {
         formBuilder.add("spinnerDepo", depo);
         formBuilder.add("spinnerYear", year);
         formBuilder.add("freightAmount", freightAmount);
+        formBuilder.add("godownKeeperName", godownKeeperName);
         formBuilder.add("selectedHamaliVendor", selectedHamaliVendor);
-        formBuilder.add("finalHamliAmount", String.valueOf(amountPaidToHVendor));
+        formBuilder.add("finalHamliAmount", amountPaidToHVendor);
         formBuilder.add("selectedHamaliType", hamaliType);
-        formBuilder.add("deductionAmount", String.valueOf(deductionAmount));
+        formBuilder.add("deductionAmount", deductionAmount);
         formBuilder.add("selectedRadioButton", selectedRadioButton);
         formBuilder.add("rowDataList", rowDataList.toString());
+        formBuilder.add("PRN", prnId);
 
         Request request = new Request.Builder().url("https://vtc3pl.com/insert_arrival_data_prn_app.php").post(formBuilder.build()).build();
 
@@ -980,6 +1213,9 @@ public class MainActivity7 extends AppCompatActivity {
                 e.printStackTrace();
                 Log.e("MainActivity7(submit)", "Failed to connect to server", e);
                 runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+
                     showAlert("Connection Failed Error", "Failed to connect to server");
                 });
             }
@@ -992,6 +1228,10 @@ public class MainActivity7 extends AppCompatActivity {
                         String responseBody = body.string();
                         Log.e("Response CreatePRN:", responseBody);
                         runOnUiThread(() -> {
+
+                            lottieAnimationView.setVisibility(View.GONE);
+                            lottieAnimationView.cancelAnimation();
+
                             Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
                             Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
                             Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
@@ -1016,11 +1256,17 @@ public class MainActivity7 extends AppCompatActivity {
                     } else {
                         Log.e("Response CreatePRN:", "Empty response body");
                         runOnUiThread(() -> {
+                            lottieAnimationView.setVisibility(View.GONE);
+                            lottieAnimationView.cancelAnimation();
+
                             showAlert("Empty Response Error", "Empty response received from server");
                         });
                     }
                 } else {
                     runOnUiThread(() -> {
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+
                         showAlert("Server Error", "Server error: " + response.code());
                     });
                 }
@@ -1031,6 +1277,7 @@ public class MainActivity7 extends AppCompatActivity {
     private void clearUIComponents() {
         radioGroupOptions.clearCheck();
         freightEditText.setText("");
+        godownKeeperNameEditText.setText("");
         tableLayoutActivitySeven.removeAllViews();
         lrNumbersSet.clear();
         hamaliVendorNameSpinnerActivitySeven.setSelection(0);

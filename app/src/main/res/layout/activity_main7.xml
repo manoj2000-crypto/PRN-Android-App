@@ -198,6 +198,33 @@
         app:layout_constraintVertical_bias="0.73"
         tools:ignore="HardcodedText,TextFields" />
 
+    <TextView
+        android:id="@+id/godownKeeperNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:text="@string/godown_keeper_name"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/freightTextView" />
+
+    <EditText
+        android:id="@+id/godownKeeperNameEditText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:ems="10"
+        android:hint="Godown Keeper Name"
+        app:layout_constraintBottom_toBottomOf="@id/godownKeeperNameTextView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@id/godownKeeperNameTextView"
+        app:layout_constraintTop_toTopOf="@id/godownKeeperNameTextView"
+        app:layout_constraintVertical_bias="0.73"
+        tools:ignore="HardcodedText,TextFields" />
+
     <HorizontalScrollView
         android:id="@+id/horizontalScrollView"
         android:layout_width="match_parent"
@@ -206,7 +233,7 @@
         app:layout_constraintBottom_toTopOf="@id/submitButtonArrivalPRN"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/freightEditText">
+        app:layout_constraintTop_toBottomOf="@id/godownKeeperNameEditText">
 
         <ScrollView
             android:layout_width="wrap_content"
@@ -305,5 +332,20 @@
     <!--        app:layout_constraintStart_toEndOf="@id/fuelrateTextView"-->
     <!--        app:layout_constraintTop_toTopOf="@id/fuelrateTextView"-->
     <!--        tools:ignore="HardcodedText,TextFields" />-->
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center">
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottieAnimationView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            app:lottie_rawRes="@raw/loading_animation_for_prn_app" />
+
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
