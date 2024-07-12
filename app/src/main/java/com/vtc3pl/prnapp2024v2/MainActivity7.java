@@ -1,8 +1,6 @@
 package com.vtc3pl.prnapp2024v2;
 //Arrival Page Part 2
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
@@ -178,16 +176,6 @@ public class MainActivity7 extends AppCompatActivity {
         submitButtonArrivalPRN.setOnClickListener(v -> {
             lottieAnimationView.setVisibility(View.VISIBLE);
             lottieAnimationView.playAnimation();
-
-            if (radioGroupOptions.getCheckedRadioButtonId() == -1) {
-                runOnUiThread(() -> {
-                    lottieAnimationView.setVisibility(View.GONE);
-                    lottieAnimationView.cancelAnimation();
-                });
-
-                showWarning("Unselected Radio Button Warning", "Please select any one radio button.");
-                return;
-            }
 
             submitDataToServer();
         });
@@ -658,10 +646,14 @@ public class MainActivity7 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                runOnUiThread(() -> {
-                    lottieAnimationView.setVisibility(View.GONE);
-                    lottieAnimationView.cancelAnimation();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+                    }
                 });
+
                 e.printStackTrace();
             }
 
@@ -671,28 +663,32 @@ public class MainActivity7 extends AppCompatActivity {
                     String responseBody = response.body().string();
                     Log.d("ServerResponse", responseBody);
 
-                    runOnUiThread(() -> {
-
-                        lottieAnimationView.setVisibility(View.GONE);
-                        lottieAnimationView.cancelAnimation();
-
-                        try {
-                            JSONObject responseJson = new JSONObject(responseBody);
-                            Log.d("Inside server() ", "OK");
-                            Log.d("checkAndAddEditText ", "Calling method checkAndAddEditText() ");
-                            checkAndAddEditText(responseJson, row, previousReceivedQtyEditText);
-                        } catch (JSONException e) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
                             lottieAnimationView.setVisibility(View.GONE);
                             lottieAnimationView.cancelAnimation();
-                            e.printStackTrace();
+                            try {
+                                JSONObject responseJson = new JSONObject(responseBody);
+                                Log.d("Inside server() ", "OK");
+                                Log.d("checkAndAddEditText ", "Calling method checkAndAddEditText() ");
+                                checkAndAddEditText(responseJson, row, previousReceivedQtyEditText);
+                            } catch (JSONException e) {
+                                lottieAnimationView.setVisibility(View.GONE);
+                                lottieAnimationView.cancelAnimation();
+                                e.printStackTrace();
+                            }
                         }
                     });
                 } else {
-                    runOnUiThread(() -> {
-                        lottieAnimationView.setVisibility(View.GONE);
-                        lottieAnimationView.cancelAnimation();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            lottieAnimationView.setVisibility(View.GONE);
+                            lottieAnimationView.cancelAnimation();
+                            Log.e("ServerResponse", "Request failed: " + response.code());
+                        }
                     });
-                    Log.e("ServerResponse", "Request failed: " + response.code());
                 }
             }
         });
@@ -897,9 +893,12 @@ public class MainActivity7 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                runOnUiThread(() -> {
-                    lottieAnimationView.setVisibility(View.GONE);
-                    lottieAnimationView.cancelAnimation();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+                    }
                 });
                 e.printStackTrace();
             }
@@ -910,71 +909,77 @@ public class MainActivity7 extends AppCompatActivity {
                     String responseBody = response.body().string();
                     Log.d("ServerResponse", responseBody);
 
-                    runOnUiThread(() -> {
-                        lottieAnimationView.setVisibility(View.GONE);
-                        lottieAnimationView.cancelAnimation();
-                    });
-
-                    try {
-                        JSONObject responseJson = new JSONObject(responseBody);
-
-                        // Extract BAGS and BOX data
-                        JSONObject bags = responseJson.getJSONObject("BAGS");
-                        JSONObject box = responseJson.getJSONObject("BOX");
-
-                        int bagsReceivedWeight = bags.getInt("receivedWeight");
-                        int bagsReceivedQty = bags.getInt("receivedQty");
-
-                        int boxReceivedWeight = box.getInt("receivedWeight");
-                        int boxReceivedQty = box.getInt("receivedQty");
-
-                        int receivedQty = responseJson.optInt("ReceivedQty", 0);
-
-                        // Subtract the previous values
-                        totalBagWeightFromAllLRNO -= previousBagReceivedWeight;
-                        totalBagQtyFromAllLRNO -= previousBagReceivedQty;
-
-                        totalBoxWeightFromAllLRNO -= previousBoxReceivedWeight;
-                        totalBoxQtyFromAllLRNO -= previousBoxReceivedQty;
-
-                        totalBoxQtyFromAllLRNO -= previousReceivedQty;
-
-                        // Add the new values
-                        totalBagWeightFromAllLRNO += bagsReceivedWeight;
-                        totalBagQtyFromAllLRNO += bagsReceivedQty;
-
-                        totalBoxWeightFromAllLRNO += boxReceivedWeight;
-                        totalBoxQtyFromAllLRNO += boxReceivedQty;
-
-                        totalBoxQtyFromAllLRNO += receivedQty;
-
-                        // Update the previous values
-                        previousBagReceivedWeight = bagsReceivedWeight;
-                        previousBagReceivedQty = bagsReceivedQty;
-                        previousBoxReceivedWeight = boxReceivedWeight;
-                        previousBoxReceivedQty = boxReceivedQty;
-                        previousReceivedQty = receivedQty;
-
-                        // Log the updated global variables
-                        Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
-                        Log.d("Global Variables", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
-                        Log.d("Global Variables", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
-                        Log.d("Global Variables", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
-
-                    } catch (JSONException e) {
-                        runOnUiThread(() -> {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
                             lottieAnimationView.setVisibility(View.GONE);
                             lottieAnimationView.cancelAnimation();
-                        });
-                        e.printStackTrace();
-                    }
 
-                } else {
-                    runOnUiThread(() -> {
-                        lottieAnimationView.setVisibility(View.GONE);
-                        lottieAnimationView.cancelAnimation();
+
+                            try {
+                                JSONObject responseJson = new JSONObject(responseBody);
+
+                                // Extract BAGS and BOX data
+                                JSONObject bags = responseJson.getJSONObject("BAGS");
+                                JSONObject box = responseJson.getJSONObject("BOX");
+
+                                int bagsReceivedWeight = bags.getInt("receivedWeight");
+                                int bagsReceivedQty = bags.getInt("receivedQty");
+
+                                int boxReceivedWeight = box.getInt("receivedWeight");
+                                int boxReceivedQty = box.getInt("receivedQty");
+
+                                int receivedQty = responseJson.optInt("ReceivedQty", 0);
+
+                                // Subtract the previous values
+                                totalBagWeightFromAllLRNO -= previousBagReceivedWeight;
+                                totalBagQtyFromAllLRNO -= previousBagReceivedQty;
+
+                                totalBoxWeightFromAllLRNO -= previousBoxReceivedWeight;
+                                totalBoxQtyFromAllLRNO -= previousBoxReceivedQty;
+
+                                totalBoxQtyFromAllLRNO -= previousReceivedQty;
+
+                                // Add the new values
+                                totalBagWeightFromAllLRNO += bagsReceivedWeight;
+                                totalBagQtyFromAllLRNO += bagsReceivedQty;
+
+                                totalBoxWeightFromAllLRNO += boxReceivedWeight;
+                                totalBoxQtyFromAllLRNO += boxReceivedQty;
+
+                                totalBoxQtyFromAllLRNO += receivedQty;
+
+                                // Update the previous values
+                                previousBagReceivedWeight = bagsReceivedWeight;
+                                previousBagReceivedQty = bagsReceivedQty;
+                                previousBoxReceivedWeight = boxReceivedWeight;
+                                previousBoxReceivedQty = boxReceivedQty;
+                                previousReceivedQty = receivedQty;
+
+                                // Log the updated global variables
+                                Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
+                                Log.d("Global Variables", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
+                                Log.d("Global Variables", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
+                                Log.d("Global Variables", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
+
+                            } catch (JSONException e) {
+                                lottieAnimationView.setVisibility(View.GONE);
+                                lottieAnimationView.cancelAnimation();
+                                e.printStackTrace();
+                            }
+                        }
                     });
-                    Log.e("ServerResponse", "Request failed: " + response.code());
+                } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            lottieAnimationView.setVisibility(View.GONE);
+                            lottieAnimationView.cancelAnimation();
+
+                            Log.e("ServerResponse", "Request failed: " + response.code());
+                        }
+                    });
+
                 }
             }
         });
@@ -1074,18 +1079,23 @@ public class MainActivity7 extends AppCompatActivity {
                     // Add the JSON object to the list
                     rowDataList.add(rowData);
                 } catch (JSONException e) {
-                    runOnUiThread(() -> {
-                        lottieAnimationView.setVisibility(View.GONE);
-                        lottieAnimationView.cancelAnimation();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            lottieAnimationView.setVisibility(View.GONE);
+                            lottieAnimationView.cancelAnimation();
+                        }
                     });
                     e.printStackTrace();
                 }
             } else {
-                runOnUiThread(() -> {
-                    lottieAnimationView.setVisibility(View.GONE);
-                    lottieAnimationView.cancelAnimation();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+                    }
                 });
-                // Handle empty fields or show a message
                 showWarning("Empty Field Warning", "One or more fields are empty for LRNO: " + lrNo);
                 return;
             }
@@ -1096,12 +1106,15 @@ public class MainActivity7 extends AppCompatActivity {
 
         Object selectedItem = hamaliVendorNameSpinnerActivitySeven.getSelectedItem();
         if (selectedItem == null) {
-            runOnUiThread(() -> {
-                lottieAnimationView.setVisibility(View.GONE);
-                lottieAnimationView.cancelAnimation();
-            });
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
 
-            showWarning("Unselected Field Warning", "Please select hamali vendor name.");
+                    showWarning("Unselected Field Warning", "Please select hamali vendor name.");
+                }
+            });
             return;
         }
 
@@ -1134,58 +1147,93 @@ public class MainActivity7 extends AppCompatActivity {
             }
         });
 
+        if (radioGroupOptions.getCheckedRadioButtonId() == -1) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+
+                    showWarning("Unselected Radio Button Warning", "Please select any one radio button.");
+                }
+            });
+            return;
+        }
+
         if (selectedRadioButton == null || selectedRadioButton.isEmpty()) {
-            showWarning("Unselected Radio Button Warning", "Please select any one radio button.");
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+
+                    showWarning("Unselected Radio Button Warning", "Please select any one radio button.");
+                }
+            });
             return;
         }
 
         if (freightAmount.isEmpty()) {
 
-            runOnUiThread(() -> {
-                lottieAnimationView.setVisibility(View.GONE);
-                lottieAnimationView.cancelAnimation();
-            });
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
 
-            showWarning("Empty Field Warning", "Please enter freight amount.");
-            freightEditText.requestFocus();
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.showSoftInput(freightEditText, InputMethodManager.SHOW_IMPLICIT);
+                    showWarning("Empty Field Warning", "Please enter freight amount.");
+                    freightEditText.requestFocus();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(freightEditText, InputMethodManager.SHOW_IMPLICIT);
+
+                }
+            });
             return;
         }
 
         if (godownKeeperName.isEmpty()) {
 
-            runOnUiThread(() -> {
-                lottieAnimationView.setVisibility(View.GONE);
-                lottieAnimationView.cancelAnimation();
-            });
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
 
-            showWarning("Empty Field Warning", "Please enter godown keeper name.");
-            godownKeeperNameEditText.requestFocus();
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.showSoftInput(godownKeeperNameEditText, InputMethodManager.SHOW_IMPLICIT);
+                    showWarning("Empty Field Warning", "Please enter godown keeper name.");
+                    godownKeeperNameEditText.requestFocus();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(godownKeeperNameEditText, InputMethodManager.SHOW_IMPLICIT);
+                }
+            });
             return;
         }
 
         if (hamaliVendor.equals("Please Select Vendor")) {
 
-            runOnUiThread(() -> {
-                lottieAnimationView.setVisibility(View.GONE);
-                lottieAnimationView.cancelAnimation();
-            });
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
 
-            showWarning("Unselected Field Warning", "Please select hamali vendor name.");
+                    showWarning("Unselected Field Warning", "Please select hamali vendor name.");
+                }
+            });
             return;
         }
 
         if (amountPaidToHVendor.isEmpty() || hamaliAmount.isEmpty()) {
 
-            runOnUiThread(() -> {
-                lottieAnimationView.setVisibility(View.GONE);
-                lottieAnimationView.cancelAnimation();
-            });
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
 
-            showWarning("Empty Field Warning", "Amount is empty.");
+                    showWarning("Empty Field Warning", "Amount is empty.");
+                }
+            });
             return;
         }
 
@@ -1210,14 +1258,16 @@ public class MainActivity7 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                e.printStackTrace();
-                Log.e("MainActivity7(submit)", "Failed to connect to server", e);
-                runOnUiThread(() -> {
-                    lottieAnimationView.setVisibility(View.GONE);
-                    lottieAnimationView.cancelAnimation();
-
-                    showAlert("Connection Failed Error", "Failed to connect to server");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+                        Log.e("MainActivity7(submit)", "Failed to connect to server", e);
+                        showAlert("Connection Failed Error", "Failed to connect to server");
+                    }
                 });
+                e.printStackTrace();
             }
 
             @Override
@@ -1227,47 +1277,56 @@ public class MainActivity7 extends AppCompatActivity {
                     if (body != null) {
                         String responseBody = body.string();
                         Log.e("Response CreatePRN:", responseBody);
-                        runOnUiThread(() -> {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
 
-                            lottieAnimationView.setVisibility(View.GONE);
-                            lottieAnimationView.cancelAnimation();
+                                lottieAnimationView.setVisibility(View.GONE);
+                                lottieAnimationView.cancelAnimation();
 
-                            Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
-                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
-                            Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
+                                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
+                                Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+                                Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-                            final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity7.this)
-                                    .setTitle("Success")
-                                    .setMessage(responseBody)
-                                    .setPositiveButton("OK", (dialog, which) -> {
+                                final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity7.this)
+                                        .setTitle("Success")
+                                        .setMessage(responseBody)
+                                        .setPositiveButton("OK", (dialog, which) -> {
+                                            dialog.dismiss();
+                                            clearUIComponents();
+                                        }).setIcon(successIcon).create();
+                                alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                    @Override
+                                    public void onDismiss(DialogInterface dialog) {
                                         dialog.dismiss();
                                         clearUIComponents();
-                                    }).setIcon(successIcon).create();
-                            alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                @Override
-                                public void onDismiss(DialogInterface dialog) {
-                                    dialog.dismiss();
-                                    clearUIComponents();
-                                }
-                            });
+                                    }
+                                });
 
-                            alertDialog.show();
+                                alertDialog.show();
+                            }
                         });
                     } else {
-                        Log.e("Response CreatePRN:", "Empty response body");
-                        runOnUiThread(() -> {
-                            lottieAnimationView.setVisibility(View.GONE);
-                            lottieAnimationView.cancelAnimation();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                lottieAnimationView.setVisibility(View.GONE);
+                                lottieAnimationView.cancelAnimation();
 
-                            showAlert("Empty Response Error", "Empty response received from server");
+                                showAlert("Empty Response Error", "Empty response received from server");
+                                Log.e("Response CreatePRN:", "Empty response body");
+                            }
                         });
                     }
                 } else {
-                    runOnUiThread(() -> {
-                        lottieAnimationView.setVisibility(View.GONE);
-                        lottieAnimationView.cancelAnimation();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            lottieAnimationView.setVisibility(View.GONE);
+                            lottieAnimationView.cancelAnimation();
 
-                        showAlert("Server Error", "Server error: " + response.code());
+                            showAlert("Server Error", "Server error: " + response.code());
+                        }
                     });
                 }
             }
