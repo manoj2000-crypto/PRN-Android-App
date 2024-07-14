@@ -344,7 +344,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:visibility="gone"
-            app:lottie_rawRes="@raw/loading_animation_for_prn_app" />
+            app:lottie_rawRes="@raw/loading_animation" />
 
     </FrameLayout>
 

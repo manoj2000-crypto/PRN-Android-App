@@ -84,7 +84,11 @@ public class MainActivity7 extends AppCompatActivity {
 
     private int previousReceivedQty = 0;
 
+    private double uncheckedBoxReceivedWeight = 0, uncheckedBoxReceivedQty = 0, uncheckedBagReceivedWeight = 0, uncheckedBagReceivedQty = 0;
+
     private LottieAnimationView lottieAnimationView;
+
+    private boolean isReceivedQtyChanged = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -339,10 +343,7 @@ public class MainActivity7 extends AppCompatActivity {
         formBuilder.add("spinnerDepo", depo);
         formBuilder.add("Hvendor", selectedHamaliVendor);
 
-        Request request = new Request.Builder()
-                .url("https://vtc3pl.com/fetch_hamali_rates_calculation_prn_app.php")
-                .post(formBuilder.build())
-                .build();
+        Request request = new Request.Builder().url("https://vtc3pl.com/fetch_hamali_rates_calculation_prn_app.php").post(formBuilder.build()).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -578,6 +579,25 @@ public class MainActivity7 extends AppCompatActivity {
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+                    } else {
+                        //If check box is uncheck and if the recevied value is unchanged then we have to add those values again that we subtract.
+                        if (isReceivedQtyChanged) {
+                            Log.d("isReceivedQtyChanged : ", "TRUE, Value has been changed.");
+                            //NOTHING TO DO HERE IF VALUE HAS BEEN CHNAGED.
+                        } else {
+                            Log.d("isReceivedQtyChanged : ", "False, Same value");
+                            // Add values to global variables
+                            totalBagWeightFromAllLRNO += uncheckedBagReceivedWeight;
+                            totalBagQtyFromAllLRNO += uncheckedBagReceivedQty;
+                            totalBoxWeightFromAllLRNO += uncheckedBoxReceivedWeight;
+                            totalBoxQtyFromAllLRNO += uncheckedBoxReceivedQty;
+
+                            // Log the updated global variables
+                            Log.d("On Unchecked", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
+                            Log.d("On Unchecked", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
+                            Log.d("On Unchecked", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
+                            Log.d("On Unchecked", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
+                        }
                     }
                 });
 
@@ -589,6 +609,7 @@ public class MainActivity7 extends AppCompatActivity {
 
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        isReceivedQtyChanged = true;
                     }
 
                     @Override
@@ -638,10 +659,7 @@ public class MainActivity7 extends AppCompatActivity {
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json; charset=utf-8"));
-        Request request = new Request.Builder()
-                .url("https://vtc3pl.com/fetch_lrno_details_prn_arrival_prn_app.php")
-                .post(body)
-                .build();
+        Request request = new Request.Builder().url("https://vtc3pl.com/fetch_lrno_details_prn_arrival_prn_app.php").post(body).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -653,7 +671,6 @@ public class MainActivity7 extends AppCompatActivity {
                         lottieAnimationView.cancelAnimation();
                     }
                 });
-
                 e.printStackTrace();
             }
 
@@ -714,11 +731,17 @@ public class MainActivity7 extends AppCompatActivity {
                 //Here we have to subtract values from variables from response values
 
                 // Subtract values from global variables
-                totalBagWeightFromAllLRNO -= bags.getInt("receivedWeight");
+                totalBagWeightFromAllLRNO -= bagsReceivedWeight;//bags.getInt("receivedWeight");
                 totalBagQtyFromAllLRNO -= bagsReceivedQty;
 
-                totalBoxWeightFromAllLRNO -= box.getInt("receivedWeight");
+                totalBoxWeightFromAllLRNO -= boxReceivedWeight;//box.getInt("receivedWeight");
                 totalBoxQtyFromAllLRNO -= boxReceivedQty;
+
+                //Storing this value if user accidentally clicks on the checkbox and if he didn't change the value
+                uncheckedBagReceivedWeight = bagsReceivedWeight;
+                uncheckedBagReceivedQty = bagsReceivedQty;
+                uncheckedBoxReceivedWeight = boxReceivedWeight;
+                uncheckedBoxReceivedQty = boxReceivedQty;
 
                 // Log the updated global variables
                 Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
@@ -813,6 +836,12 @@ public class MainActivity7 extends AppCompatActivity {
                 totalBagWeightFromAllLRNO -= bagsReceivedWeight;
                 totalBagQtyFromAllLRNO -= bagsReceivedQty;
 
+                //Storing this value if user accidentally clicks on the checkbox and if he didn't change the value
+                uncheckedBagReceivedWeight = bagsReceivedWeight;
+                uncheckedBagReceivedQty = bagsReceivedQty;
+                uncheckedBoxReceivedWeight = 0;
+                uncheckedBoxReceivedQty = 0;
+
                 // Log the updated global variables
                 Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
                 Log.d("Global Variables", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
@@ -843,6 +872,12 @@ public class MainActivity7 extends AppCompatActivity {
                 // Subtract values from global variables
                 totalBoxWeightFromAllLRNO -= boxReceivedWeight;
                 totalBoxQtyFromAllLRNO -= boxReceivedQty;
+
+                //Storing this value if user accidentally clicks on the checkbox and if he didn't change the value
+                uncheckedBagReceivedWeight = 0;
+                uncheckedBagReceivedQty = 0;
+                uncheckedBoxReceivedWeight = boxReceivedWeight;
+                uncheckedBoxReceivedQty = boxReceivedQty;
 
                 // Log the updated global variables
                 Log.d("Global Variables", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
@@ -885,10 +920,7 @@ public class MainActivity7 extends AppCompatActivity {
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json; charset=utf-8"));
-        Request request = new Request.Builder()
-                .url("https://vtc3pl.com/fetch_lrno_details_for_single_lrno_prn_arrival_prn_app.php")
-                .post(body)
-                .build();
+        Request request = new Request.Builder().url("https://vtc3pl.com/fetch_lrno_details_for_single_lrno_prn_arrival_prn_app.php").post(body).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -984,16 +1016,6 @@ public class MainActivity7 extends AppCompatActivity {
             }
         });
     }
-
-//    private int getIndexOfReceivedQty(TableRow row) {
-//        for (int i = 0; i < row.getChildCount(); i++) {
-//            View view = row.getChildAt(i);
-//            if (view instanceof EditText && ((EditText) view).getHint() != null && ((EditText) view).getHint().toString().equals("Received Qty")) {
-//                return i;
-//            }
-//        }
-//        return -1;
-//    }
 
     private TextView createHeaderTextView(String text) {
         TextView textView = new TextView(MainActivity7.this);
@@ -1237,6 +1259,10 @@ public class MainActivity7 extends AppCompatActivity {
             return;
         }
 
+        if (deductionAmount.isEmpty()) {
+            deductionAmount = "0";
+        }
+
         // Make HTTP request
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).writeTimeout(30, TimeUnit.SECONDS).build();
         FormBody.Builder formBuilder = new FormBody.Builder();
@@ -1288,13 +1314,10 @@ public class MainActivity7 extends AppCompatActivity {
                                 Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
                                 Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-                                final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity7.this)
-                                        .setTitle("Success")
-                                        .setMessage(responseBody)
-                                        .setPositiveButton("OK", (dialog, which) -> {
-                                            dialog.dismiss();
-                                            clearUIComponents();
-                                        }).setIcon(successIcon).create();
+                                final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity7.this).setTitle("Success").setMessage(responseBody).setPositiveButton("OK", (dialog, which) -> {
+                                    dialog.dismiss();
+                                    clearUIComponents();
+                                }).setIcon(successIcon).create();
                                 alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                                     @Override
                                     public void onDismiss(DialogInterface dialog) {
