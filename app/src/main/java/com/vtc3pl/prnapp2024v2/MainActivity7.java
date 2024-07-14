@@ -575,7 +575,7 @@ public class MainActivity7 extends AppCompatActivity {
                             logJson.put("LRNO", lrNoTextView.getText().toString());
                             logJson.put("Received Qty", receivedQtyEditText.getText().toString());
                             Log.d("SelectedItem", logJson.toString());
-                            sendJsonToServer(logJson, row, receivedQtyEditText); // Send JSON to server with the current row and previous EditText
+                            sendJsonToServer(logJson, row, receivedQtyEditText, differentQtyEditText); // Send JSON to server with the current row and previous EditText
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -650,7 +650,7 @@ public class MainActivity7 extends AppCompatActivity {
         }
     }
 
-    private void sendJsonToServer(JSONObject json, TableRow row, EditText previousReceivedQtyEditText) {
+    private void sendJsonToServer(JSONObject json, TableRow row, EditText previousReceivedQtyEditText, EditText differentQtyEditText) {
 
         // Show the Lottie animation
         lottieAnimationView.setVisibility(View.VISIBLE);
@@ -689,7 +689,7 @@ public class MainActivity7 extends AppCompatActivity {
                                 JSONObject responseJson = new JSONObject(responseBody);
                                 Log.d("Inside server() ", "OK");
                                 Log.d("checkAndAddEditText ", "Calling method checkAndAddEditText() ");
-                                checkAndAddEditText(responseJson, row, previousReceivedQtyEditText);
+                                checkAndAddEditText(responseJson, row, previousReceivedQtyEditText, differentQtyEditText);
                             } catch (JSONException e) {
                                 lottieAnimationView.setVisibility(View.GONE);
                                 lottieAnimationView.cancelAnimation();
@@ -711,7 +711,7 @@ public class MainActivity7 extends AppCompatActivity {
         });
     }
 
-    private void checkAndAddEditText(JSONObject responseJson, TableRow row, EditText previousReceivedQtyEditText) {
+    private void checkAndAddEditText(JSONObject responseJson, TableRow row, EditText previousReceivedQtyEditText, EditText differentQtyEditText) {
         try {
 //            Log.d("LRNO: " , "LRNO IN checkAndAddEditText : " + responseJson);
             JSONObject bags = responseJson.getJSONObject("BAGS");
@@ -749,6 +749,7 @@ public class MainActivity7 extends AppCompatActivity {
                 Log.d("Global Variables", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
                 Log.d("Global Variables", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
 
+                int previousReceivedQtyEditTextForDiff = Integer.parseInt(previousReceivedQtyEditText.getText().toString().trim());
                 // Hide the previous EditText
                 previousReceivedQtyEditText.setVisibility(View.GONE);
 
@@ -764,6 +765,7 @@ public class MainActivity7 extends AppCompatActivity {
                 bagsReceivedQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
                 bagsReceivedQtyEditText.setText(String.valueOf(bagsReceivedQty));
                 bagsReceivedQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+                bagsReceivedQtyEditText.setHint("BAGS");
 
                 TextView boxLabel = new TextView(MainActivity7.this);
                 boxLabel.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -773,6 +775,7 @@ public class MainActivity7 extends AppCompatActivity {
                 boxReceivedQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
                 boxReceivedQtyEditText.setText(String.valueOf(boxReceivedQty));
                 boxReceivedQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+                boxReceivedQtyEditText.setHint("BOX");
 
                 bagsReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
                     @Override
@@ -786,6 +789,13 @@ public class MainActivity7 extends AppCompatActivity {
                     @Override
                     public void afterTextChanged(Editable s) {
                         try {
+
+//                          int pkgsNo = previousReceivedQtyEditTextForDiff;
+                            int receivedQtyBagsForDiff = Integer.parseInt(s.toString().trim());
+                            int receivedQtyBoxForDiff = Integer.parseInt(boxReceivedQtyEditText.getText().toString().trim());
+                            int differenceQty = (previousReceivedQtyEditTextForDiff - (receivedQtyBagsForDiff + receivedQtyBoxForDiff));
+                            differentQtyEditText.setText(String.valueOf(differenceQty));
+
                             JSONObject updateJson = new JSONObject();
                             updateJson.put("LRNO", lrNo);
                             updateJson.put("BAGS", s.toString());
@@ -809,6 +819,12 @@ public class MainActivity7 extends AppCompatActivity {
                     @Override
                     public void afterTextChanged(Editable s) {
                         try {
+
+                            int receivedQtyBoxForDiff = Integer.parseInt(s.toString().trim());
+                            int receivedQtyBagsForDiff = Integer.parseInt(bagsReceivedQtyEditText.getText().toString().trim());
+                            int differenceQty = (previousReceivedQtyEditTextForDiff - (receivedQtyBagsForDiff + receivedQtyBoxForDiff));
+                            differentQtyEditText.setText(String.valueOf(differenceQty));
+
                             JSONObject updateJson = new JSONObject();
                             updateJson.put("LRNO", lrNo);
                             updateJson.put("BOX", s.toString());
@@ -1051,6 +1067,11 @@ public class MainActivity7 extends AppCompatActivity {
             String differentQty = "";
             String reason = "";
 
+            // Variables to check and store bag and box quantities
+            boolean bagsAndBoxPresent = false;
+            int bagsReceivedQtyEditTextValue = 0;
+            int boxReceivedQtyEditTextValue = 0;
+
             // Iterate through each cell in the row
             for (int j = 0; j < row.getChildCount(); j++) {
                 View view = row.getChildAt(j);
@@ -1073,7 +1094,9 @@ public class MainActivity7 extends AppCompatActivity {
                             pkgsNo = text;
                             break;
                         case 5: // receivedQtyTextView
-                            receivedQty = text;
+                            if (!bagsAndBoxPresent) {
+                                receivedQty = text;
+                            }
                             break;
                         case 6: // differentQtyTextView
                             differentQty = text;
@@ -1082,11 +1105,47 @@ public class MainActivity7 extends AppCompatActivity {
                             reason = text;
                             break;
                     }
+                } else if (view instanceof EditText) {
+                    EditText editText = (EditText) view;
+                    String text = editText.getText().toString().trim();
+                    if (editText.getHint() != null) {
+                        if (editText.getHint().toString().equalsIgnoreCase("BAGS")) {
+                            bagsReceivedQtyEditTextValue = Integer.parseInt(text.isEmpty() ? "0" : text);
+                            bagsAndBoxPresent = true;
+                        } else if (editText.getHint().toString().equalsIgnoreCase("BOX")) {
+                            boxReceivedQtyEditTextValue = Integer.parseInt(text.isEmpty() ? "0" : text);
+                            bagsAndBoxPresent = true;
+                        }
+                    }
+                } else if (view instanceof LinearLayout) {
+                    Log.d("Else IF : ", "Else If condition for LinearLayout fetching the values ");
+                    LinearLayout linearLayout = (LinearLayout) view;
+                    for (int k = 0; k < linearLayout.getChildCount(); k++) {
+                        View innerView = linearLayout.getChildAt(k);
+                        if (innerView instanceof EditText) {
+                            EditText editText = (EditText) innerView;
+                            String text = editText.getText().toString().trim();
+                            if (editText.getHint() != null) {
+                                if (editText.getHint().toString().equalsIgnoreCase("BAGS")) {
+                                    bagsReceivedQtyEditTextValue = Integer.parseInt(text.isEmpty() ? "0" : text);
+                                    bagsAndBoxPresent = true;
+                                } else if (editText.getHint().toString().equalsIgnoreCase("BOX")) {
+                                    boxReceivedQtyEditTextValue = Integer.parseInt(text.isEmpty() ? "0" : text);
+                                    bagsAndBoxPresent = true;
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
+            // If bags and box quantities are present, calculate the receivedQty
+            if (bagsAndBoxPresent) {
+                receivedQty = String.valueOf(bagsReceivedQtyEditTextValue + boxReceivedQtyEditTextValue);
+            }
+
             // Validate data before storing
-            if (!lrNo.isEmpty() && !lrDate.isEmpty() && !toPlace.isEmpty() && !pkgsNo.isEmpty() && !receivedQty.isEmpty() && !differentQty.isEmpty() && !reason.isEmpty()) {
+            if (!lrNo.isEmpty() && !lrDate.isEmpty() && !toPlace.isEmpty() && !pkgsNo.isEmpty() && !differentQty.isEmpty() && !reason.isEmpty()) {
                 // Create a JSON object to store row data
                 JSONObject rowData = new JSONObject();
                 try {
