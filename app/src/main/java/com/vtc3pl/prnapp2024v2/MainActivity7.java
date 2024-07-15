@@ -141,6 +141,7 @@ public class MainActivity7 extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedVendor = parent.getItemAtPosition(position).toString();
+                Log.i("SelectedVendor: ", "Parent Selected Vendor : " + selectedVendor);
                 if (selectedVendor.equals("No hamali Vendor")) {
                     hamaliAmountEditTextActivitySeven.setText("0.0");
                     hamaliAmountEditTextActivitySeven.setEnabled(false);
@@ -149,9 +150,10 @@ public class MainActivity7 extends AppCompatActivity {
 
                     amountPaidToHVendorEditTextActivitySeven.setText("0.0");
                     amountPaidToHVendorEditTextActivitySeven.setEnabled(false);
-                } else {
+                } else if (!selectedVendor.equals("Please Select Vendor")) {
+                    Log.i("selectedVendor : ",selectedVendor);
                     fetchWeightsFromServer();
-                    // If user select any another value then calculate,
+                    // If user selects any other value then calculate,
                     calculateHamali();
                 }
             }
@@ -928,6 +930,7 @@ public class MainActivity7 extends AppCompatActivity {
     }
 
     private void sendUpdatedValueToServer(JSONObject json) {
+        //ON SUBMIT THE THE SELECTED HAMALI VENDOR IS GETTING SUBMMITED AS "PLEASE SELECT HAMALI"
         Log.d("JSON RESPONSE : ", "sendUpdatedValueToServer JSON response after change value in BAGS OR BOX Value: " + json);
 
         lottieAnimationView.setVisibility(View.VISIBLE);
@@ -1145,7 +1148,7 @@ public class MainActivity7 extends AppCompatActivity {
             }
 
             // Validate data before storing
-            if (!lrNo.isEmpty() && !lrDate.isEmpty() && !toPlace.isEmpty() && !pkgsNo.isEmpty() && !differentQty.isEmpty() && !reason.isEmpty()) {
+            if (!lrNo.isEmpty() && !lrDate.isEmpty() && !toPlace.isEmpty() && !pkgsNo.isEmpty() && !receivedQty.isEmpty() && !differentQty.isEmpty() && !reason.isEmpty()) {
                 // Create a JSON object to store row data
                 JSONObject rowData = new JSONObject();
                 try {
@@ -1186,7 +1189,7 @@ public class MainActivity7 extends AppCompatActivity {
         Log.d("TablLayoutData : ", rowDataList.toString());
 
         Object selectedItem = hamaliVendorNameSpinnerActivitySeven.getSelectedItem();
-        if (selectedItem == null) {
+        if (selectedItem == null || selectedItem.toString().equals("Please Select Vendor")) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -1357,44 +1360,66 @@ public class MainActivity7 extends AppCompatActivity {
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+                    }
+                });
+
                 if (response.isSuccessful()) {
                     ResponseBody body = response.body();
                     if (body != null) {
                         String responseBody = body.string();
                         Log.e("Response CreatePRN:", responseBody);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
 
-                                lottieAnimationView.setVisibility(View.GONE);
-                                lottieAnimationView.cancelAnimation();
+                        try {
+                            JSONObject jsonResponse = new JSONObject(responseBody);
+                            String status = jsonResponse.getString("status");
+                            String message = jsonResponse.getString("message");
 
-                                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
-                                Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
-                                Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if ("success".equals(status)) {
+                                        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
+                                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+                                        Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-                                final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity7.this).setTitle("Success").setMessage(responseBody).setPositiveButton("OK", (dialog, which) -> {
-                                    dialog.dismiss();
-                                    clearUIComponents();
-                                }).setIcon(successIcon).create();
-                                alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                    @Override
-                                    public void onDismiss(DialogInterface dialog) {
-                                        dialog.dismiss();
-                                        clearUIComponents();
+                                        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity7.this)
+                                                .setTitle("Success")
+                                                .setMessage(message)
+                                                .setPositiveButton("OK", (dialog, which) -> {
+                                                    dialog.dismiss();
+                                                    clearUIComponents();
+                                                })
+                                                .setIcon(successIcon)
+                                                .create();
+                                        alertDialog.setOnDismissListener(dialog -> {
+                                            dialog.dismiss();
+                                            clearUIComponents();
+                                        });
+
+                                        alertDialog.show();
+                                    } else {
+                                        showAlert("Error", message);
                                     }
-                                });
-
-                                alertDialog.show();
-                            }
-                        });
+                                }
+                            });
+                        } catch (JSONException e) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showAlert("Parsing Error", "Error parsing response: " + e.getMessage());
+                                    Log.e("Response CreatePRN:", "Error parsing response", e);
+                                }
+                            });
+                        }
                     } else {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                lottieAnimationView.setVisibility(View.GONE);
-                                lottieAnimationView.cancelAnimation();
-
                                 showAlert("Empty Response Error", "Empty response received from server");
                                 Log.e("Response CreatePRN:", "Empty response body");
                             }
@@ -1404,15 +1429,13 @@ public class MainActivity7 extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            lottieAnimationView.setVisibility(View.GONE);
-                            lottieAnimationView.cancelAnimation();
-
                             showAlert("Server Error", "Server error: " + response.code());
                         }
                     });
                 }
             }
         });
+
     }
 
     private void clearUIComponents() {
