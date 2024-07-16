@@ -151,7 +151,7 @@ public class MainActivity7 extends AppCompatActivity {
                     amountPaidToHVendorEditTextActivitySeven.setText("0.0");
                     amountPaidToHVendorEditTextActivitySeven.setEnabled(false);
                 } else if (!selectedVendor.equals("Please Select Vendor")) {
-                    Log.i("selectedVendor : ",selectedVendor);
+                    Log.i("selectedVendor : ", selectedVendor);
                     fetchWeightsFromServer();
                     // If user selects any other value then calculate,
                     calculateHamali();
@@ -177,6 +177,20 @@ public class MainActivity7 extends AppCompatActivity {
         });
 
         displayDataInTable(response);
+
+        radioGroupOptions = findViewById(R.id.radioGroupOptions);
+        radioButtonWithoutUnLoading = findViewById(R.id.radioButtonWithoutUnLoading);
+        radioButtonUnLoading = findViewById(R.id.radioButtonUnLoading);
+
+        radioGroupOptions.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == radioButtonWithoutUnLoading.getId()) {
+                selectedRadioButton = "WithoutUnLoading";
+                Log.d("If RadioButton Value:", selectedRadioButton + " , checkId = " + checkedId);
+            } else if (checkedId == radioButtonUnLoading.getId()) {
+                selectedRadioButton = "UnLoading";
+                Log.d("else RadioButton Value:", selectedRadioButton + " , checkId = " + checkedId);
+            }
+        });
 
         Button submitButtonArrivalPRN = findViewById(R.id.submitButtonArrivalPRN);
         submitButtonArrivalPRN.setOnClickListener(v -> {
@@ -1216,20 +1230,6 @@ public class MainActivity7 extends AppCompatActivity {
         Log.d("freightAmount", freightAmount);
         String godownKeeperName = godownKeeperNameEditText.getText().toString().trim();
         Log.d("godownKeeperName", godownKeeperName);
-
-        radioGroupOptions = findViewById(R.id.radioGroupOptions);
-        radioButtonWithoutUnLoading = findViewById(R.id.radioButtonWithoutUnLoading);
-        radioButtonUnLoading = findViewById(R.id.radioButtonUnLoading);
-
-        radioGroupOptions.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == radioButtonWithoutUnLoading.getId()) {
-                selectedRadioButton = "WithoutUnLoading";
-                Log.d("If RadioButton Value:", selectedRadioButton + " , checkId = " + checkedId);
-            } else if (checkedId == radioButtonUnLoading.getId()) {
-                selectedRadioButton = "UnLoading";
-                Log.d("else RadioButton Value:", selectedRadioButton + " , checkId = " + checkedId);
-            }
-        });
 
         if (radioGroupOptions.getCheckedRadioButtonId() == -1) {
             runOnUiThread(new Runnable() {
