@@ -70,5 +70,7 @@
     <string name="lr_missmatch_report">LR Missmatch Report</string>
     <string name="godown_keeper_name">Godown Keeper Name:</string>
     <string name="get_data">Get Data</string>
+    <string name="cancel_prn">Cancel PRN</string>
+    <string name="edit_prn">Edit PRN</string>
 
 </resources>

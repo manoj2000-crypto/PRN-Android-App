@@ -1,5 +1,5 @@
 package com.vtc3pl.prnapp2024v2;
-// Second Page with four Buttons
+// Second Page with seven Buttons
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -37,7 +37,7 @@ public class MainActivity4 extends AppCompatActivity {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private String username = "", depo = "", year = "";
     private TextView showUserNameActivityFourTextView;
-    private Button createPrnButton, arrivalPrnButton, prnListButton, lrNoPendingForPRNButton, lrNoMissmatchReportPRNButton;
+    private Button createPrnButton, arrivalPrnButton, prnListButton, lrNoPendingForPRNButton, lrNoMissmatchReportPRNButton, cancelPrnButton, editPrnButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +51,8 @@ public class MainActivity4 extends AppCompatActivity {
         prnListButton = findViewById(R.id.prnListButton);
         lrNoPendingForPRNButton = findViewById(R.id.lrNoPendingForPRNButton);
         lrNoMissmatchReportPRNButton = findViewById(R.id.lrNoMissmatchReportPRNButton);
+        cancelPrnButton = findViewById(R.id.cancelPrnButton);
+        editPrnButton = findViewById(R.id.editPrnButton);
 
         Intent intent = getIntent();
         if (intent != null) {
@@ -131,6 +133,8 @@ public class MainActivity4 extends AppCompatActivity {
             final boolean prnListAccess = accessData.getInt("prnList") == 1;
             final boolean lrPendingForPRNAccess = accessData.getInt("lrPendingForPRN") == 1;
             final boolean lrNoMissmatchReportAccess = accessData.getInt("LrMissmatchReport") == 1;
+            final boolean cancelPrnAccess = accessData.getInt("cancelPrn") == 1;
+            final boolean editPrnAccess = accessData.getInt("editPrn") == 1;
 
             createPrnButton.setOnClickListener(v -> {
                 if (createPRNAccess) {
@@ -190,6 +194,30 @@ public class MainActivity4 extends AppCompatActivity {
             lrNoMissmatchReportPRNButton.setOnClickListener(v -> {
                 if (lrNoMissmatchReportAccess) {
                     Intent intent = new Intent(MainActivity4.this, MainActivity11.class);
+                    intent.putExtra("username", username);
+                    intent.putExtra("depo", depo);
+                    intent.putExtra("year", year);
+                    startActivity(intent);
+                } else {
+                    showAccessDeniedAlert();
+                }
+            });
+
+            cancelPrnButton.setOnClickListener(v -> {
+                if (cancelPrnAccess) {
+                    Intent intent = new Intent(MainActivity4.this, MainActivity12.class);
+                    intent.putExtra("username", username);
+                    intent.putExtra("depo", depo);
+                    intent.putExtra("year", year);
+                    startActivity(intent);
+                } else {
+                    showAccessDeniedAlert();
+                }
+            });
+
+            editPrnButton.setOnClickListener(v -> {
+                if (editPrnAccess) {
+                    Intent intent = new Intent(MainActivity4.this, MainActivity13.class);
                     intent.putExtra("username", username);
                     intent.putExtra("depo", depo);
                     intent.putExtra("year", year);

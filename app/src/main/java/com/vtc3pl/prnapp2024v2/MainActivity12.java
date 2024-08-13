@@ -1,0 +1,233 @@
+package com.vtc3pl.prnapp2024v2;
+// PRN Cancel
+
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.text.InputFilter;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+public class MainActivity12 extends AppCompatActivity {
+
+    private String username = "", depo = "", year = "";
+    private TextView showUserNameActivityTwelveTextView, prnNumberTextViewShowValue, prnDateTextViewShow, vehicleNoTextViewShow, godownTextViewShow;
+    private EditText editTextPRN, reasonEditText;
+    private Button searchPRNButton, cancelPRNButton;
+    private ConstraintLayout detailsContainer;
+    private OkHttpClient client;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_main12);
+
+        client = new OkHttpClient();
+
+        showUserNameActivityTwelveTextView = findViewById(R.id.showUserNameActivityTwelveTextView);
+        editTextPRN = findViewById(R.id.editTextPRN);
+        editTextPRN.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+
+        prnNumberTextViewShowValue = findViewById(R.id.prnNumberTextViewShowValue);
+        prnDateTextViewShow = findViewById(R.id.prnDateTextViewShow);
+        vehicleNoTextViewShow = findViewById(R.id.vehicleNoTextViewShow);
+        godownTextViewShow = findViewById(R.id.godownTextViewShow);
+        searchPRNButton = findViewById(R.id.searchPRNButton);
+        cancelPRNButton = findViewById(R.id.cancelPRNButton);
+        reasonEditText = findViewById(R.id.reasonEditText);
+        reasonEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+
+        detailsContainer = findViewById(R.id.detailsContainer);
+
+        Intent intent = getIntent();
+        if (intent != null) {
+            username = intent.getStringExtra("username");
+            depo = intent.getStringExtra("depo");
+            year = intent.getStringExtra("year");
+
+            if (username != null) {
+                String usernameText = getString(R.string.user_name_prefix, username);
+                showUserNameActivityTwelveTextView.setText(usernameText);
+            }
+        }
+
+        searchPRNButton.setOnClickListener(v -> {
+            String prnId = editTextPRN.getText().toString().trim();
+            if (!prnId.isEmpty()) {
+                fetchData(prnId);
+            } else {
+                showAlert("Empty Field", "PRN Number is empty.");
+            }
+        });
+
+        cancelPRNButton.setOnClickListener(v -> {
+            String prnId = editTextPRN.getText().toString().trim();
+            String reason = reasonEditText.getText().toString().trim();
+
+            if (!prnId.isEmpty() && !reason.isEmpty()) {
+                cancelPRN(prnId, reason);
+            } else {
+                showAlert("Empty Fields", "PRN Number or reason is empty.");
+            }
+        });
+
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+    }
+
+    private void fetchData(String prnId) {
+        String url = "https://vtc3pl.com/fetch_prn_cancel_data.php?prnId=" + prnId;
+        Request request = new Request.Builder().url(url).build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(() -> showAlert("Network Error ", "Network request failed."));
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String responseData = response.body().string();
+                    runOnUiThread(() -> {
+                        updateUI(responseData);
+                    });
+                } else {
+                    runOnUiThread(() -> showAlert("Server Error", "Server returned an error."));
+                }
+            }
+        });
+    }
+
+    private void updateUI(String jsonResponse) {
+        try {
+            // Parse the JSON array
+            JSONArray jsonArray = new JSONArray(jsonResponse);
+
+            // Check if the array is not empty
+            if (jsonArray.length() > 0) {
+                // Get the first object (assuming you get only one result)
+                JSONObject jsonObject = jsonArray.getJSONObject(0);
+
+                // Extract data from the JSON object
+                String prnNumber = jsonObject.optString("PRNId", "--");
+                String prnDate = jsonObject.optString("PRNDate", "--");
+                String vehicleNo = jsonObject.optString("VehicleNo", "--");
+                String godown = jsonObject.optString("Godown", "--");
+
+                // Update TextViews with the extracted data
+                prnNumberTextViewShowValue.setText(prnNumber);
+                prnDateTextViewShow.setText(prnDate);
+                vehicleNoTextViewShow.setText(vehicleNo);
+                godownTextViewShow.setText(godown);
+
+                // Make the details container visible
+                detailsContainer.setVisibility(View.VISIBLE);
+            } else {
+                // Handle case when no data is found
+                showAlert("Error ", "No data found.");
+                detailsContainer.setVisibility(View.GONE);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            showAlert("Error ", "Error parsing data.");
+            detailsContainer.setVisibility(View.GONE);
+        }
+    }
+
+    private void cancelPRN(String prnId, String reason) {
+        String url = "https://vtc3pl.com/prn_cancel_update_data_prn_app.php";
+        RequestBody formBody = new FormBody.Builder()
+                .add("PRNId", prnId)
+                .add("cancelreason", reason)
+                .add("loginUser", username)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .post(formBody)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(() -> showAlert("Network Error", "Network request failed."));
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    runOnUiThread(() -> {
+                        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
+                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+                        Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
+
+                        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity12.this)
+                                .setTitle("Success")
+                                .setMessage("PRN successfully canceled.")
+                                .setPositiveButton("OK", (dialog, which) -> {
+                                    dialog.dismiss();
+                                })
+                                .setIcon(successIcon)
+                                .create();
+
+                        alertDialog.setOnDismissListener(dialog -> {
+                            dialog.dismiss();
+                        });
+
+                        alertDialog.show();
+                    });
+                } else {
+                    runOnUiThread(() -> showAlert("Server Error", "Server returned an error."));
+                }
+            }
+        });
+    }
+
+
+    private void showAlert(String title, String message) {
+        // Load the original image
+        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.declined);
+
+        // Scale the image to the desired size
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+
+        // Create a Drawable from the scaled Bitmap
+        Drawable alertIcon = new BitmapDrawable(getResources(), scaledBitmap);
+
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(alertIcon).show();
+    }
+
+}

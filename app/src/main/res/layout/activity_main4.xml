@@ -21,7 +21,7 @@
         android:id="@+id/createPrnButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="160dp"
+        android:layout_marginTop="100dp"
         android:text="@string/create_prn"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -40,6 +40,28 @@
         app:layout_constraintTop_toBottomOf="@id/createPrnButton" />
 
     <Button
+        android:id="@+id/cancelPrnButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/cancel_prn"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/arrivalPrnButton" />
+
+    <Button
+        android:id="@+id/editPrnButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/edit_prn"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cancelPrnButton" />
+
+    <Button
         android:id="@+id/prnListButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -48,7 +70,7 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/arrivalPrnButton" />
+        app:layout_constraintTop_toBottomOf="@id/editPrnButton" />
 
     <Button
         android:id="@+id/lrNoPendingForPRNButton"
