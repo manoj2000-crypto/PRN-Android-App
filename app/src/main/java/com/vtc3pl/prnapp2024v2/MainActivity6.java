@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -76,6 +77,7 @@ public class MainActivity6 extends AppCompatActivity {
 
         prnNumberTextView = findViewById(R.id.prnNumberTextView);
         prnNumberEditText = findViewById(R.id.prnNumberEditText);
+        prnNumberEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
 
         searchButton = findViewById(R.id.searchButton);
 

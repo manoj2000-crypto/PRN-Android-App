@@ -76,19 +76,11 @@ public class MainActivity7 extends AppCompatActivity {
     private String selectedHamaliVendor = "", selectedHamaliType = "";
     private double amountPaidToHVendor, deductionAmount;
     private TableLayout tableLayoutActivitySeven;
+    private Button submitButtonArrivalPRN, getDataButton;
 
-    private double previousBoxReceivedWeight = 0;
-    private double previousBoxReceivedQty = 0;
-    private double previousBagReceivedWeight = 0;
-    private double previousBagReceivedQty = 0;
-
-    private int previousReceivedQty = 0;
-
-    private double uncheckedBoxReceivedWeight = 0, uncheckedBoxReceivedQty = 0, uncheckedBagReceivedWeight = 0, uncheckedBagReceivedQty = 0;
+    private TextView loadingUnloadingTextView, hamaliVendorNameTextViewActivitySeven, hamaliTypeTextViewActivitySeven, hamaliAmountTextViewActivitySeven, deductionAmountTextViewActivitySeven, amountPaidToHVendorTextViewActivitySeven, freightTextView, godownKeeperNameTextView;
 
     private LottieAnimationView lottieAnimationView;
-
-    private boolean isReceivedQtyChanged = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,6 +105,18 @@ public class MainActivity7 extends AppCompatActivity {
             lrNumbersSet.addAll(Arrays.asList(lrnoArray));
         }
 
+        loadingUnloadingTextView = findViewById(R.id.loadingUnloadingTextView);
+        hamaliVendorNameTextViewActivitySeven = findViewById(R.id.hamaliVendorNameTextViewActivitySeven);
+        hamaliTypeTextViewActivitySeven = findViewById(R.id.hamaliTypeTextViewActivitySeven);
+        hamaliAmountTextViewActivitySeven = findViewById(R.id.hamaliAmountTextViewActivitySeven);
+        deductionAmountTextViewActivitySeven = findViewById(R.id.deductionAmountTextViewActivitySeven);
+        amountPaidToHVendorTextViewActivitySeven = findViewById(R.id.amountPaidToHVendorTextViewActivitySeven);
+        freightTextView = findViewById(R.id.freightTextView);
+        godownKeeperNameTextView = findViewById(R.id.godownKeeperNameTextView);
+
+        submitButtonArrivalPRN = findViewById(R.id.submitButtonArrivalPRN);
+        submitButtonArrivalPRN.setEnabled(false);
+
         hamaliVendorNameSpinnerActivitySeven = findViewById(R.id.hamaliVendorNameSpinnerActivitySeven);
         hamaliTypeSpinnerActivitySeven = findViewById(R.id.hamaliTypeSpinnerActivitySeven);
         tableLayoutActivitySeven = findViewById(R.id.tableLayoutActivitySeven);
@@ -134,14 +138,15 @@ public class MainActivity7 extends AppCompatActivity {
         lottieAnimationView = findViewById(R.id.lottieAnimationView);
 
         fetchHvendors();
-        Log.d("onCreate fetch Weight", "fetchWeightsFromServer() called after fetchvendor");
-        fetchWeightsFromServer();
+//        Log.d("onCreate fetch Weight", "fetchWeightsFromServer() called after fetchvendor");
+//        fetchWeightsFromServer();
 
         hamaliVendorNameSpinnerActivitySeven.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedVendor = parent.getItemAtPosition(position).toString();
                 Log.i("SelectedVendor: ", "Parent Selected Vendor : " + selectedVendor);
+
                 if (selectedVendor.equals("No hamali Vendor")) {
                     hamaliAmountEditTextActivitySeven.setText("0.0");
                     hamaliAmountEditTextActivitySeven.setEnabled(false);
@@ -150,11 +155,11 @@ public class MainActivity7 extends AppCompatActivity {
 
                     amountPaidToHVendorEditTextActivitySeven.setText("0.0");
                     amountPaidToHVendorEditTextActivitySeven.setEnabled(false);
+                    submitButtonArrivalPRN.setEnabled(true);
                 } else if (!selectedVendor.equals("Please Select Vendor")) {
                     Log.i("selectedVendor : ", selectedVendor);
-                    fetchWeightsFromServer();
-                    // If user selects any other value then calculate,
                     calculateHamali();
+                    submitButtonArrivalPRN.setEnabled(true);
                 }
             }
 
@@ -175,7 +180,7 @@ public class MainActivity7 extends AppCompatActivity {
                 // Do nothing if nothing is selected
             }
         });
-
+        Log.i("response : ", response);
         displayDataInTable(response);
 
         radioGroupOptions = findViewById(R.id.radioGroupOptions);
@@ -192,13 +197,42 @@ public class MainActivity7 extends AppCompatActivity {
             }
         });
 
-        Button submitButtonArrivalPRN = findViewById(R.id.submitButtonArrivalPRN);
         submitButtonArrivalPRN.setOnClickListener(v -> {
             lottieAnimationView.setVisibility(View.VISIBLE);
             lottieAnimationView.playAnimation();
 
             submitDataToServer();
         });
+
+        getDataButton = findViewById(R.id.getDataButton);
+
+        // Direct references to views
+        getDataButton.setOnClickListener(v -> {
+            boolean allReasonsFilled = extractDataToJson();
+            if (allReasonsFilled) {
+                disableComponents();
+                loadingUnloadingTextView.setVisibility(View.VISIBLE);
+                radioGroupOptions.setVisibility(View.VISIBLE);
+                hamaliVendorNameTextViewActivitySeven.setVisibility(View.VISIBLE);
+                hamaliVendorNameSpinnerActivitySeven.setVisibility(View.VISIBLE);
+                hamaliTypeTextViewActivitySeven.setVisibility(View.VISIBLE);
+                hamaliTypeSpinnerActivitySeven.setVisibility(View.VISIBLE);
+                hamaliAmountTextViewActivitySeven.setVisibility(View.VISIBLE);
+                hamaliAmountEditTextActivitySeven.setVisibility(View.VISIBLE);
+                deductionAmountTextViewActivitySeven.setVisibility(View.VISIBLE);
+                deductionAmountEditTextActivitySeven.setVisibility(View.VISIBLE);
+                amountPaidToHVendorTextViewActivitySeven.setVisibility(View.VISIBLE);
+                amountPaidToHVendorEditTextActivitySeven.setVisibility(View.VISIBLE);
+                freightTextView.setVisibility(View.VISIBLE);
+                freightEditText.setVisibility(View.VISIBLE);
+                godownKeeperNameTextView.setVisibility(View.VISIBLE);
+                godownKeeperNameEditText.setVisibility(View.VISIBLE);
+                submitButtonArrivalPRN.setVisibility(View.VISIBLE);
+                getDataButton.setEnabled(false);
+                submitButtonArrivalPRN.setEnabled(false);
+            }
+        });
+
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -272,74 +306,74 @@ public class MainActivity7 extends AppCompatActivity {
         });
     }
 
-    private void fetchWeightsFromServer() {
-        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
-
-        // URL for fetching weights
-        String url = "https://vtc3pl.com/hamali_bag_box_weight_prn_app_arrival.php";
-
-        Request request = new Request.Builder().url(url).build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                e.printStackTrace();
-                runOnUiThread(() -> {
-                    Toast.makeText(MainActivity7.this, "Failed to fetch weights from server", Toast.LENGTH_SHORT).show();
-                });
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    ResponseBody body = response.body();
-                    if (body != null) {
-                        String responseBody = body.string();
-                        Log.e("Response : ", responseBody);
-                        // Parse the JSON response
-                        try {
-                            JSONArray jsonArray = new JSONArray(responseBody);
-                            double totalBoxWeight = 0, totalBoxQty = 0, totalBagWeight = 0, totalBagQty = 0;
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                String lrNumber = jsonObject.getString("LRNO").trim();
-                                if (lrNumbersSet.contains(lrNumber)) {
-                                    totalBoxWeight += jsonObject.getDouble("TotalWeightBox");
-                                    totalBagWeight += jsonObject.getDouble("TotalWeightBag");
-                                    totalBoxQty += jsonObject.getDouble("TotalBoxQty");
-                                    totalBagQty += jsonObject.getDouble("TotalBagQty");
-                                }
-                            }
-
-                            totalBoxWeightFromAllLRNO = totalBoxWeight;
-                            totalBagWeightFromAllLRNO = totalBagWeight;
-                            totalBoxQtyFromAllLRNO = totalBoxQty;
-                            totalBagQtyFromAllLRNO = totalBagQty;
-
-                            runOnUiThread(() -> {
-                                Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeightFromAllLRNO));
-                                Log.d("totalBagWeight : ", String.valueOf(totalBagWeightFromAllLRNO));
-                                Log.d("totalBoxQty : ", String.valueOf(totalBoxQtyFromAllLRNO));
-                                Log.d("totalBagQty : ", String.valueOf(totalBagQtyFromAllLRNO));
-                            });
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            runOnUiThread(() -> {
-                                Toast.makeText(MainActivity7.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
-                            });
-                        }
-                    } else {
-                        runOnUiThread(() -> {
-                            Toast.makeText(MainActivity7.this, "Response body is null(Box Qty and Bag Weight)", Toast.LENGTH_SHORT).show();
-                        });
-                    }
-                } else {
-                    onFailure(call, new IOException("Unexpected response code " + response));
-                }
-            }
-        });
-    }
+//    private void fetchWeightsFromServer() {
+//        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
+//
+//        // URL for fetching weights
+//        String url = "https://vtc3pl.com/hamali_bag_box_weight_prn_app_arrival.php";
+//
+//        Request request = new Request.Builder().url(url).build();
+//
+//        client.newCall(request).enqueue(new Callback() {
+//            @Override
+//            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+//                e.printStackTrace();
+//                runOnUiThread(() -> {
+//                    Toast.makeText(MainActivity7.this, "Failed to fetch weights from server", Toast.LENGTH_SHORT).show();
+//                });
+//            }
+//
+//            @Override
+//            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+//                if (response.isSuccessful()) {
+//                    ResponseBody body = response.body();
+//                    if (body != null) {
+//                        String responseBody = body.string();
+//                        Log.e("Response : ", responseBody);
+//                        // Parse the JSON response
+//                        try {
+//                            JSONArray jsonArray = new JSONArray(responseBody);
+//                            double totalBoxWeight = 0, totalBoxQty = 0, totalBagWeight = 0, totalBagQty = 0;
+//                            for (int i = 0; i < jsonArray.length(); i++) {
+//                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+//                                String lrNumber = jsonObject.getString("LRNO").trim();
+//                                if (lrNumbersSet.contains(lrNumber)) {
+//                                    totalBoxWeight += jsonObject.getDouble("TotalWeightBox");
+//                                    totalBagWeight += jsonObject.getDouble("TotalWeightBag");
+//                                    totalBoxQty += jsonObject.getDouble("TotalBoxQty");
+//                                    totalBagQty += jsonObject.getDouble("TotalBagQty");
+//                                }
+//                            }
+//
+//                            totalBoxWeightFromAllLRNO = totalBoxWeight;
+//                            totalBagWeightFromAllLRNO = totalBagWeight;
+//                            totalBoxQtyFromAllLRNO = totalBoxQty;
+//                            totalBagQtyFromAllLRNO = totalBagQty;
+//
+//                            runOnUiThread(() -> {
+//                                Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeightFromAllLRNO));
+//                                Log.d("totalBagWeight : ", String.valueOf(totalBagWeightFromAllLRNO));
+//                                Log.d("totalBoxQty : ", String.valueOf(totalBoxQtyFromAllLRNO));
+//                                Log.d("totalBagQty : ", String.valueOf(totalBagQtyFromAllLRNO));
+//                            });
+//
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                            runOnUiThread(() -> {
+//                                Toast.makeText(MainActivity7.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
+//                            });
+//                        }
+//                    } else {
+//                        runOnUiThread(() -> {
+//                            Toast.makeText(MainActivity7.this, "Response body is null(Box Qty and Bag Weight)", Toast.LENGTH_SHORT).show();
+//                        });
+//                    }
+//                } else {
+//                    onFailure(call, new IOException("Unexpected response code " + response));
+//                }
+//            }
+//        });
+//    }
 
     private void calculateHamali() {
         Log.d("calculateHamali() :", "Method is invoked");
@@ -554,13 +588,6 @@ public class MainActivity7 extends AppCompatActivity {
                 TextView toPlaceTextView = createTextView(jsonObject.getString("ToPlace"));
                 TextView pkgsNoTextView = createTextView(jsonObject.getString("PkgsNo"));
 
-                EditText receivedQtyEditText = new EditText(MainActivity7.this);
-                receivedQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-//                receivedQtyEditText.setText(jsonObject.getString("RecievedQty"));
-                receivedQtyEditText.setText(jsonObject.getString("PkgsNo"));
-                receivedQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
-                receivedQtyEditText.setEnabled(false);
-
                 EditText differentQtyEditText = new EditText(MainActivity7.this);
                 differentQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
                 differentQtyEditText.setEnabled(false);
@@ -574,481 +601,647 @@ public class MainActivity7 extends AppCompatActivity {
                 reasonEditText.setText("OK");
                 reasonEditText.setEnabled(false);
 
-                // Add a listener to the CheckBox to enable/disable EditTexts
-                rowCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                    receivedQtyEditText.setEnabled(isChecked);
-                    if (!isChecked) {
-                        reasonEditText.setText("OK");
-                    } else {
-                        reasonEditText.setText("");
-                    }
-                    reasonEditText.setEnabled(isChecked);
+                // Create new TextViews and EditTexts for TotalBagQty and TotalBoxQty
+                TextView totalBagQtyTextView = createTextView("Bag ");
+                EditText totalBagQtyEditText = new EditText(MainActivity7.this);
+                totalBagQtyEditText.setText(jsonObject.getString("TotalBagQty"));
+                totalBagQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+                totalBagQtyEditText.setEnabled(false);
 
-                    // Log message when checkbox is selected
-                    if (isChecked) {
-                        try {
-                            JSONObject logJson = new JSONObject();
-                            logJson.put("LRNO", lrNoTextView.getText().toString());
-                            logJson.put("Received Qty", receivedQtyEditText.getText().toString());
-                            Log.d("SelectedItem", logJson.toString());
-                            sendJsonToServer(logJson, row, receivedQtyEditText, differentQtyEditText); // Send JSON to server with the current row and previous EditText
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        //If check box is uncheck and if the recevied value is unchanged then we have to add those values again that we subtract.
-                        if (isReceivedQtyChanged) {
-                            Log.d("isReceivedQtyChanged : ", "TRUE, Value has been changed.");
-                            //NOTHING TO DO HERE IF VALUE HAS BEEN CHNAGED.
-                        } else {
-                            Log.d("isReceivedQtyChanged : ", "False, Same value");
-                            // Add values to global variables
-                            totalBagWeightFromAllLRNO += uncheckedBagReceivedWeight;
-                            totalBagQtyFromAllLRNO += uncheckedBagReceivedQty;
-                            totalBoxWeightFromAllLRNO += uncheckedBoxReceivedWeight;
-                            totalBoxQtyFromAllLRNO += uncheckedBoxReceivedQty;
+                TextView totalBoxQtyTextView = createTextView("Box ");
+                EditText totalBoxQtyEditText = new EditText(MainActivity7.this);
+                totalBoxQtyEditText.setText(jsonObject.getString("TotalBoxQty"));
+                totalBoxQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+                totalBoxQtyEditText.setEnabled(false);
 
-                            // Log the updated global variables
-                            Log.d("On Unchecked", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
-                            Log.d("On Unchecked", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
-                            Log.d("On Unchecked", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
-                            Log.d("On Unchecked", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
-                        }
-                    }
-                });
-
-                // Add a TextWatcher to receivedQtyEditText to update differentQtyEditText
-                receivedQtyEditText.addTextChangedListener(new TextWatcher() {
+                totalBagQtyEditText.addTextChangedListener(new TextWatcher() {
                     @Override
                     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                     }
 
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
-                        isReceivedQtyChanged = true;
+                        calculateDifferentQty(pkgsNoTextView, totalBagQtyEditText, totalBoxQtyEditText, differentQtyEditText, reasonEditText);
                     }
 
                     @Override
                     public void afterTextChanged(Editable s) {
-                        try {
-                            int pkgsNo = Integer.parseInt(pkgsNoTextView.getText().toString());
-                            int receivedQty = Integer.parseInt(s.toString());
-                            int differenceQty = (pkgsNo - receivedQty);
-                            differentQtyEditText.setText(String.valueOf(differenceQty));
-
-                            JSONObject updateJson = new JSONObject();
-                            updateJson.put("LRNO", lrNoTextView.getText().toString());
-                            updateJson.put("ReceivedQty", s.toString());
-                            sendUpdatedValueToServer(updateJson);
-                        } catch (NumberFormatException e) {
-                            differentQtyEditText.setText("0");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
                     }
                 });
 
-                // Add the CheckBox and TextViews to the row
+                totalBoxQtyEditText.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        calculateDifferentQty(pkgsNoTextView, totalBagQtyEditText, totalBoxQtyEditText, differentQtyEditText, reasonEditText);
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                    }
+                });
+
+                // Create a LinearLayout to hold TotalBagQty and TotalBoxQty views
+                LinearLayout extraInfoLayout = new LinearLayout(MainActivity7.this);
+                extraInfoLayout.setOrientation(LinearLayout.HORIZONTAL);
+                extraInfoLayout.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+                extraInfoLayout.addView(totalBagQtyTextView);
+                extraInfoLayout.addView(totalBagQtyEditText);
+                extraInfoLayout.addView(totalBoxQtyTextView);
+                extraInfoLayout.addView(totalBoxQtyEditText);
+
                 row.addView(rowCheckBox);
-                // Add TextViews to the row
                 row.addView(lrNoTextView);
                 row.addView(lrDateTextView);
                 row.addView(toPlaceTextView);
                 row.addView(pkgsNoTextView);
-                row.addView(receivedQtyEditText);
+                row.addView(extraInfoLayout);
                 row.addView(differentQtyEditText);
                 row.addView(reasonEditText);
-
                 tableLayoutActivitySeven.addView(row);
+
+                // Set the OnClickListener for the CheckBox
+                rowCheckBox.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        boolean isChecked = ((CheckBox) v).isChecked();
+                        totalBagQtyEditText.setEnabled(isChecked);
+                        totalBoxQtyEditText.setEnabled(isChecked);
+                        reasonEditText.setEnabled(isChecked);
+                    }
+                });
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    private void sendJsonToServer(JSONObject json, TableRow row, EditText previousReceivedQtyEditText, EditText differentQtyEditText) {
-
-        // Show the Lottie animation
-        lottieAnimationView.setVisibility(View.VISIBLE);
-        lottieAnimationView.playAnimation();
-
-        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
-
-        RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json; charset=utf-8"));
-        Request request = new Request.Builder().url("https://vtc3pl.com/fetch_lrno_details_prn_arrival_prn_app.php").post(body).build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        lottieAnimationView.setVisibility(View.GONE);
-                        lottieAnimationView.cancelAnimation();
-                    }
-                });
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-                    Log.d("ServerResponse", responseBody);
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            lottieAnimationView.setVisibility(View.GONE);
-                            lottieAnimationView.cancelAnimation();
-                            try {
-                                JSONObject responseJson = new JSONObject(responseBody);
-                                Log.d("Inside server() ", "OK");
-                                Log.d("checkAndAddEditText ", "Calling method checkAndAddEditText() ");
-                                checkAndAddEditText(responseJson, row, previousReceivedQtyEditText, differentQtyEditText);
-                            } catch (JSONException e) {
-                                lottieAnimationView.setVisibility(View.GONE);
-                                lottieAnimationView.cancelAnimation();
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-                } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            lottieAnimationView.setVisibility(View.GONE);
-                            lottieAnimationView.cancelAnimation();
-                            Log.e("ServerResponse", "Request failed: " + response.code());
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-    private void checkAndAddEditText(JSONObject responseJson, TableRow row, EditText previousReceivedQtyEditText, EditText differentQtyEditText) {
+    private void calculateDifferentQty(TextView pkgsNoTextView, EditText totalBagQtyEditText, EditText totalBoxQtyEditText, EditText differentQtyEditText, EditText reasonEditText) {
         try {
-//            Log.d("LRNO: " , "LRNO IN checkAndAddEditText : " + responseJson);
-            JSONObject bags = responseJson.getJSONObject("BAGS");
-            JSONObject box = responseJson.getJSONObject("BOX");
+            int pkgsNo = Integer.parseInt(pkgsNoTextView.getText().toString());
+            int bagQty = Integer.parseInt(totalBagQtyEditText.getText().toString().isEmpty() ? "0" : totalBagQtyEditText.getText().toString());
+            int boxQty = Integer.parseInt(totalBoxQtyEditText.getText().toString().isEmpty() ? "0" : totalBoxQtyEditText.getText().toString());
 
-            int bagsReceivedQty = bags.getInt("receivedQty");
-            int boxReceivedQty = box.getInt("receivedQty");
-            int bagsReceivedWeight = bags.getInt("receivedWeight");
-            int boxReceivedWeight = box.getInt("receivedWeight");
+            int totalQty = (bagQty + boxQty);
+            int differentQty = (pkgsNo - totalQty);
 
-            // Get LRNO from responseJson
-            String lrNo = responseJson.getString("LRNO");
+            differentQtyEditText.setText(String.valueOf(differentQty));
 
-            if (bagsReceivedQty > 0 && boxReceivedQty > 0) {
+            // Set reason based on differentQty
+            String reason = (differentQty == 0) ? "OK" : "MISSMATCH";
+            reasonEditText.setText(reason);
 
-                //responseJson = {"LRNO":"PNA0000925705","BAGS":{"receivedWeight":74,"receivedQty":17},"BOX":{"receivedWeight":225,"receivedQty":25}}
-                //Here we have to subtract values from variables from response values
-
-                // Subtract values from global variables
-                totalBagWeightFromAllLRNO -= bagsReceivedWeight;//bags.getInt("receivedWeight");
-                totalBagQtyFromAllLRNO -= bagsReceivedQty;
-
-                totalBoxWeightFromAllLRNO -= boxReceivedWeight;//box.getInt("receivedWeight");
-                totalBoxQtyFromAllLRNO -= boxReceivedQty;
-
-                //Storing this value if user accidentally clicks on the checkbox and if he didn't change the value
-                uncheckedBagReceivedWeight = bagsReceivedWeight;
-                uncheckedBagReceivedQty = bagsReceivedQty;
-                uncheckedBoxReceivedWeight = boxReceivedWeight;
-                uncheckedBoxReceivedQty = boxReceivedQty;
-
-                // Log the updated global variables
-                Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
-                Log.d("Global Variables", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
-                Log.d("Global Variables", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
-                Log.d("Global Variables", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
-
-                int previousReceivedQtyEditTextForDiff = Integer.parseInt(previousReceivedQtyEditText.getText().toString().trim());
-                // Hide the previous EditText
-                previousReceivedQtyEditText.setVisibility(View.GONE);
-
-                LinearLayout receivedQtyLayout = new LinearLayout(MainActivity7.this);
-                receivedQtyLayout.setOrientation(LinearLayout.HORIZONTAL);
-                receivedQtyLayout.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-
-                TextView bagsLabel = new TextView(MainActivity7.this);
-                bagsLabel.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                bagsLabel.setText("BAGS:");
-
-                EditText bagsReceivedQtyEditText = new EditText(MainActivity7.this);
-                bagsReceivedQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-                bagsReceivedQtyEditText.setText(String.valueOf(bagsReceivedQty));
-                bagsReceivedQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
-                bagsReceivedQtyEditText.setHint("BAGS");
-
-                TextView boxLabel = new TextView(MainActivity7.this);
-                boxLabel.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                boxLabel.setText("BOX:");
-
-                EditText boxReceivedQtyEditText = new EditText(MainActivity7.this);
-                boxReceivedQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-                boxReceivedQtyEditText.setText(String.valueOf(boxReceivedQty));
-                boxReceivedQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
-                boxReceivedQtyEditText.setHint("BOX");
-
-                bagsReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    }
-
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {
-                        try {
-
-//                          int pkgsNo = previousReceivedQtyEditTextForDiff;
-                            int receivedQtyBagsForDiff = Integer.parseInt(s.toString().trim());
-                            int receivedQtyBoxForDiff = Integer.parseInt(boxReceivedQtyEditText.getText().toString().trim());
-                            int differenceQty = (previousReceivedQtyEditTextForDiff - (receivedQtyBagsForDiff + receivedQtyBoxForDiff));
-                            differentQtyEditText.setText(String.valueOf(differenceQty));
-
-                            JSONObject updateJson = new JSONObject();
-                            updateJson.put("LRNO", lrNo);
-                            updateJson.put("BAGS", s.toString());
-                            updateJson.put("BOX", boxReceivedQtyEditText.getText().toString());
-                            sendUpdatedValueToServer(updateJson);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-
-                boxReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    }
-
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {
-                        try {
-
-                            int receivedQtyBoxForDiff = Integer.parseInt(s.toString().trim());
-                            int receivedQtyBagsForDiff = Integer.parseInt(bagsReceivedQtyEditText.getText().toString().trim());
-                            int differenceQty = (previousReceivedQtyEditTextForDiff - (receivedQtyBagsForDiff + receivedQtyBoxForDiff));
-                            differentQtyEditText.setText(String.valueOf(differenceQty));
-
-                            JSONObject updateJson = new JSONObject();
-                            updateJson.put("LRNO", lrNo);
-                            updateJson.put("BOX", s.toString());
-                            updateJson.put("BAGS", bagsReceivedQtyEditText.getText().toString());
-                            sendUpdatedValueToServer(updateJson);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-
-                receivedQtyLayout.addView(bagsLabel);
-                receivedQtyLayout.addView(bagsReceivedQtyEditText);
-                receivedQtyLayout.addView(boxLabel);
-                receivedQtyLayout.addView(boxReceivedQtyEditText);
-
-                // Add new EditTexts in place of the previous one
-                int receivedQtyIndex = row.indexOfChild(previousReceivedQtyEditText);
-                if (receivedQtyIndex != -1) {
-                    row.removeViewAt(receivedQtyIndex);
-                    row.addView(receivedQtyLayout, receivedQtyIndex);
-                }
-            } else if (bagsReceivedQty > 0 && boxReceivedQty == 0) {
-                // Subtract values from global variables
-                totalBagWeightFromAllLRNO -= bagsReceivedWeight;
-                totalBagQtyFromAllLRNO -= bagsReceivedQty;
-
-                //Storing this value if user accidentally clicks on the checkbox and if he didn't change the value
-                uncheckedBagReceivedWeight = bagsReceivedWeight;
-                uncheckedBagReceivedQty = bagsReceivedQty;
-                uncheckedBoxReceivedWeight = 0;
-                uncheckedBoxReceivedQty = 0;
-
-                // Log the updated global variables
-                Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
-                Log.d("Global Variables", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
-
-                // Add TextWatcher to the existing previousReceivedQtyEditText
-                previousReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    }
-
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {
-                        try {
-                            JSONObject updateJson = new JSONObject();
-                            updateJson.put("LRNO", lrNo);
-                            updateJson.put("BAGS", s.toString());
-                            sendUpdatedValueToServer(updateJson);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-            } else if (bagsReceivedQty == 0 && boxReceivedQty > 0) {
-                // Subtract values from global variables
-                totalBoxWeightFromAllLRNO -= boxReceivedWeight;
-                totalBoxQtyFromAllLRNO -= boxReceivedQty;
-
-                //Storing this value if user accidentally clicks on the checkbox and if he didn't change the value
-                uncheckedBagReceivedWeight = 0;
-                uncheckedBagReceivedQty = 0;
-                uncheckedBoxReceivedWeight = boxReceivedWeight;
-                uncheckedBoxReceivedQty = boxReceivedQty;
-
-                // Log the updated global variables
-                Log.d("Global Variables", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
-                Log.d("Global Variables", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
-
-                // Add TextWatcher to the existing previousReceivedQtyEditText
-                previousReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    }
-
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {
-                        try {
-                            JSONObject updateJson = new JSONObject();
-                            updateJson.put("LRNO", lrNo);
-                            updateJson.put("BOX", s.toString());
-                            sendUpdatedValueToServer(updateJson);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-            }
-        } catch (JSONException e) {
+        } catch (NumberFormatException e) {
             e.printStackTrace();
+            differentQtyEditText.setText("0");
+            reasonEditText.setText("");
         }
     }
 
-    private void sendUpdatedValueToServer(JSONObject json) {
-        //ON SUBMIT THE THE SELECTED HAMALI VENDOR IS GETTING SUBMMITED AS "PLEASE SELECT HAMALI"
-        Log.d("JSON RESPONSE : ", "sendUpdatedValueToServer JSON response after change value in BAGS OR BOX Value: " + json);
+    private boolean extractDataToJson() {
+        JSONArray jsonArray = new JSONArray();
+        int rowCount = tableLayoutActivitySeven.getChildCount();
+        boolean hasEmptyReason = false;
 
-        lottieAnimationView.setVisibility(View.VISIBLE);
-        lottieAnimationView.playAnimation();
+        for (int i = 1; i < rowCount; i++) { // Start from 1 to skip header row
+            TableRow row = (TableRow) tableLayoutActivitySeven.getChildAt(i);
+
+            // Extract data from views in the row
+            TextView lrNoTextView = (TextView) row.getChildAt(1);
+            TextView lrDateTextView = (TextView) row.getChildAt(2);
+            TextView toPlaceTextView = (TextView) row.getChildAt(3);
+            TextView pkgsNoTextView = (TextView) row.getChildAt(4);
+            LinearLayout extraInfoLayout = (LinearLayout) row.getChildAt(5);
+
+            EditText totalBagQtyEditText = (EditText) extraInfoLayout.getChildAt(1);
+            EditText totalBoxQtyEditText = (EditText) extraInfoLayout.getChildAt(3);
+
+            EditText differentQtyEditText = (EditText) row.getChildAt(6);
+            EditText reasonEditText = (EditText) row.getChildAt(7);
+
+            // Check if reasonEditText is empty
+            if (reasonEditText.getText().toString().trim().isEmpty()) {
+                hasEmptyReason = true;
+
+                runOnUiThread(() -> {
+                    reasonEditText.requestFocus();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(reasonEditText, InputMethodManager.SHOW_IMPLICIT);
+                });
+                break;
+            }
+
+            try {
+                // Create a new JSON object for the row
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("LRNO", lrNoTextView.getText().toString());
+                jsonObject.put("LRDate", lrDateTextView.getText().toString());
+                jsonObject.put("ToPlace", toPlaceTextView.getText().toString());
+                jsonObject.put("PkgsNo", pkgsNoTextView.getText().toString());
+                jsonObject.put("DifferentQty", differentQtyEditText.getText().toString());
+                jsonObject.put("Reason", reasonEditText.getText().toString());
+                jsonObject.put("TotalBagQty", totalBagQtyEditText.getText().toString());
+                jsonObject.put("TotalBoxQty", totalBoxQtyEditText.getText().toString());
+
+                jsonArray.put(jsonObject);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (hasEmptyReason) {
+            showWarning("Empty Field Warning", "Please fill the reason.");
+            return false;
+        } else {
+            Log.d("JSON Data", jsonArray.toString());
+            sendJsonToServer(jsonArray);
+            return true;
+        }
+    }
+
+    private void sendJsonToServer(JSONArray jsonArray) {
+        runOnUiThread(() -> {
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+        });
 
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
-        RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json; charset=utf-8"));
-        Request request = new Request.Builder().url("https://vtc3pl.com/fetch_lrno_details_for_single_lrno_prn_arrival_prn_app.php").post(body).build();
+        RequestBody body = RequestBody.create(jsonArray.toString(), MediaType.parse("application/json; charset=utf-8"));
+
+        Request request = new Request.Builder().url("https://vtc3pl.com/fetch_bag_box_weight_only_for_single_lrno.php").post(body).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        lottieAnimationView.setVisibility(View.GONE);
-                        lottieAnimationView.cancelAnimation();
-                    }
-                });
+            public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                    Toast.makeText(MainActivity7.this, "Request failed", Toast.LENGTH_SHORT).show();
+                });
             }
 
             @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+            public void onResponse(Call call, Response response) throws IOException {
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
+
                 if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-                    Log.d("ServerResponse", responseBody);
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        String responseBody = body.string();
+                        Log.e("Response : ", responseBody);
+                        try {
+                            JSONObject jsonObject = new JSONObject(responseBody);
 
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            lottieAnimationView.setVisibility(View.GONE);
-                            lottieAnimationView.cancelAnimation();
+                            double totalBoxWeight = jsonObject.getDouble("TotalBoxWeight");
+                            double totalBoxQty = jsonObject.getDouble("TotalBoxQty");
+                            double totalBagWeight = jsonObject.getDouble("TotalBagWeight");
+                            double totalBagQty = jsonObject.getDouble("TotalBagQty");
 
+                            totalBoxWeightFromAllLRNO = totalBoxWeight;
+                            totalBagWeightFromAllLRNO = totalBagWeight;
+                            totalBoxQtyFromAllLRNO = totalBoxQty;
+                            totalBagQtyFromAllLRNO = totalBagQty;
 
-                            try {
-                                JSONObject responseJson = new JSONObject(responseBody);
+                            runOnUiThread(() -> {
+                                Log.i("New", "This data is coming from New Logic");
+                                Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeightFromAllLRNO));
+                                Log.d("totalBagWeight : ", String.valueOf(totalBagWeightFromAllLRNO));
+                                Log.d("totalBoxQty : ", String.valueOf(totalBoxQtyFromAllLRNO));
+                                Log.d("totalBagQty : ", String.valueOf(totalBagQtyFromAllLRNO));
+                            });
 
-                                // Extract BAGS and BOX data
-                                JSONObject bags = responseJson.getJSONObject("BAGS");
-                                JSONObject box = responseJson.getJSONObject("BOX");
-
-                                int bagsReceivedWeight = bags.getInt("receivedWeight");
-                                int bagsReceivedQty = bags.getInt("receivedQty");
-
-                                int boxReceivedWeight = box.getInt("receivedWeight");
-                                int boxReceivedQty = box.getInt("receivedQty");
-
-                                int receivedQty = responseJson.optInt("ReceivedQty", 0);
-
-                                // Subtract the previous values
-                                totalBagWeightFromAllLRNO -= previousBagReceivedWeight;
-                                totalBagQtyFromAllLRNO -= previousBagReceivedQty;
-
-                                totalBoxWeightFromAllLRNO -= previousBoxReceivedWeight;
-                                totalBoxQtyFromAllLRNO -= previousBoxReceivedQty;
-
-                                totalBoxQtyFromAllLRNO -= previousReceivedQty;
-
-                                // Add the new values
-                                totalBagWeightFromAllLRNO += bagsReceivedWeight;
-                                totalBagQtyFromAllLRNO += bagsReceivedQty;
-
-                                totalBoxWeightFromAllLRNO += boxReceivedWeight;
-                                totalBoxQtyFromAllLRNO += boxReceivedQty;
-
-                                totalBoxQtyFromAllLRNO += receivedQty;
-
-                                // Update the previous values
-                                previousBagReceivedWeight = bagsReceivedWeight;
-                                previousBagReceivedQty = bagsReceivedQty;
-                                previousBoxReceivedWeight = boxReceivedWeight;
-                                previousBoxReceivedQty = boxReceivedQty;
-                                previousReceivedQty = receivedQty;
-
-                                // Log the updated global variables
-                                Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
-                                Log.d("Global Variables", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
-                                Log.d("Global Variables", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
-                                Log.d("Global Variables", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
-
-                            } catch (JSONException e) {
-                                lottieAnimationView.setVisibility(View.GONE);
-                                lottieAnimationView.cancelAnimation();
-                                e.printStackTrace();
-                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            runOnUiThread(() -> {
+                                Toast.makeText(MainActivity7.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
+                            });
                         }
-                    });
+                    }
                 } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            lottieAnimationView.setVisibility(View.GONE);
-                            lottieAnimationView.cancelAnimation();
-
-                            Log.e("ServerResponse", "Request failed: " + response.code());
-                        }
-                    });
-
+                    // Handle the failure response
+                    runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Server error", Toast.LENGTH_SHORT).show());
                 }
             }
         });
     }
+
+    private void disableComponents() {
+        int rowCount = tableLayoutActivitySeven.getChildCount();
+
+        for (int i = 1; i < rowCount; i++) { // Start from 1 to skip header row
+            TableRow row = (TableRow) tableLayoutActivitySeven.getChildAt(i);
+
+            // Disable CheckBox
+            CheckBox rowCheckBox = (CheckBox) row.getChildAt(0);
+            rowCheckBox.setEnabled(false);
+
+            // Disable EditTexts
+            LinearLayout extraInfoLayout = (LinearLayout) row.getChildAt(5);
+
+            EditText totalBagQtyEditText = (EditText) extraInfoLayout.getChildAt(1);
+            EditText totalBoxQtyEditText = (EditText) extraInfoLayout.getChildAt(3);
+
+            EditText differentQtyEditText = (EditText) row.getChildAt(6);
+            EditText reasonEditText = (EditText) row.getChildAt(7);
+
+            totalBagQtyEditText.setEnabled(false);
+            totalBoxQtyEditText.setEnabled(false);
+            differentQtyEditText.setEnabled(false);
+            reasonEditText.setEnabled(false);
+        }
+    }
+
+//    private void sendJsonToServer(JSONObject json, TableRow row, EditText previousReceivedQtyEditText, EditText differentQtyEditText) {
+//
+//        // Show the Lottie animation
+//        lottieAnimationView.setVisibility(View.VISIBLE);
+//        lottieAnimationView.playAnimation();
+//
+//        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
+//
+//        RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json; charset=utf-8"));
+//        Request request = new Request.Builder().url("https://vtc3pl.com/fetch_lrno_details_prn_arrival_prn_app.php").post(body).build();
+//
+//        client.newCall(request).enqueue(new Callback() {
+//            @Override
+//            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        lottieAnimationView.setVisibility(View.GONE);
+//                        lottieAnimationView.cancelAnimation();
+//                    }
+//                });
+//                e.printStackTrace();
+//            }
+//
+//            @Override
+//            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+//                if (response.isSuccessful()) {
+//                    String responseBody = response.body().string();
+//                    Log.d("ServerResponse", responseBody);
+//
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            lottieAnimationView.setVisibility(View.GONE);
+//                            lottieAnimationView.cancelAnimation();
+//                            try {
+//                                JSONObject responseJson = new JSONObject(responseBody);
+//                                Log.d("Inside server() ", "OK");
+//                                Log.d("checkAndAddEditText ", "Calling method checkAndAddEditText() ");
+//                                checkAndAddEditText(responseJson, row, previousReceivedQtyEditText, differentQtyEditText);
+//                            } catch (JSONException e) {
+//                                lottieAnimationView.setVisibility(View.GONE);
+//                                lottieAnimationView.cancelAnimation();
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    });
+//                } else {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            lottieAnimationView.setVisibility(View.GONE);
+//                            lottieAnimationView.cancelAnimation();
+//                            Log.e("ServerResponse", "Request failed: " + response.code());
+//                        }
+//                    });
+//                }
+//            }
+//        });
+//    }
+
+//    private void checkAndAddEditText(JSONObject responseJson, TableRow row, EditText previousReceivedQtyEditText, EditText differentQtyEditText) {
+//        try {
+////            Log.d("LRNO: " , "LRNO IN checkAndAddEditText : " + responseJson);
+//            JSONObject bags = responseJson.getJSONObject("BAGS");
+//            JSONObject box = responseJson.getJSONObject("BOX");
+//
+//            int bagsReceivedQty = bags.getInt("receivedQty");
+//            int boxReceivedQty = box.getInt("receivedQty");
+//            int bagsReceivedWeight = bags.getInt("receivedWeight");
+//            int boxReceivedWeight = box.getInt("receivedWeight");
+//
+//            // Get LRNO from responseJson
+//            String lrNo = responseJson.getString("LRNO");
+//
+//            if (bagsReceivedQty > 0 && boxReceivedQty > 0) {
+//
+//                //responseJson = {"LRNO":"PNA0000925705","BAGS":{"receivedWeight":74,"receivedQty":17},"BOX":{"receivedWeight":225,"receivedQty":25}}
+//                //Here we have to subtract values from variables from response values
+//
+//                // Subtract values from global variables
+//                totalBagWeightFromAllLRNO -= bagsReceivedWeight;//bags.getInt("receivedWeight");
+//                totalBagQtyFromAllLRNO -= bagsReceivedQty;
+//
+//                totalBoxWeightFromAllLRNO -= boxReceivedWeight;//box.getInt("receivedWeight");
+//                totalBoxQtyFromAllLRNO -= boxReceivedQty;
+//
+//                //Storing this value if user accidentally clicks on the checkbox and if he didn't change the value
+//                uncheckedBagReceivedWeight = bagsReceivedWeight;
+//                uncheckedBagReceivedQty = bagsReceivedQty;
+//                uncheckedBoxReceivedWeight = boxReceivedWeight;
+//                uncheckedBoxReceivedQty = boxReceivedQty;
+//
+//                // Log the updated global variables
+//                Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
+//                Log.d("Global Variables", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
+//                Log.d("Global Variables", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
+//                Log.d("Global Variables", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
+//
+//                int previousReceivedQtyEditTextForDiff = Integer.parseInt(previousReceivedQtyEditText.getText().toString().trim());
+//                // Hide the previous EditText
+//                previousReceivedQtyEditText.setVisibility(View.GONE);
+//
+//                LinearLayout receivedQtyLayout = new LinearLayout(MainActivity7.this);
+//                receivedQtyLayout.setOrientation(LinearLayout.HORIZONTAL);
+//                receivedQtyLayout.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+//
+//                TextView bagsLabel = new TextView(MainActivity7.this);
+//                bagsLabel.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+//                bagsLabel.setText("BAGS:");
+//
+//                EditText bagsReceivedQtyEditText = new EditText(MainActivity7.this);
+//                bagsReceivedQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+//                bagsReceivedQtyEditText.setText(String.valueOf(bagsReceivedQty));
+//                bagsReceivedQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+//                bagsReceivedQtyEditText.setHint("BAGS");
+//
+//                TextView boxLabel = new TextView(MainActivity7.this);
+//                boxLabel.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+//                boxLabel.setText("BOX:");
+//
+//                EditText boxReceivedQtyEditText = new EditText(MainActivity7.this);
+//                boxReceivedQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+//                boxReceivedQtyEditText.setText(String.valueOf(boxReceivedQty));
+//                boxReceivedQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+//                boxReceivedQtyEditText.setHint("BOX");
+//
+//                bagsReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
+//                    @Override
+//                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//                    }
+//
+//                    @Override
+//                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+//                    }
+//
+//                    @Override
+//                    public void afterTextChanged(Editable s) {
+//                        try {
+//
+////                          int pkgsNo = previousReceivedQtyEditTextForDiff;
+//                            int receivedQtyBagsForDiff = Integer.parseInt(s.toString().trim());
+//                            int receivedQtyBoxForDiff = Integer.parseInt(boxReceivedQtyEditText.getText().toString().trim());
+//                            int differenceQty = (previousReceivedQtyEditTextForDiff - (receivedQtyBagsForDiff + receivedQtyBoxForDiff));
+//                            differentQtyEditText.setText(String.valueOf(differenceQty));
+//
+//                            JSONObject updateJson = new JSONObject();
+//                            updateJson.put("LRNO", lrNo);
+//                            updateJson.put("BAGS", s.toString());
+//                            updateJson.put("BOX", boxReceivedQtyEditText.getText().toString());
+//                            sendUpdatedValueToServer(updateJson);
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                });
+//
+//                boxReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
+//                    @Override
+//                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//                    }
+//
+//                    @Override
+//                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+//                    }
+//
+//                    @Override
+//                    public void afterTextChanged(Editable s) {
+//                        try {
+//
+//                            int receivedQtyBoxForDiff = Integer.parseInt(s.toString().trim());
+//                            int receivedQtyBagsForDiff = Integer.parseInt(bagsReceivedQtyEditText.getText().toString().trim());
+//                            int differenceQty = (previousReceivedQtyEditTextForDiff - (receivedQtyBagsForDiff + receivedQtyBoxForDiff));
+//                            differentQtyEditText.setText(String.valueOf(differenceQty));
+//
+//                            JSONObject updateJson = new JSONObject();
+//                            updateJson.put("LRNO", lrNo);
+//                            updateJson.put("BOX", s.toString());
+//                            updateJson.put("BAGS", bagsReceivedQtyEditText.getText().toString());
+//                            sendUpdatedValueToServer(updateJson);
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                });
+//
+//                receivedQtyLayout.addView(bagsLabel);
+//                receivedQtyLayout.addView(bagsReceivedQtyEditText);
+//                receivedQtyLayout.addView(boxLabel);
+//                receivedQtyLayout.addView(boxReceivedQtyEditText);
+//
+//                // Add new EditTexts in place of the previous one
+//                int receivedQtyIndex = row.indexOfChild(previousReceivedQtyEditText);
+//                if (receivedQtyIndex != -1) {
+//                    row.removeViewAt(receivedQtyIndex);
+//                    row.addView(receivedQtyLayout, receivedQtyIndex);
+//                }
+//            } else if (bagsReceivedQty > 0 && boxReceivedQty == 0) {
+//                // Subtract values from global variables
+//                totalBagWeightFromAllLRNO -= bagsReceivedWeight;
+//                totalBagQtyFromAllLRNO -= bagsReceivedQty;
+//
+//                //Storing this value if user accidentally clicks on the checkbox and if he didn't change the value
+//                uncheckedBagReceivedWeight = bagsReceivedWeight;
+//                uncheckedBagReceivedQty = bagsReceivedQty;
+//                uncheckedBoxReceivedWeight = 0;
+//                uncheckedBoxReceivedQty = 0;
+//
+//                // Log the updated global variables
+//                Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
+//                Log.d("Global Variables", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
+//
+//                // Add TextWatcher to the existing previousReceivedQtyEditText
+//                previousReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
+//                    @Override
+//                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//                    }
+//
+//                    @Override
+//                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+//                    }
+//
+//                    @Override
+//                    public void afterTextChanged(Editable s) {
+//                        try {
+//                            JSONObject updateJson = new JSONObject();
+//                            updateJson.put("LRNO", lrNo);
+//                            updateJson.put("BAGS", s.toString());
+//                            sendUpdatedValueToServer(updateJson);
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                });
+//            } else if (bagsReceivedQty == 0 && boxReceivedQty > 0) {
+//                // Subtract values from global variables
+//                totalBoxWeightFromAllLRNO -= boxReceivedWeight;
+//                totalBoxQtyFromAllLRNO -= boxReceivedQty;
+//
+//                //Storing this value if user accidentally clicks on the checkbox and if he didn't change the value
+//                uncheckedBagReceivedWeight = 0;
+//                uncheckedBagReceivedQty = 0;
+//                uncheckedBoxReceivedWeight = boxReceivedWeight;
+//                uncheckedBoxReceivedQty = boxReceivedQty;
+//
+//                // Log the updated global variables
+//                Log.d("Global Variables", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
+//                Log.d("Global Variables", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
+//
+//                // Add TextWatcher to the existing previousReceivedQtyEditText
+//                previousReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
+//                    @Override
+//                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//                    }
+//
+//                    @Override
+//                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+//                    }
+//
+//                    @Override
+//                    public void afterTextChanged(Editable s) {
+//                        try {
+//                            JSONObject updateJson = new JSONObject();
+//                            updateJson.put("LRNO", lrNo);
+//                            updateJson.put("BOX", s.toString());
+//                            sendUpdatedValueToServer(updateJson);
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                });
+//            }
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+//    private void sendUpdatedValueToServer(JSONObject json) {
+//        //ON SUBMIT THE THE SELECTED HAMALI VENDOR IS GETTING SUBMMITED AS "PLEASE SELECT HAMALI"
+//        Log.d("JSON RESPONSE : ", "sendUpdatedValueToServer JSON response after change value in BAGS OR BOX Value: " + json);
+//
+//        lottieAnimationView.setVisibility(View.VISIBLE);
+//        lottieAnimationView.playAnimation();
+//
+//        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
+//
+//        RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json; charset=utf-8"));
+//        Request request = new Request.Builder().url("https://vtc3pl.com/fetch_lrno_details_for_single_lrno_prn_arrival_prn_app.php").post(body).build();
+//
+//        client.newCall(request).enqueue(new Callback() {
+//            @Override
+//            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        lottieAnimationView.setVisibility(View.GONE);
+//                        lottieAnimationView.cancelAnimation();
+//                    }
+//                });
+//                e.printStackTrace();
+//            }
+//
+//            @Override
+//            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+//                if (response.isSuccessful()) {
+//                    String responseBody = response.body().string();
+//                    Log.d("ServerResponse", responseBody);
+//
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            lottieAnimationView.setVisibility(View.GONE);
+//                            lottieAnimationView.cancelAnimation();
+//
+//
+//                            try {
+//                                JSONObject responseJson = new JSONObject(responseBody);
+//
+//                                // Extract BAGS and BOX data
+//                                JSONObject bags = responseJson.getJSONObject("BAGS");
+//                                JSONObject box = responseJson.getJSONObject("BOX");
+//
+//                                int bagsReceivedWeight = bags.getInt("receivedWeight");
+//                                int bagsReceivedQty = bags.getInt("receivedQty");
+//
+//                                int boxReceivedWeight = box.getInt("receivedWeight");
+//                                int boxReceivedQty = box.getInt("receivedQty");
+//
+//                                int receivedQty = responseJson.optInt("ReceivedQty", 0);
+//
+//                                // Subtract the previous values
+//                                totalBagWeightFromAllLRNO -= previousBagReceivedWeight;
+//                                totalBagQtyFromAllLRNO -= previousBagReceivedQty;
+//
+//                                totalBoxWeightFromAllLRNO -= previousBoxReceivedWeight;
+//                                totalBoxQtyFromAllLRNO -= previousBoxReceivedQty;
+//
+//                                totalBoxQtyFromAllLRNO -= previousReceivedQty;
+//
+//                                // Add the new values
+//                                totalBagWeightFromAllLRNO += bagsReceivedWeight;
+//                                totalBagQtyFromAllLRNO += bagsReceivedQty;
+//
+//                                totalBoxWeightFromAllLRNO += boxReceivedWeight;
+//                                totalBoxQtyFromAllLRNO += boxReceivedQty;
+//
+//                                totalBoxQtyFromAllLRNO += receivedQty;
+//
+//                                // Update the previous values
+//                                previousBagReceivedWeight = bagsReceivedWeight;
+//                                previousBagReceivedQty = bagsReceivedQty;
+//                                previousBoxReceivedWeight = boxReceivedWeight;
+//                                previousBoxReceivedQty = boxReceivedQty;
+//                                previousReceivedQty = receivedQty;
+//
+//                                // Log the updated global variables
+//                                Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
+//                                Log.d("Global Variables", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
+//                                Log.d("Global Variables", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
+//                                Log.d("Global Variables", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
+//
+//                            } catch (JSONException e) {
+//                                lottieAnimationView.setVisibility(View.GONE);
+//                                lottieAnimationView.cancelAnimation();
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    });
+//                } else {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            lottieAnimationView.setVisibility(View.GONE);
+//                            lottieAnimationView.cancelAnimation();
+//
+//                            Log.e("ServerResponse", "Request failed: " + response.code());
+//                        }
+//                    });
+//
+//                }
+//            }
+//        });
+//    }
 
     private TextView createHeaderTextView(String text) {
         TextView textView = new TextView(MainActivity7.this);
@@ -1387,15 +1580,10 @@ public class MainActivity7 extends AppCompatActivity {
                                         Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
                                         Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-                                        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity7.this)
-                                                .setTitle("Success")
-                                                .setMessage(message)
-                                                .setPositiveButton("OK", (dialog, which) -> {
-                                                    dialog.dismiss();
-                                                    clearUIComponents();
-                                                })
-                                                .setIcon(successIcon)
-                                                .create();
+                                        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity7.this).setTitle("Success").setMessage(message).setPositiveButton("OK", (dialog, which) -> {
+                                            dialog.dismiss();
+                                            clearUIComponents();
+                                        }).setIcon(successIcon).create();
                                         alertDialog.setOnDismissListener(dialog -> {
                                             dialog.dismiss();
                                             clearUIComponents();

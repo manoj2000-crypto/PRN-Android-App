@@ -6,6 +6,40 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity7">
 
+    <HorizontalScrollView
+        android:id="@+id/horizontalScrollView"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/scrollview_border"
+        app:layout_constraintBottom_toTopOf="@id/getDataButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+            <TableLayout
+                android:id="@+id/tableLayoutActivitySeven"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </ScrollView>
+
+    </HorizontalScrollView>
+
+    <Button
+        android:id="@+id/getDataButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/get_data"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/horizontalScrollView" />
+
     <TextView
         android:id="@+id/loadingUnloadingTextView"
         android:layout_width="wrap_content"
@@ -14,8 +48,9 @@
         android:layout_marginTop="16dp"
         android:text="@string/select_one_option"
         android:textStyle="bold"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/getDataButton" />
 
     <RadioGroup
         android:id="@+id/radioGroupOptions"
@@ -24,6 +59,7 @@
         android:layout_marginStart="2dp"
         android:layout_marginTop="16dp"
         android:orientation="horizontal"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/loadingUnloadingTextView"
         app:layout_constraintStart_toEndOf="@id/loadingUnloadingTextView"
         app:layout_constraintTop_toTopOf="@id/loadingUnloadingTextView">
@@ -53,6 +89,7 @@
         android:layout_marginTop="16dp"
         android:text="@string/hamali_vendor_name"
         android:textStyle="bold"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/radioGroupOptions" />
 
@@ -62,6 +99,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="16dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/hamaliVendorNameTextViewActivitySeven"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/hamaliVendorNameTextViewActivitySeven"
@@ -75,6 +113,7 @@
         android:layout_marginTop="24dp"
         android:text="@string/hamali_type"
         android:textStyle="bold"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/hamaliVendorNameTextViewActivitySeven" />
 
@@ -85,6 +124,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="16dp"
         android:entries="@array/hamali_type_options"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/hamaliTypeTextViewActivitySeven"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/hamaliTypeTextViewActivitySeven"
@@ -98,6 +138,7 @@
         android:layout_marginTop="24dp"
         android:text="@string/hamali_amount"
         android:textStyle="bold"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/hamaliTypeTextViewActivitySeven" />
 
@@ -110,6 +151,7 @@
         android:ems="10"
         android:hint="Enter Hamali Amount"
         android:inputType="numberDecimal"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/hamaliAmountTextViewActivitySeven"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/hamaliAmountTextViewActivitySeven"
@@ -124,6 +166,7 @@
         android:layout_marginTop="32dp"
         android:text="@string/deduction_amount"
         android:textStyle="bold"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/hamaliAmountTextViewActivitySeven" />
 
@@ -136,6 +179,7 @@
         android:ems="10"
         android:hint="Enter Deduction Amount"
         android:inputType="numberDecimal"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/deductionAmountTextViewActivitySeven"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/deductionAmountTextViewActivitySeven"
@@ -150,6 +194,7 @@
         android:layout_marginTop="36dp"
         android:text="@string/amount_paid_to_hvendor"
         android:textStyle="bold"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/deductionAmountTextViewActivitySeven" />
 
@@ -162,6 +207,7 @@
         android:ems="10"
         android:hint="Enter Amount Paid"
         android:inputType="numberDecimal"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/amountPaidToHVendorTextViewActivitySeven"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -178,6 +224,7 @@
         android:layout_marginTop="32dp"
         android:text="@string/freight"
         android:textStyle="bold"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/amountPaidToHVendorTextViewActivitySeven" />
 
@@ -190,6 +237,7 @@
         android:ems="10"
         android:hint="Enter Freight Amount"
         android:inputType="numberDecimal"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/freightTextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -203,11 +251,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="16dp"
         android:text="@string/godown_keeper_name"
         android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/submitButtonArrivalPRN"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/freightTextView" />
+    />
 
     <EditText
         android:id="@+id/godownKeeperNameEditText"
@@ -217,6 +268,7 @@
         android:layout_marginEnd="16dp"
         android:ems="10"
         android:hint="Godown Keeper Name"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/godownKeeperNameTextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -225,39 +277,17 @@
         app:layout_constraintVertical_bias="0.73"
         tools:ignore="HardcodedText,TextFields" />
 
-    <HorizontalScrollView
-        android:id="@+id/horizontalScrollView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintBottom_toTopOf="@id/submitButtonArrivalPRN"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/godownKeeperNameEditText">
-
-        <ScrollView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent">
-
-            <TableLayout
-                android:id="@+id/tableLayoutActivitySeven"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-        </ScrollView>
-
-    </HorizontalScrollView>
-
     <Button
         android:id="@+id/submitButtonArrivalPRN"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/submit"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/horizontalScrollView" />
+        app:layout_constraintTop_toBottomOf="@id/godownKeeperNameTextView" />
 
     <!--    <TextView-->
     <!--        android:id="@+id/fuelVendorNameTextView"-->
@@ -344,7 +374,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:visibility="gone"
-            app:lottie_rawRes="@raw/loading_animation" />
+            app:lottie_rawRes="@raw/moving_vehicle_animation_vtc" />
 
     </FrameLayout>
 
