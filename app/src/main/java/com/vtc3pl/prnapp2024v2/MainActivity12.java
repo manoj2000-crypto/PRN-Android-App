@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -43,6 +44,7 @@ public class MainActivity12 extends AppCompatActivity {
     private Button searchPRNButton, cancelPRNButton;
     private ConstraintLayout detailsContainer;
     private OkHttpClient client;
+    private boolean isActive = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,18 +109,24 @@ public class MainActivity12 extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        isActive = false;
+    }
+
     private void fetchData(String prnId) {
         String url = "https://vtc3pl.com/fetch_prn_cancel_data.php?prnId=" + prnId;
         Request request = new Request.Builder().url(url).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 runOnUiThread(() -> showAlert("Network Error ", "Network request failed."));
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if (response.isSuccessful()) {
                     String responseData = response.body().string();
                     runOnUiThread(() -> {
@@ -138,7 +146,7 @@ public class MainActivity12 extends AppCompatActivity {
 
             // Check if the array is not empty
             if (jsonArray.length() > 0) {
-                // Get the first object (assuming you get only one result)
+                // Get the first object
                 JSONObject jsonObject = jsonArray.getJSONObject(0);
 
                 // Extract data from the JSON object
@@ -156,58 +164,49 @@ public class MainActivity12 extends AppCompatActivity {
                 // Make the details container visible
                 detailsContainer.setVisibility(View.VISIBLE);
             } else {
-                // Handle case when no data is found
-                showAlert("Error ", "No data found.");
                 detailsContainer.setVisibility(View.GONE);
+                showAlert("Error ", "No data found.");
             }
         } catch (JSONException e) {
             e.printStackTrace();
-            showAlert("Error ", "Error parsing data.");
             detailsContainer.setVisibility(View.GONE);
+            showAlert("Error ", "Error parsing data.");
         }
     }
 
     private void cancelPRN(String prnId, String reason) {
         String url = "https://vtc3pl.com/prn_cancel_update_data_prn_app.php";
-        RequestBody formBody = new FormBody.Builder()
-                .add("PRNId", prnId)
-                .add("cancelreason", reason)
-                .add("loginUser", username)
-                .build();
+        RequestBody formBody = new FormBody.Builder().add("PRNId", prnId).add("cancelreason", reason).add("loginUser", username).build();
 
-        Request request = new Request.Builder()
-                .url(url)
-                .post(formBody)
-                .build();
+        Request request = new Request.Builder().url(url).post(formBody).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 runOnUiThread(() -> showAlert("Network Error", "Network request failed."));
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if (response.isSuccessful()) {
                     runOnUiThread(() -> {
-                        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
-                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
-                        Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
+                        if (isActive) { // Check if activity is still active
+                            Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
+                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+                            Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-                        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity12.this)
-                                .setTitle("Success")
-                                .setMessage("PRN successfully canceled.")
-                                .setPositiveButton("OK", (dialog, which) -> {
-                                    dialog.dismiss();
-                                })
-                                .setIcon(successIcon)
-                                .create();
+                            final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity12.this).setTitle("Success").setMessage("PRN successfully canceled.").setPositiveButton("OK", (dialog, which) -> {
+                                dialog.dismiss();
+                                clearUIComponents();
+                            }).setIcon(successIcon).create();
 
-                        alertDialog.setOnDismissListener(dialog -> {
-                            dialog.dismiss();
-                        });
+                            alertDialog.setOnDismissListener(dialog -> {
+                                dialog.dismiss();
+                                clearUIComponents();
+                            });
 
-                        alertDialog.show();
+                            alertDialog.show();
+                        }
                     });
                 } else {
                     runOnUiThread(() -> showAlert("Server Error", "Server returned an error."));
@@ -216,6 +215,15 @@ public class MainActivity12 extends AppCompatActivity {
         });
     }
 
+    private void clearUIComponents() {
+        editTextPRN.setText("");
+        prnNumberTextViewShowValue.setText("");
+        prnDateTextViewShow.setText("");
+        vehicleNoTextViewShow.setText("");
+        godownTextViewShow.setText("");
+        reasonEditText.setText("");
+        finish();
+    }
 
     private void showAlert(String title, String message) {
         // Load the original image
