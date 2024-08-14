@@ -7,4 +7,314 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity13">
 
+    <TextView
+        android:id="@+id/showUserNameActivityThirteenTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- PRN Number TextView -->
+    <TextView
+        android:id="@+id/prnNumberActivityThirteenTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/prn_number"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/showUserNameActivityThirteenTextView" />
+
+    <!-- EditText for PRN Number -->
+    <EditText
+        android:id="@+id/editTextPRNActivityThirteen"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:hint="@string/enter_prn_number"
+        app:layout_constraintBottom_toBottomOf="@id/prnNumberActivityThirteenTextView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/prnNumberActivityThirteenTextView"
+        app:layout_constraintTop_toTopOf="@id/prnNumberActivityThirteenTextView" />
+
+    <Button
+        android:id="@+id/searchPRNButtonActivityThirteen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="@string/search"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/editTextPRNActivityThirteen" />
+
+    <ScrollView
+        android:id="@+id/scrollViewActivityThirteen"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:fillViewport="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/searchPRNButtonActivityThirteen">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/lRNumberActivityThirteen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="24dp"
+                android:text="@string/lr_no"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <EditText
+                android:id="@+id/lrEditTextActivityThirteen"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:ems="10"
+                android:hint="@string/enter_lr_no"
+                android:inputType="text"
+                app:layout_constraintBottom_toBottomOf="@id/lRNumberActivityThirteen"
+                app:layout_constraintEnd_toStartOf="@id/addButtonActivityThirteen"
+                app:layout_constraintStart_toEndOf="@id/lRNumberActivityThirteen"
+                app:layout_constraintTop_toTopOf="@id/lRNumberActivityThirteen" />
+
+            <Button
+                android:id="@+id/addButtonActivityThirteen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="16dp"
+                android:text="@string/add_lr_sign"
+                android:textSize="24sp"
+                app:layout_constraintBottom_toBottomOf="@id/lrEditTextActivityThirteen"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/lrEditTextActivityThirteen"
+                app:layout_constraintTop_toTopOf="@id/lrEditTextActivityThirteen" />
+
+            <!-- Table Layout added below the addButton -->
+            <TableLayout
+                android:id="@+id/tableDisplayActivityThirteen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:orientation="vertical"
+                app:layout_constraintTop_toBottomOf="@id/addButtonActivityThirteen">
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/total_box_qty"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/totalBoxQtyEditTextActivityThirteen"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="@string/calculated_values"
+                        android:inputType="none" />
+
+                </TableRow>
+
+                <!-- Row for Total Bag Weight -->
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/total_bag_weight"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/totalBagWeightEditTextActivityThirteen"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="@string/calculated_values"
+                        android:inputType="none" />
+
+                </TableRow>
+
+            </TableLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/hamaliCalculationsFeildConstraintLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:padding="16dp"
+                app:layout_constraintTop_toBottomOf="@id/tableDisplayActivityThirteen">
+
+                <TextView
+                    android:id="@+id/hamaliVendorNameTextViewActivityThirteen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="24dp"
+                    android:text="@string/hamali_vendor_name"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <Spinner
+                    android:id="@+id/hamaliVendorNameSpinnerActivityThirteen"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="16dp"
+                    app:layout_constraintBottom_toBottomOf="@id/hamaliVendorNameTextViewActivityThirteen"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/hamaliVendorNameTextViewActivityThirteen"
+                    app:layout_constraintTop_toTopOf="@id/hamaliVendorNameTextViewActivityThirteen" />
+
+                <TextView
+                    android:id="@+id/hamaliTypeTextViewActivityThirteen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="24dp"
+                    android:text="@string/hamali_type"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/hamaliVendorNameTextViewActivityThirteen" />
+
+                <Spinner
+                    android:id="@+id/hamaliTypeSpinnerActivityThirteen"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="16dp"
+                    android:entries="@array/hamali_type_options"
+                    app:layout_constraintBottom_toBottomOf="@id/hamaliTypeTextViewActivityThirteen"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/hamaliTypeTextViewActivityThirteen"
+                    app:layout_constraintTop_toTopOf="@id/hamaliTypeTextViewActivityThirteen" />
+
+                <TextView
+                    android:id="@+id/hamaliAmountTextViewActivityThirteen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="24dp"
+                    android:text="@string/hamali_amount"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/hamaliTypeTextViewActivityThirteen" />
+
+                <EditText
+                    android:id="@+id/hamaliAmountEditTextActivityThirteen"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="16dp"
+                    android:ems="10"
+                    android:hint="Calculated Hamali Amount"
+                    android:inputType="numberDecimal"
+                    app:layout_constraintBottom_toBottomOf="@id/hamaliAmountTextViewActivityThirteen"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/hamaliAmountTextViewActivityThirteen"
+                    app:layout_constraintTop_toTopOf="@id/hamaliAmountTextViewActivityThirteen" />
+
+                <TextView
+                    android:id="@+id/deductionAmountTextViewActivityThirteen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="32dp"
+                    android:text="@string/deduction_amount"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/hamaliAmountTextViewActivityThirteen" />
+
+                <EditText
+                    android:id="@+id/deductionAmountEditTextActivityThirteen"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="16dp"
+                    android:ems="10"
+                    android:hint="Deduction Amount"
+                    android:inputType="numberDecimal"
+                    app:layout_constraintBottom_toBottomOf="@id/deductionAmountTextViewActivityThirteen"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/deductionAmountTextViewActivityThirteen"
+                    app:layout_constraintTop_toTopOf="@id/deductionAmountTextViewActivityThirteen" />
+
+                <TextView
+                    android:id="@+id/amountPaidToHVendorTextViewActivityThirteen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="32dp"
+                    android:text="@string/amount_paid_to_hvendor"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/deductionAmountTextViewActivityThirteen" />
+
+                <EditText
+                    android:id="@+id/amountPaidToHVendorEditTextActivityThirteen"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="16dp"
+                    android:ems="10"
+                    android:hint="Calculated Amount Paid"
+                    android:inputType="numberDecimal"
+                    app:layout_constraintBottom_toBottomOf="@id/amountPaidToHVendorTextViewActivityThirteen"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/amountPaidToHVendorTextViewActivityThirteen"
+                    app:layout_constraintTop_toTopOf="@id/amountPaidToHVendorTextViewActivityThirteen" />
+
+                <Button
+                    android:id="@+id/submitActivityThirteen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="16dp"
+                    android:text="@string/edit_prn"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/amountPaidToHVendorTextViewActivityThirteen" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
