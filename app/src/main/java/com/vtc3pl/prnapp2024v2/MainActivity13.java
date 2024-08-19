@@ -33,6 +33,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.airbnb.lottie.LottieAnimationView;
+
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -62,7 +64,7 @@ public class MainActivity13 extends AppCompatActivity {
     private String username = "", depo = "", year = "";
     private TextView showUserNameActivityThirteenTextView, prnNumberActivityThirteenTextView;
     private EditText editTextPRNActivityThirteen, hamaliAmountEditTextActivityThirteen, amountPaidToHVendorEditTextActivityThirteen, deductionAmountEditTextActivityThirteen, lrEditTextActivityThirteen, totalBoxQtyEditTextActivityThirteen, totalBagWeightEditTextActivityThirteen;
-    private Button searchPRNButtonActivityThirteen, addButtonActivityThirteen;
+    private Button searchPRNButtonActivityThirteen, addButtonActivityThirteen, submitActivityThirteen;
     private ScrollView scrollViewActivityThirteen;
     private TableLayout tableDisplayActivityThirteen;
     private Spinner hamaliVendorNameSpinnerActivityThirteen, hamaliTypeSpinnerActivityThirteen;
@@ -71,7 +73,8 @@ public class MainActivity13 extends AppCompatActivity {
     private String selectedHamaliType = "";
     private double amountPaidToHVendor, deductionAmount;
     private ConstraintLayout hamaliCalculationsFeildConstraintLayout;
-    private boolean fromPRNEditText = false;
+    private boolean updatingFromFetchPRNData = false, fromPRNEditText = false;
+    private LottieAnimationView lottieAnimationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +110,9 @@ public class MainActivity13 extends AppCompatActivity {
 
         hamaliCalculationsFeildConstraintLayout = findViewById(R.id.hamaliCalculationsFeildConstraintLayout);
 
+        submitActivityThirteen = findViewById(R.id.submitActivityThirteen);
+        lottieAnimationView = findViewById(R.id.lottieAnimationView);
+
         Intent intent = getIntent();
         if (intent != null) {
             username = intent.getStringExtra("username");
@@ -122,6 +128,7 @@ public class MainActivity13 extends AppCompatActivity {
         searchPRNButtonActivityThirteen.setOnClickListener(v -> {
             String prnId = editTextPRNActivityThirteen.getText().toString().trim();
             if (!prnId.isEmpty()) {
+                editTextPRNActivityThirteen.setEnabled(false);
                 searchPRNButtonActivityThirteen.setEnabled(false);
                 scrollViewActivityThirteen.setVisibility(View.VISIBLE);
                 fetchPRNData(prnId, depo);
@@ -169,6 +176,10 @@ public class MainActivity13 extends AppCompatActivity {
             }
         });
 
+        submitActivityThirteen.setOnClickListener(v -> {
+            submitData();
+        });
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -178,14 +189,25 @@ public class MainActivity13 extends AppCompatActivity {
 
     private void addRowToTable() {
         String lrNumber = lrEditTextActivityThirteen.getText().toString().trim();
-        if (LR_NUMBER_PATTERN.matcher(lrNumber).matches() && !lrNumber.isEmpty() && !lrNumbersSet.contains(lrNumber)) {
-            checkLRNumberOnServer(lrNumber);
+        if (lrNumber.isEmpty()) {
+            showWarning("Warning", "LR number cannot be empty");
+        } else if (!LR_NUMBER_PATTERN.matcher(lrNumber).matches()) {
+            showWarning("Warning", "LR number format is invalid");
+        } else if (lrNumbersSet.contains(lrNumber)) {
+            showWarning("Warning", "Duplicate LR number");
         } else {
-            showWarning("Warning", "LR number format is invalid or duplicate");
+            checkLRNumberOnServer(lrNumber);
         }
     }
 
     private void checkLRNumberOnServer(String lrNumber) {
+
+        runOnUiThread(() -> {
+            // Show the Lottie animation
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+        });
+
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         FormBody.Builder formBuilder = new FormBody.Builder();
@@ -201,12 +223,20 @@ public class MainActivity13 extends AppCompatActivity {
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
                     showAlert("Connection Failed", "Failed to connect to server");
                 });
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
+
                 if (response.isSuccessful()) {
                     ResponseBody body = response.body();
                     if (body != null) {
@@ -218,7 +248,9 @@ public class MainActivity13 extends AppCompatActivity {
                         } else if (responseBody.equals(lrNumber)) {
                             Log.d("LR NUMBER : ", String.valueOf(response));
                             fromPRNEditText = false;
-                            runOnUiThread(() -> addLRNumberToTable(lrNumber, fromPRNEditText));
+                            runOnUiThread(() -> {
+                                addLRNumberToTable(lrNumber);
+                            });
                         }
                     } else {
                         runOnUiThread(() -> {
@@ -235,7 +267,7 @@ public class MainActivity13 extends AppCompatActivity {
         });
     }
 
-    private void addLRNumberToTable(String lrNumber, boolean fromPRNEditText) {
+    private void addLRNumberToTable(String lrNumber) {
         TableRow newRow = new TableRow(this);
         TextView textView = new TextView(this);
         textView.setText(lrNumber);
@@ -244,8 +276,10 @@ public class MainActivity13 extends AppCompatActivity {
         Button deleteButton = new Button(this);
         deleteButton.setText(getString(R.string.delete_button_text));
         deleteButton.setOnClickListener(v -> {
+            fromPRNEditText = false;
             tableDisplayActivityThirteen.removeView(newRow);
             lrNumbersSet.remove(lrNumber);
+            Log.i("Set : ", "After remove lrNumbersSet : " + lrNumbersSet);
             if (!fromPRNEditText) {
                 fetchWeightsFromServer();
             }
@@ -258,9 +292,16 @@ public class MainActivity13 extends AppCompatActivity {
             fetchWeightsFromServer();
         }
         lrEditTextActivityThirteen.setText("");
+        Log.i("Set : ", "After add lrNumbersSet : " + lrNumbersSet);
     }
 
     private void fetchWeightsFromServer() {
+        runOnUiThread(() -> {
+            // Show the Lottie animation
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+        });
+
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         String url = "https://vtc3pl.com/hamali_bag_box_weight_prn_app.php";
@@ -272,16 +313,25 @@ public class MainActivity13 extends AppCompatActivity {
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
                     showAlert("Connection Failed Error", "Failed to fetch Box Quantity and Box Weight from server");
                 });
             }
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
+
                 if (response.isSuccessful()) {
                     ResponseBody body = response.body();
                     if (body != null) {
                         String responseBody = body.string();
+                        Log.i("responseBody : ", " fetchWeightsFromServer : " + responseBody);
                         try {
                             JSONArray jsonArray = new JSONArray(responseBody);
                             double totalBoxWeight = 0;
@@ -292,6 +342,7 @@ public class MainActivity13 extends AppCompatActivity {
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                                 String lrNumber = jsonObject.getString("LRNO");
+                                Log.i("Response : : ", "lrNumber : " + lrNumber);
                                 if (lrNumbersSet.contains(lrNumber)) {
                                     totalBoxWeight += jsonObject.getDouble("TotalWeightBox");
                                     totalBagWeight += jsonObject.getDouble("TotalWeightBag");
@@ -306,8 +357,10 @@ public class MainActivity13 extends AppCompatActivity {
                             totalBagQtyFromAllLRNO = totalBagQty;
 
                             runOnUiThread(() -> {
-                                totalBoxQtyEditTextActivityThirteen.setText(String.valueOf(totalBoxQtyFromAllLRNO));
-                                totalBagWeightEditTextActivityThirteen.setText(String.valueOf(totalBagWeightFromAllLRNO));
+                                if (!updatingFromFetchPRNData) {
+                                    totalBoxQtyEditTextActivityThirteen.setText(String.valueOf(totalBoxQtyFromAllLRNO));
+                                    totalBagWeightEditTextActivityThirteen.setText(String.valueOf(totalBagWeightFromAllLRNO));
+                                }
 
                                 Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeightFromAllLRNO));
                                 Log.d("totalBagWeight : ", String.valueOf(totalBagWeightFromAllLRNO));
@@ -317,7 +370,6 @@ public class MainActivity13 extends AppCompatActivity {
 
                                 // Check and hide the ConstraintLayout based on the values
                                 checkAndHideHamaliCalculations();
-
                             });
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -398,6 +450,12 @@ public class MainActivity13 extends AppCompatActivity {
     }
 
     private void calculateHamali() {
+        runOnUiThread(() -> {
+            // Show the Lottie animation
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+        });
+
         Log.d("calculateHamali() :", "Method is invoked");
 
         if (hamaliVendorNameSpinnerActivityThirteen.getSelectedItem() == null || hamaliTypeSpinnerActivityThirteen.getSelectedItem() == null) {
@@ -424,12 +482,18 @@ public class MainActivity13 extends AppCompatActivity {
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
                     showAlert("Connection Failed Error", "Failed to fetch hamali rates from server");
                 });
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
                 if (response.isSuccessful()) {
                     ResponseBody body = response.body();
                     if (body != null) {
@@ -574,6 +638,13 @@ public class MainActivity13 extends AppCompatActivity {
     }
 
     private void fetchPRNData(String prnId, String depo) {
+
+        runOnUiThread(() -> {
+            // Show the Lottie animation
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+        });
+
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         String url = "https://vtc3pl.com/fetch_prn_data_for_prn_app.php";
@@ -587,12 +658,18 @@ public class MainActivity13 extends AppCompatActivity {
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
                     showAlert("Connection Failed Error", "Failed to fetch PRN data from server.");
                 });
             }
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
                 if (response.isSuccessful()) {
                     ResponseBody body = response.body();
                     if (body != null) {
@@ -609,10 +686,12 @@ public class MainActivity13 extends AppCompatActivity {
                                 Log.i("totalBagWeight : ", String.valueOf(totalBagWeight));
 
                                 runOnUiThread(() -> {
+                                    updatingFromFetchPRNData = true;
                                     totalBoxQtyEditTextActivityThirteen.setText(String.valueOf(totalBoxQty));
                                     totalBagWeightEditTextActivityThirteen.setText(String.valueOf(totalBagWeight));
                                     totalBoxQtyFromAllLRNO = totalBoxQty;
                                     totalBagWeightFromAllLRNO = totalBagWeight;
+                                    updatingFromFetchPRNData = false;
                                 });
                             }
 
@@ -620,10 +699,12 @@ public class MainActivity13 extends AppCompatActivity {
                             for (int i = 0; i < lrnos.length(); i++) {
                                 String lrno = lrnos.getJSONObject(i).getString("LRNO");
                                 fromPRNEditText = true;
-                                runOnUiThread(() -> addLRNumberToTable(lrno, fromPRNEditText));
+                                runOnUiThread(() -> addLRNumberToTable(lrno));
                             }
 
-                            runOnUiThread(() -> checkAndHideHamaliCalculations());
+                            runOnUiThread(() -> {
+                                checkAndHideHamaliCalculations();
+                            });
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -641,6 +722,24 @@ public class MainActivity13 extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void submitData() {
+        String lRNOSet = lrNumbersSet.toString();
+        String prnNumber = editTextPRNActivityThirteen.getText().toString().trim();
+        String totalBagValue = totalBagWeightEditTextActivityThirteen.getText().toString().trim();
+        String totalBoxValue = totalBoxQtyEditTextActivityThirteen.getText().toString().trim();
+        String hamaliVendorName = hamaliVendorNameSpinnerActivityThirteen.getSelectedItem().toString().trim();
+        String hamaliVendorType = hamaliTypeSpinnerActivityThirteen.getSelectedItem().toString().trim();
+        String hamaliAmount = hamaliAmountEditTextActivityThirteen.getText().toString().trim();
+        String amountPaidToHVendor = amountPaidToHVendorEditTextActivityThirteen.getText().toString().trim();
+        String deductionAmount = deductionAmountEditTextActivityThirteen.getText().toString().trim();
+
+        String logMessage = "LRNO Set: " + lRNOSet + "\n" + "PRN Number: " + prnNumber + "\n" + "Total Bag Value: " + totalBagValue + "\n" + "Total Box Value: " + totalBoxValue + "\n" + "Hamali Vendor Name: " + hamaliVendorName + "\n" + "Hamali Vendor Type: " + hamaliVendorType + "\n" + "Hamali Amount: " + hamaliAmount + "\n" + "Amount Paid to Vendor: " + amountPaidToHVendor + "\n" + "Deduction Amount: " + deductionAmount;
+
+        // Log the message
+        Log.i("SubmitData", logMessage);
+        finish();
     }
 
     private void showAlert(String title, String message) {
