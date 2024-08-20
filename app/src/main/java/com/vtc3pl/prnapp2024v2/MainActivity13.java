@@ -1,6 +1,10 @@
 package com.vtc3pl.prnapp2024v2;
 // Edit PRN
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -51,6 +55,7 @@ import java.util.regex.Pattern;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -133,7 +138,7 @@ public class MainActivity13 extends AppCompatActivity {
                 scrollViewActivityThirteen.setVisibility(View.VISIBLE);
                 fetchPRNData(prnId, depo);
             } else {
-                showAlert("Empty Field", "PRN Number is empty.");
+                showWarning("Empty Field", "PRN Number is empty.");
             }
         });
 
@@ -550,19 +555,32 @@ public class MainActivity13 extends AppCompatActivity {
                             // Assuming these variables are declared globally
                             deductionAmountEditTextActivityThirteen.setOnKeyListener((v, keyCode, event) -> {
                                 if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                                    deductionAmount = Double.parseDouble(deductionAmountEditTextActivityThirteen.getText().toString());
+                                    String deductionAmountText = deductionAmountEditTextActivityThirteen.getText().toString().trim();
 
-                                    if (deductionAmount < 0) {
-                                        // Prevent deduction amount from being less than zero
-                                        Toast.makeText(MainActivity13.this, "Deduction amount cannot be less than zero", Toast.LENGTH_SHORT).show();
+                                    if (deductionAmountText.isEmpty()) {
+                                        deductionAmountText = "0.0";
+                                        deductionAmountEditTextActivityThirteen.setText(deductionAmountText);
+                                    }
+
+                                    try {
+                                        deductionAmount = Double.parseDouble(deductionAmountText);
+
+                                        if (deductionAmount < 0) {
+                                            Toast.makeText(MainActivity13.this, "Deduction amount cannot be less than zero", Toast.LENGTH_SHORT).show();
+                                            deductionAmountEditTextActivityThirteen.setText("0.0");
+                                            return true;
+                                        }
+                                        amountPaidToHVendor = (totalHamaliAmount - deductionAmount);
+                                        Log.d("amountPaidToHVendor : ", String.valueOf(amountPaidToHVendor));
+                                        amountPaidToHVendorEditTextActivityThirteen.setText(String.valueOf(amountPaidToHVendor));
+                                        amountPaidToHVendorEditTextActivityThirteen.setEnabled(false);
+                                        return true;
+                                    } catch (NumberFormatException e) {
+                                        e.printStackTrace();
+                                        Toast.makeText(MainActivity13.this, "Invalid input. Please enter a valid number.", Toast.LENGTH_SHORT).show();
                                         deductionAmountEditTextActivityThirteen.setText("0.0");
                                         return true;
                                     }
-                                    amountPaidToHVendor = (totalHamaliAmount - deductionAmount);
-                                    Log.d("amountPaidToHVendor : ", String.valueOf(amountPaidToHVendor));
-                                    amountPaidToHVendorEditTextActivityThirteen.setText(String.valueOf(amountPaidToHVendor));
-                                    amountPaidToHVendorEditTextActivityThirteen.setEnabled(false);
-                                    return true;
                                 }
                                 return false;
                             });
@@ -725,7 +743,16 @@ public class MainActivity13 extends AppCompatActivity {
     }
 
     private void submitData() {
-        String lRNOSet = lrNumbersSet.toString();
+        runOnUiThread(() -> {
+            // Show the Lottie animation
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+        });
+
+        // Convert lrNumbersSet to JSON Array
+        JSONArray jsonArray = new JSONArray(lrNumbersSet);
+        String lRNOSetJson = jsonArray.toString();
+
         String prnNumber = editTextPRNActivityThirteen.getText().toString().trim();
         String totalBagValue = totalBagWeightEditTextActivityThirteen.getText().toString().trim();
         String totalBoxValue = totalBoxQtyEditTextActivityThirteen.getText().toString().trim();
@@ -735,10 +762,103 @@ public class MainActivity13 extends AppCompatActivity {
         String amountPaidToHVendor = amountPaidToHVendorEditTextActivityThirteen.getText().toString().trim();
         String deductionAmount = deductionAmountEditTextActivityThirteen.getText().toString().trim();
 
-        String logMessage = "LRNO Set: " + lRNOSet + "\n" + "PRN Number: " + prnNumber + "\n" + "Total Bag Value: " + totalBagValue + "\n" + "Total Box Value: " + totalBoxValue + "\n" + "Hamali Vendor Name: " + hamaliVendorName + "\n" + "Hamali Vendor Type: " + hamaliVendorType + "\n" + "Hamali Amount: " + hamaliAmount + "\n" + "Amount Paid to Vendor: " + amountPaidToHVendor + "\n" + "Deduction Amount: " + deductionAmount;
+        // Create JSON Object to send
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("lrNumbersSet", lRNOSetJson);
+            jsonObject.put("prnNumber", prnNumber);
+            jsonObject.put("totalBagValue", totalBagValue);
+            jsonObject.put("totalBoxValue", totalBoxValue);
+            jsonObject.put("hamaliVendorName", hamaliVendorName);
+            jsonObject.put("hamaliVendorType", hamaliVendorType);
+            jsonObject.put("hamaliAmount", hamaliAmount);
+            jsonObject.put("amountPaidToHVendor", amountPaidToHVendor);
+            jsonObject.put("deductionAmount", deductionAmount);
+            jsonObject.put("userName", username);
+            jsonObject.put("depo", depo);
+            jsonObject.put("year", year);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
-        // Log the message
-        Log.i("SubmitData", logMessage);
+        // Send data to PHP file
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
+        RequestBody requestBody = RequestBody.create(jsonObject.toString(), MediaType.parse("application/json; charset=utf-8"));
+        Request request = new Request.Builder().url("https://vtc3pl.com/update_prn_prn_app.php").post(requestBody).build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                    showAlert("Error", "Failed to submit data");
+                });
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
+                String responseBody = response.body() != null ? response.body().string() : "";
+
+                if (response.isSuccessful()) {
+                    try {
+                        JSONObject jsonResponse = new JSONObject(responseBody);
+                        String status = jsonResponse.optString("status", "");
+                        String message = jsonResponse.optString("message", "No message from server");
+
+                        if ("success".equals(status)) {
+                            runOnUiThread(() -> {
+                                // Load the original image
+                                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
+
+                                // Scale the image to the desired size
+                                Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+
+                                // Create a Drawable from the scaled Bitmap
+                                Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
+
+                                final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity13.this).setTitle("Success").setMessage(message).setPositiveButton("OK", (dialog, which) -> {
+                                    dialog.dismiss();
+                                    clearUIComponents();
+                                }).setIcon(successIcon).create();
+
+                                alertDialog.setOnDismissListener(dialog -> {
+                                    dialog.dismiss();
+                                    clearUIComponents();
+                                });
+
+                                alertDialog.show();
+                            });
+                        } else {
+                            runOnUiThread(() -> showAlert("Error", message));
+                        }
+                    } catch (JSONException e) {
+                        runOnUiThread(() -> showAlert("Error", "Failed to parse server response"));
+                        e.printStackTrace();
+                    }
+                } else {
+                    runOnUiThread(() -> showAlert("Error", "Failed to submit data: " + response.message()));
+                }
+            }
+        });
+    }
+
+    private void clearUIComponents() {
+        editTextPRNActivityThirteen.setText("");
+        lrEditTextActivityThirteen.setText("");
+        tableDisplayActivityThirteen.removeAllViews();
+        lrNumbersSet.clear();
+        hamaliVendorNameSpinnerActivityThirteen.setSelection(0);
+        hamaliTypeSpinnerActivityThirteen.setSelection(0);
+        hamaliAmountEditTextActivityThirteen.setText("");
+        deductionAmountEditTextActivityThirteen.setText("");
+        amountPaidToHVendorEditTextActivityThirteen.setText("");
+
         finish();
     }
 
@@ -752,7 +872,10 @@ public class MainActivity13 extends AppCompatActivity {
         // Create a Drawable from the scaled Bitmap
         Drawable alertIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(alertIcon).show();
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> {
+            dialog.dismiss();
+            finish();
+        }).setIcon(alertIcon).setCancelable(false).show();
     }
 
     private void showWarning(String title, String message) {
