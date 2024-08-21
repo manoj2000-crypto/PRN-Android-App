@@ -2,7 +2,6 @@ package com.vtc3pl.prnapp2024v2;
 //Arrival Page Part 2
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
@@ -260,7 +259,6 @@ public class MainActivity7 extends AppCompatActivity {
                     ResponseBody body = response.body();
                     if (body != null) {
                         String responseBody = body.string();
-                        // Parse the JSON response
                         List<String> hVendors = new ArrayList<>();
                         try {
                             JSONArray jsonArray = new JSONArray(responseBody);
@@ -272,12 +270,10 @@ public class MainActivity7 extends AppCompatActivity {
                                     hVendors.add(hVendor);
                                 }
                             } else {
-                                runOnUiThread(() -> {
-                                    Toast.makeText(MainActivity7.this, "No hamali vendors found", Toast.LENGTH_SHORT).show();
-                                });
+                                runOnUiThread(() -> showAlert("Hamali Error", "No hamali vendors found."));
                             }
                         } catch (JSONException e) {
-                            e.printStackTrace();
+                            runOnUiThread(() -> showAlert("JSON Error", "Exception while fetching Hamali vendor."));
                         }
 
                         // Update the spinner UI on the main thread
@@ -287,9 +283,7 @@ public class MainActivity7 extends AppCompatActivity {
                             hamaliVendorNameSpinnerActivitySeven.setAdapter(adapter);
                         });
                     } else {
-                        runOnUiThread(() -> {
-                            Toast.makeText(MainActivity7.this, "Response body is null (fetch vendors)", Toast.LENGTH_SHORT).show();
-                        });
+                        runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Response body is null (fetch vendors)", Toast.LENGTH_SHORT).show());
                     }
                 } else {
                     onFailure(call, new IOException("Unexpected response code " + response));
@@ -298,10 +292,7 @@ public class MainActivity7 extends AppCompatActivity {
 
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                e.printStackTrace();
-                runOnUiThread(() -> {
-                    Toast.makeText(MainActivity7.this, "Failed to fetch Hamali Vendors", Toast.LENGTH_SHORT).show();
-                });
+                runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Failed to fetch Hamali Vendors", Toast.LENGTH_SHORT).show());
             }
         });
     }
@@ -398,10 +389,7 @@ public class MainActivity7 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                e.printStackTrace();
-                runOnUiThread(() -> {
-                    Toast.makeText(MainActivity7.this, "Failed to fetch hamali rates", Toast.LENGTH_SHORT).show();
-                });
+                runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Failed to fetch hamali rates", Toast.LENGTH_SHORT).show());
             }
 
             @Override
@@ -435,9 +423,7 @@ public class MainActivity7 extends AppCompatActivity {
                                     return;
                                 }
                             } else {
-                                runOnUiThread(() -> {
-                                    Toast.makeText(MainActivity7.this, "Unknown hamali type", Toast.LENGTH_SHORT).show();
-                                });
+                                runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Unknown hamali type", Toast.LENGTH_SHORT).show());
                                 return;
                             }
 
@@ -516,16 +502,10 @@ public class MainActivity7 extends AppCompatActivity {
                             });
 
                         } catch (JSONException e) {
-                            e.printStackTrace();
-                            runOnUiThread(() -> {
-                                // Handle JSON parsing error
-                                Toast.makeText(MainActivity7.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
-                            });
+                            runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show());
                         }
                     } else {
-                        runOnUiThread(() -> {
-                            Toast.makeText(MainActivity7.this, "Response body is empty (Hamali rates)", Toast.LENGTH_SHORT).show();
-                        });
+                        runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Response body is empty (Hamali rates)", Toast.LENGTH_SHORT).show());
                     }
                 } else {
                     runOnUiThread(() -> {
@@ -584,33 +564,69 @@ public class MainActivity7 extends AppCompatActivity {
 
                 // Create TextViews for each column
                 TextView lrNoTextView = createTextView(jsonObject.getString("LRNO"));
+                lrNoTextView.setTag("lrNo");
+
                 TextView lrDateTextView = createTextView(jsonObject.getString("LRDate"));
+                lrDateTextView.setTag("lrDate");
+
                 TextView toPlaceTextView = createTextView(jsonObject.getString("ToPlace"));
-                TextView pkgsNoTextView = createTextView(jsonObject.getString("PkgsNo"));
+                toPlaceTextView.setTag("toPlace");
+
+                String prnShortQty = jsonObject.getString("PRNShortQty");
+                Log.i("prnShortQty : ", "prnShortQty");
+                TextView pkgsNoTextView;
+
+                if (!prnShortQty.equals("0")) {
+                    pkgsNoTextView = createTextView(prnShortQty);
+                } else {
+                    pkgsNoTextView = createTextView(jsonObject.getString("PkgsNo"));
+                }
+//                TextView pkgsNoTextView = createTextView(jsonObject.getString("PkgsNo"));
+//                pkgsNoTextView.setTag("pkgsNo");
 
                 EditText differentQtyEditText = new EditText(MainActivity7.this);
+                differentQtyEditText.setTag("differentQty");
                 differentQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
                 differentQtyEditText.setEnabled(false);
-                differentQtyEditText.setText("0");
+                if (!prnShortQty.equals("0")) {
+                    differentQtyEditText.setText(prnShortQty);
+                } else {
+                    differentQtyEditText.setText("0");
+                }
 
-                // Create an EditText for reason column
                 EditText reasonEditText = new EditText(MainActivity7.this);
+                reasonEditText.setTag("reason");
                 reasonEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-//                reasonEditText.setText(jsonObject.getString("Reason"));
+                if (!prnShortQty.equals("0")) {
+                    reasonEditText.setText(jsonObject.getString("reason"));
+                } else {
+                    reasonEditText.setText(R.string.ok);
+                }
                 reasonEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
-                reasonEditText.setText("OK");
                 reasonEditText.setEnabled(false);
 
-                // Create new TextViews and EditTexts for TotalBagQty and TotalBoxQty
+                // Creating new TextViews and EditTexts for TotalBagQty and TotalBoxQty
                 TextView totalBagQtyTextView = createTextView("Bag ");
                 EditText totalBagQtyEditText = new EditText(MainActivity7.this);
-                totalBagQtyEditText.setText(jsonObject.getString("TotalBagQty"));
+                totalBagQtyEditText.setTag("totalBagQty");
+                if (!prnShortQty.equals("0")) {
+                    totalBagQtyEditText.setText("0");
+                } else {
+                    totalBagQtyEditText.setText(jsonObject.getString("TotalBagQty"));
+                }
+//                totalBagQtyEditText.setText(jsonObject.getString("TotalBagQty"));
                 totalBagQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
                 totalBagQtyEditText.setEnabled(false);
 
                 TextView totalBoxQtyTextView = createTextView("Box ");
                 EditText totalBoxQtyEditText = new EditText(MainActivity7.this);
-                totalBoxQtyEditText.setText(jsonObject.getString("TotalBoxQty"));
+                totalBoxQtyEditText.setTag("totalBoxQty");
+                if (!prnShortQty.equals("0")) {
+                    totalBoxQtyEditText.setText("0");
+                } else {
+                    totalBoxQtyEditText.setText(jsonObject.getString("TotalBoxQty"));
+                }
+//                totalBoxQtyEditText.setText(jsonObject.getString("TotalBoxQty"));
                 totalBoxQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
                 totalBoxQtyEditText.setEnabled(false);
 
@@ -644,7 +660,7 @@ public class MainActivity7 extends AppCompatActivity {
                     }
                 });
 
-                // Create a LinearLayout to hold TotalBagQty and TotalBoxQty views
+                // Creating a LinearLayout to hold TotalBagQty and TotalBoxQty views
                 LinearLayout extraInfoLayout = new LinearLayout(MainActivity7.this);
                 extraInfoLayout.setOrientation(LinearLayout.HORIZONTAL);
                 extraInfoLayout.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
@@ -664,18 +680,15 @@ public class MainActivity7 extends AppCompatActivity {
                 tableLayoutActivitySeven.addView(row);
 
                 // Set the OnClickListener for the CheckBox
-                rowCheckBox.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        boolean isChecked = ((CheckBox) v).isChecked();
-                        totalBagQtyEditText.setEnabled(isChecked);
-                        totalBoxQtyEditText.setEnabled(isChecked);
-                        reasonEditText.setEnabled(isChecked);
-                    }
+                rowCheckBox.setOnClickListener(v -> {
+                    boolean isChecked = ((CheckBox) v).isChecked();
+                    totalBagQtyEditText.setEnabled(isChecked);
+                    totalBoxQtyEditText.setEnabled(isChecked);
+                    reasonEditText.setEnabled(isChecked);
                 });
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            runOnUiThread(() -> showAlert("JSON Error", "Unable to insert data into the table."));
         }
     }
 
@@ -695,7 +708,6 @@ public class MainActivity7 extends AppCompatActivity {
             reasonEditText.setText(reason);
 
         } catch (NumberFormatException e) {
-            e.printStackTrace();
             differentQtyEditText.setText("0");
             reasonEditText.setText("");
         }
@@ -748,7 +760,7 @@ public class MainActivity7 extends AppCompatActivity {
 
                 jsonArray.put(jsonObject);
             } catch (JSONException e) {
-                e.printStackTrace();
+                runOnUiThread(() -> showAlert("JSON Error", "Unable to extract the data from the table."));
             }
         }
 
@@ -776,8 +788,7 @@ public class MainActivity7 extends AppCompatActivity {
 
         client.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 runOnUiThread(() -> {
                     lottieAnimationView.setVisibility(View.GONE);
                     lottieAnimationView.cancelAnimation();
@@ -786,7 +797,7 @@ public class MainActivity7 extends AppCompatActivity {
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 runOnUiThread(() -> {
                     lottieAnimationView.setVisibility(View.GONE);
                     lottieAnimationView.cancelAnimation();
@@ -819,14 +830,10 @@ public class MainActivity7 extends AppCompatActivity {
                             });
 
                         } catch (JSONException e) {
-                            e.printStackTrace();
-                            runOnUiThread(() -> {
-                                Toast.makeText(MainActivity7.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
-                            });
+                            runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show());
                         }
                     }
                 } else {
-                    // Handle the failure response
                     runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Server error", Toast.LENGTH_SHORT).show());
                 }
             }
@@ -1260,7 +1267,6 @@ public class MainActivity7 extends AppCompatActivity {
     }
 
     private void submitDataToServer() {
-
         // Initialize a list to store the data from each row
         List<JSONObject> rowDataList = new ArrayList<>();
 
@@ -1268,143 +1274,50 @@ public class MainActivity7 extends AppCompatActivity {
         for (int i = 1; i < tableLayoutActivitySeven.getChildCount(); i++) { // Start from 1 to skip header row
             TableRow row = (TableRow) tableLayoutActivitySeven.getChildAt(i);
 
-            // Initialize variables to store data for each row
-            String lrNo = "";
-            String lrDate = "";
-            String toPlace = "";
-            String pkgsNo = "";
-            String receivedQty = "";
-            String differentQty = "";
-            String reason = "";
+            // Extract data using the tags
+            String lrNo = ((TextView) row.findViewWithTag("lrNo")).getText().toString().trim();
+            String lrDate = ((TextView) row.findViewWithTag("lrDate")).getText().toString().trim();
+            String toPlace = ((TextView) row.findViewWithTag("toPlace")).getText().toString().trim();
+            String pkgsNo = ((TextView) row.findViewWithTag("pkgsNo")).getText().toString().trim();
+            String totalBagQty = ((EditText) row.findViewWithTag("totalBagQty")).getText().toString().trim();
+            String totalBoxQty = ((EditText) row.findViewWithTag("totalBoxQty")).getText().toString().trim();
+            String differentQty = ((EditText) row.findViewWithTag("differentQty")).getText().toString().trim();
+            String reason = ((EditText) row.findViewWithTag("reason")).getText().toString().trim();
 
-            // Variables to check and store bag and box quantities
-            boolean bagsAndBoxPresent = false;
-            int bagsReceivedQtyEditTextValue = 0;
-            int boxReceivedQtyEditTextValue = 0;
+            // Calculate the receivedQty as the sum of bags and box quantities
+            String receivedQty = String.valueOf(Integer.parseInt(totalBagQty.isEmpty() ? "0" : totalBagQty) + Integer.parseInt(totalBoxQty.isEmpty() ? "0" : totalBoxQty));
 
-            // Iterate through each cell in the row
-            for (int j = 0; j < row.getChildCount(); j++) {
-                View view = row.getChildAt(j);
-                if (view instanceof TextView) {
-                    // Extract data from TextViews
-                    TextView textView = (TextView) view;
-                    String text = textView.getText().toString().trim();
-                    Log.d("Extracting TextView", "Index: " + j + " Text: " + text);
-                    switch (j) {
-                        case 1: // lrNoTextView
-                            lrNo = text;
-                            break;
-                        case 2: // lrDateTextView
-                            lrDate = text;
-                            break;
-                        case 3: // toPlaceTextView
-                            toPlace = text;
-                            break;
-                        case 4: // pkgsNoTextView
-                            pkgsNo = text;
-                            break;
-                        case 5: // receivedQtyTextView
-                            if (!bagsAndBoxPresent) {
-                                receivedQty = text;
-                            }
-                            break;
-                        case 6: // differentQtyTextView
-                            differentQty = text;
-                            break;
-                        case 7: // reasonTextView
-                            reason = text;
-                            break;
-                    }
-                } else if (view instanceof EditText) {
-                    EditText editText = (EditText) view;
-                    String text = editText.getText().toString().trim();
-                    if (editText.getHint() != null) {
-                        if (editText.getHint().toString().equalsIgnoreCase("BAGS")) {
-                            bagsReceivedQtyEditTextValue = Integer.parseInt(text.isEmpty() ? "0" : text);
-                            bagsAndBoxPresent = true;
-                        } else if (editText.getHint().toString().equalsIgnoreCase("BOX")) {
-                            boxReceivedQtyEditTextValue = Integer.parseInt(text.isEmpty() ? "0" : text);
-                            bagsAndBoxPresent = true;
-                        }
-                    }
-                } else if (view instanceof LinearLayout) {
-                    Log.d("Else IF : ", "Else If condition for LinearLayout fetching the values ");
-                    LinearLayout linearLayout = (LinearLayout) view;
-                    for (int k = 0; k < linearLayout.getChildCount(); k++) {
-                        View innerView = linearLayout.getChildAt(k);
-                        if (innerView instanceof EditText) {
-                            EditText editText = (EditText) innerView;
-                            String text = editText.getText().toString().trim();
-                            if (editText.getHint() != null) {
-                                if (editText.getHint().toString().equalsIgnoreCase("BAGS")) {
-                                    bagsReceivedQtyEditTextValue = Integer.parseInt(text.isEmpty() ? "0" : text);
-                                    bagsAndBoxPresent = true;
-                                } else if (editText.getHint().toString().equalsIgnoreCase("BOX")) {
-                                    boxReceivedQtyEditTextValue = Integer.parseInt(text.isEmpty() ? "0" : text);
-                                    bagsAndBoxPresent = true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            // Create a JSON object to store row data
+            JSONObject rowData = new JSONObject();
+            try {
+                rowData.put("LRNO", lrNo);
+                rowData.put("LRDate", lrDate);
+                rowData.put("ToPlace", toPlace);
+                rowData.put("PkgsNo", pkgsNo);
+                rowData.put("ReceivedQty", receivedQty);
+                rowData.put("DifferentQty", differentQty);
+                rowData.put("Reason", reason);
 
-            // If bags and box quantities are present, calculate the receivedQty
-            if (bagsAndBoxPresent) {
-                receivedQty = String.valueOf(bagsReceivedQtyEditTextValue + boxReceivedQtyEditTextValue);
-            }
-
-            // Validate data before storing
-            if (!lrNo.isEmpty() && !lrDate.isEmpty() && !toPlace.isEmpty() && !pkgsNo.isEmpty() && !receivedQty.isEmpty() && !differentQty.isEmpty() && !reason.isEmpty()) {
-                // Create a JSON object to store row data
-                JSONObject rowData = new JSONObject();
-                try {
-                    rowData.put("LRNO", lrNo);
-                    rowData.put("LRDate", lrDate);
-                    rowData.put("ToPlace", toPlace);
-                    rowData.put("PkgsNo", pkgsNo);
-                    rowData.put("ReceivedQty", receivedQty);
-                    rowData.put("DifferentQty", differentQty);
-                    rowData.put("Reason", reason);
-
-                    // Add the JSON object to the list
-                    rowDataList.add(rowData);
-                } catch (JSONException e) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            lottieAnimationView.setVisibility(View.GONE);
-                            lottieAnimationView.cancelAnimation();
-                        }
-                    });
-                    e.printStackTrace();
-                }
-            } else {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        lottieAnimationView.setVisibility(View.GONE);
-                        lottieAnimationView.cancelAnimation();
-                    }
+                // Add the JSON object to the list
+                rowDataList.add(rowData);
+            } catch (JSONException e) {
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                    showAlert("JSON Error", "Unable to insert data into the table.");
                 });
-                showWarning("Empty Field Warning", "One or more fields are empty for LRNO: " + lrNo);
-                return;
             }
         }
 
-        //print the table data in list :
-        Log.d("TablLayoutData : ", rowDataList.toString());
+        // Print the table data in list:
+        Log.d("TablLayoutData", rowDataList.toString());
 
         Object selectedItem = hamaliVendorNameSpinnerActivitySeven.getSelectedItem();
         if (selectedItem == null || selectedItem.toString().equals("Please Select Vendor")) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    lottieAnimationView.setVisibility(View.GONE);
-                    lottieAnimationView.cancelAnimation();
-
-                    showWarning("Unselected Field Warning", "Please select hamali vendor name.");
-                }
+            runOnUiThread(() -> {
+                lottieAnimationView.setVisibility(View.GONE);
+                lottieAnimationView.cancelAnimation();
+                showWarning("Unselected Field Warning", "Please select hamali vendor name.");
             });
             return;
         }
@@ -1425,91 +1338,69 @@ public class MainActivity7 extends AppCompatActivity {
         Log.d("godownKeeperName", godownKeeperName);
 
         if (radioGroupOptions.getCheckedRadioButtonId() == -1) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    lottieAnimationView.setVisibility(View.GONE);
-                    lottieAnimationView.cancelAnimation();
-
-                    showWarning("Unselected Radio Button Warning", "Please select any one radio button.");
-                }
+            runOnUiThread(() -> {
+                lottieAnimationView.setVisibility(View.GONE);
+                lottieAnimationView.cancelAnimation();
+                showWarning("Unselected Radio Button Warning", "Please select any one radio button.");
             });
             return;
         }
 
         if (selectedRadioButton == null || selectedRadioButton.isEmpty()) {
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    lottieAnimationView.setVisibility(View.GONE);
-                    lottieAnimationView.cancelAnimation();
-
-                    showWarning("Unselected Radio Button Warning", "Please select any one radio button.");
-                }
+            runOnUiThread(() -> {
+                lottieAnimationView.setVisibility(View.GONE);
+                lottieAnimationView.cancelAnimation();
+                showWarning("Unselected Radio Button Warning", "Please select any one radio button.");
             });
             return;
         }
 
         if (freightAmount.isEmpty()) {
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    lottieAnimationView.setVisibility(View.GONE);
-                    lottieAnimationView.cancelAnimation();
+            runOnUiThread(() -> {
+                lottieAnimationView.setVisibility(View.GONE);
+                lottieAnimationView.cancelAnimation();
 
-                    showWarning("Empty Field Warning", "Please enter freight amount.");
-                    freightEditText.requestFocus();
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.showSoftInput(freightEditText, InputMethodManager.SHOW_IMPLICIT);
+                showWarning("Empty Field Warning", "Please enter freight amount.");
+                freightEditText.requestFocus();
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(freightEditText, InputMethodManager.SHOW_IMPLICIT);
 
-                }
             });
             return;
         }
 
         if (godownKeeperName.isEmpty()) {
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    lottieAnimationView.setVisibility(View.GONE);
-                    lottieAnimationView.cancelAnimation();
+            runOnUiThread(() -> {
+                lottieAnimationView.setVisibility(View.GONE);
+                lottieAnimationView.cancelAnimation();
 
-                    showWarning("Empty Field Warning", "Please enter godown keeper name.");
-                    godownKeeperNameEditText.requestFocus();
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.showSoftInput(godownKeeperNameEditText, InputMethodManager.SHOW_IMPLICIT);
-                }
+                showWarning("Empty Field Warning", "Please enter godown keeper name.");
+                godownKeeperNameEditText.requestFocus();
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(godownKeeperNameEditText, InputMethodManager.SHOW_IMPLICIT);
             });
             return;
         }
 
         if (hamaliVendor.equals("Please Select Vendor")) {
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    lottieAnimationView.setVisibility(View.GONE);
-                    lottieAnimationView.cancelAnimation();
-
-                    showWarning("Unselected Field Warning", "Please select hamali vendor name.");
-                }
+            runOnUiThread(() -> {
+                lottieAnimationView.setVisibility(View.GONE);
+                lottieAnimationView.cancelAnimation();
+                showWarning("Unselected Field Warning", "Please select hamali vendor name.");
             });
             return;
         }
 
         if (amountPaidToHVendor.isEmpty() || hamaliAmount.isEmpty()) {
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    lottieAnimationView.setVisibility(View.GONE);
-                    lottieAnimationView.cancelAnimation();
-
-                    showWarning("Empty Field Warning", "Amount is empty.");
-                }
+            runOnUiThread(() -> {
+                lottieAnimationView.setVisibility(View.GONE);
+                lottieAnimationView.cancelAnimation();
+                showWarning("Empty Field Warning", "Amount is empty.");
             });
             return;
         }
@@ -1539,26 +1430,18 @@ public class MainActivity7 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        lottieAnimationView.setVisibility(View.GONE);
-                        lottieAnimationView.cancelAnimation();
-                        Log.e("MainActivity7(submit)", "Failed to connect to server", e);
-                        showAlert("Connection Failed Error", "Failed to connect to server");
-                    }
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                    showAlert("Connection Failed Error", "Failed to connect to server");
                 });
-                e.printStackTrace();
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        lottieAnimationView.setVisibility(View.GONE);
-                        lottieAnimationView.cancelAnimation();
-                    }
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
                 });
 
                 if (response.isSuccessful()) {
@@ -1572,54 +1455,34 @@ public class MainActivity7 extends AppCompatActivity {
                             String status = jsonResponse.getString("status");
                             String message = jsonResponse.getString("message");
 
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if ("success".equals(status)) {
-                                        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
-                                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
-                                        Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
+                            runOnUiThread(() -> {
+                                if ("success".equals(status)) {
+                                    Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
+                                    Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+                                    Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-                                        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity7.this).setTitle("Success").setMessage(message).setPositiveButton("OK", (dialog, which) -> {
-                                            dialog.dismiss();
-                                            clearUIComponents();
-                                        }).setIcon(successIcon).create();
-                                        alertDialog.setOnDismissListener(dialog -> {
-                                            dialog.dismiss();
-                                            clearUIComponents();
-                                        });
+                                    final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity7.this).setTitle("Success").setMessage(message).setPositiveButton("OK", (dialog, which) -> {
+                                        dialog.dismiss();
+                                        clearUIComponents();
+                                    }).setIcon(successIcon).create();
+                                    alertDialog.setOnDismissListener(dialog -> {
+                                        dialog.dismiss();
+                                        clearUIComponents();
+                                    });
 
-                                        alertDialog.show();
-                                    } else {
-                                        showAlert("Error", message);
-                                    }
+                                    alertDialog.show();
+                                } else {
+                                    runOnUiThread(() -> showAlert("Error", message));
                                 }
                             });
                         } catch (JSONException e) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    showAlert("Parsing Error", "Error parsing response: " + e.getMessage());
-                                    Log.e("Response CreatePRN:", "Error parsing response", e);
-                                }
-                            });
+                            runOnUiThread(() -> showAlert("Parsing Error", "Error parsing response: " + e.getMessage()));
                         }
                     } else {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                showAlert("Empty Response Error", "Empty response received from server");
-                                Log.e("Response CreatePRN:", "Empty response body");
-                            }
-                        });
+                        runOnUiThread(() -> showAlert("Empty Response Error", "Empty response received from server"));
                     }
                 } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            showAlert("Server Error", "Server error: " + response.code());
-                        }
-                    });
+                    runOnUiThread(() -> showAlert("Server Error", "Server error: " + response.code()));
                 }
             }
         });
@@ -1650,7 +1513,10 @@ public class MainActivity7 extends AppCompatActivity {
         // Create a Drawable from the scaled Bitmap
         Drawable alertIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(alertIcon).show();
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> {
+            dialog.dismiss();
+            finish();
+        }).setIcon(alertIcon).setCancelable(false).show();
     }
 
     private void showWarning(String title, String message) {
@@ -1663,7 +1529,7 @@ public class MainActivity7 extends AppCompatActivity {
         // Create a Drawable from the scaled Bitmap
         Drawable warningIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(warningIcon).show();
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(warningIcon).setCancelable(false).show();
     }
 
 }

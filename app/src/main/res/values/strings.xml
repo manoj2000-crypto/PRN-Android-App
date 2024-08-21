@@ -73,5 +73,6 @@
     <string name="cancel_prn">Cancel PRN</string>
     <string name="edit_prn">Edit PRN</string>
     <string name="enter_prn_number">Enter PRN Number</string>
+    <string name="ok">OK</string>
 
 </resources>

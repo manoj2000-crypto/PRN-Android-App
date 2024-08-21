@@ -2,16 +2,19 @@ package com.vtc3pl.prnapp2024v2;
 //Arrival Page Part 1
 
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -24,9 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
-import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
@@ -45,7 +46,6 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -96,135 +96,137 @@ public class MainActivity6 extends AppCompatActivity {
             year = intent.getStringExtra("year");
         }
 
-        fromDateSetListener = new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                fromCalendar.set(Calendar.YEAR, year);
-                fromCalendar.set(Calendar.MONTH, month);
-                fromCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                updateFromDate();
-            }
+        fromDateSetListener = (view, year, month, dayOfMonth) -> {
+            fromCalendar.set(Calendar.YEAR, year);
+            fromCalendar.set(Calendar.MONTH, month);
+            fromCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            updateFromDate();
         };
 
-        toDateSetListener = new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                toCalendar.set(Calendar.YEAR, year);
-                toCalendar.set(Calendar.MONTH, month);
-                toCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                updateToDate();
-            }
+        toDateSetListener = (view, year, month, dayOfMonth) -> {
+            toCalendar.set(Calendar.YEAR, year);
+            toCalendar.set(Calendar.MONTH, month);
+            toCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            updateToDate();
         };
 
         setupRadioButtons();
 
-        searchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        searchButton.setOnClickListener(v -> {
 
-                // Show the Lottie animation
+            runOnUiThread(() -> {
                 lottieAnimationView.setVisibility(View.VISIBLE);
                 lottieAnimationView.playAnimation();
+            });
 
-                OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
+            OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
-                String url = "https://vtc3pl.com/arrival_prn_search_prn_app.php";
+            String url = "https://vtc3pl.com/arrival_prn_search_prn_app.php";
+
+            Log.e("usernme", username);
+            Log.e("depo", depo);
+            Log.e("year", year);
+            Log.e("Selected ", selectedRadioButton);
+
+            FormBody.Builder formBuilder = new FormBody.Builder();
+            formBuilder.add("username", username);
+            formBuilder.add("depo", depo);
+            formBuilder.add("year", year);
+            formBuilder.add("selectedRadioButton", selectedRadioButton);
+            if (selectedRadioButton.equals("radioButton1")) {
                 String fromDate = editTextFromDateActivitySix.getText().toString().trim();
                 String toDate = editTextToDateActivitySix.getText().toString().trim();
-                String prnNumber = prnNumberEditText.getText().toString().trim();
 
-                Log.e("usernme", username);
-                Log.e("depo", depo);
-                Log.e("year", year);
-                Log.e("Selected ", selectedRadioButton);
+                if (fromDate.isEmpty()) {
+                    runOnUiThread(() -> {
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+                    });
 
-                FormBody.Builder formBuilder = new FormBody.Builder();
-                formBuilder.add("username", username);
-                formBuilder.add("depo", depo);
-                formBuilder.add("year", year);
-                formBuilder.add("selectedRadioButton", selectedRadioButton);
-                if (selectedRadioButton.equals("radioButton1")) {
-                    formBuilder.add("fromDate", fromDate);
-                    formBuilder.add("toDate", toDate);
-                } else if (selectedRadioButton.equals("radioButton2")) {
-                    formBuilder.add("prnNumber", prnNumber);
+                    showWarning("Empty From-Date Warning", "From Date is required");
+                    editTextFromDateActivitySix.requestFocus();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(editTextFromDateActivitySix, InputMethodManager.SHOW_IMPLICIT);
+                    return;
                 }
 
-                Request request = new Request.Builder().url(url).post(formBuilder.build()).build();
+                if (toDate.isEmpty()) {
+                    runOnUiThread(() -> {
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+                    });
 
-                // Make the request asynchronously
-                client.newCall(request).enqueue(new Callback() {
-                    @Override
-                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                        e.printStackTrace();
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                showAlert("Connection Failed", "Failed to connect to server.");
-                                lottieAnimationView.setVisibility(View.GONE);
-                                lottieAnimationView.cancelAnimation();
-                            }
-                        });
-                    }
+                    showWarning("Empty To-Date Warning", "To Date is required");
+                    editTextToDateActivitySix.requestFocus();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(editTextToDateActivitySix, InputMethodManager.SHOW_IMPLICIT);
+                    return;
+                }
 
-                    @Override
-                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                        if (response.isSuccessful()) {
-                            ResponseBody body = response.body();
-                            if (body != null) {
-                                String responseData = body.string();
-                                try {
-                                    JSONArray jsonArray = new JSONArray(responseData);
-                                    Log.e("response on success", String.valueOf(jsonArray));
-                                    // Process JSON array and display data in table format
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
+                formBuilder.add("fromDate", fromDate);
+                formBuilder.add("toDate", toDate);
+            } else if (selectedRadioButton.equals("radioButton2")) {
+                String prnNumber = prnNumberEditText.getText().toString().trim();
 
-                                            // Hide the Lottie animation
-                                            lottieAnimationView.setVisibility(View.GONE);
-                                            lottieAnimationView.cancelAnimation();
+                if (prnNumber.isEmpty()) {
+                    runOnUiThread(() -> {
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+                    });
 
-                                            if (jsonArray.length() > 0) {
-                                                // Process JSON array and display data in table format
-                                                displayDataInTable(jsonArray);
-                                            } else {
-                                                // Handle empty array
-                                                showAlert("Empty Response", "No data available");
-                                            }
-                                        }
-                                    });
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            lottieAnimationView.setVisibility(View.GONE);
-                                            lottieAnimationView.cancelAnimation();
-                                            showAlert("Response Error", "Wrong response received from server");
-                                        }
-                                    });
-                                }
-                            } else {
+                    showWarning("Empty PRN Warning", "PRN Number is required");
+                    prnNumberEditText.requestFocus();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(prnNumberEditText, InputMethodManager.SHOW_IMPLICIT);
+                    return;
+                }
+
+                formBuilder.add("prnNumber", prnNumber);
+            }
+
+            Request request = new Request.Builder().url(url).post(formBuilder.build()).build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    runOnUiThread(() -> {
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+                        showAlert("Connection Failed", "Failed to connect to server.");
+                    });
+                }
+
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                    runOnUiThread(() -> {
+                        lottieAnimationView.setVisibility(View.GONE);
+                        lottieAnimationView.cancelAnimation();
+                    });
+                    if (response.isSuccessful()) {
+                        ResponseBody body = response.body();
+                        if (body != null) {
+                            String responseData = body.string();
+                            try {
+                                JSONArray jsonArray = new JSONArray(responseData);
+                                Log.e("response on success", String.valueOf(jsonArray));
                                 runOnUiThread(() -> {
-                                    lottieAnimationView.setVisibility(View.GONE);
-                                    lottieAnimationView.cancelAnimation();
-                                    showAlert("Empty Response", "Empty response is received from server");
+                                    if (jsonArray.length() > 0) {
+                                        displayDataInTable(jsonArray);
+                                    } else {
+                                        showAlert("Empty Response", "No data available");
+                                    }
                                 });
+                            } catch (JSONException e) {
+                                runOnUiThread(() -> showAlert("Response Error", "Wrong response received from server"));
                             }
                         } else {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    lottieAnimationView.setVisibility(View.GONE);
-                                    lottieAnimationView.cancelAnimation();
-                                    showAlert("Response Error", "Unsuccessful response: " + response);
-                                }
-                            });
+                            runOnUiThread(() -> showAlert("Empty Response", "Empty response is received from server"));
                         }
+                    } else {
+                        runOnUiThread(() -> showAlert("Response Error", "Unsuccessful response: " + response));
                     }
-                });
-            }
+                }
+            });
         });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -362,43 +364,49 @@ public class MainActivity6 extends AppCompatActivity {
                 updateButton.setPadding(10, 5, 10, 5);
 
                 // Set OnClickListener for the update button
-                updateButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
+                updateButton.setOnClickListener(v -> {
 
-                        // Create a request body with prnId
-                        RequestBody requestBody = new FormBody.Builder().add("prnId", prnId).build();
+                    runOnUiThread(() -> {
+                        lottieAnimationView.setVisibility(View.VISIBLE);
+                        lottieAnimationView.playAnimation();
+                    });
 
-                        // Create a POST request with the URL and request body
-                        Request request = new Request.Builder().url("https://vtc3pl.com/get_all_lrno_from_prn_number.php").post(requestBody).build();
+                    RequestBody requestBody = new FormBody.Builder().add("prnId", prnId).build();
 
-                        // Create an OkHttpClient to execute the request asynchronously
-                        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
-                        client.newCall(request).enqueue(new Callback() {
-                            @Override
-                            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                                // Handle failure
-                                e.printStackTrace();
-                            }
+                    Request request = new Request.Builder().url("https://vtc3pl.com/get_all_lrno_from_prn_number.php").post(requestBody).build();
 
-                            @Override
-                            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                                if (response.isSuccessful()) {
-                                    // Parse response and pass it to MainActivity7
-                                    String responseData = response.body().string();
+                    OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
+                    client.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                            runOnUiThread(() -> {
+                                lottieAnimationView.setVisibility(View.GONE);
+                                lottieAnimationView.cancelAnimation();
+                                showAlert("Connection Failed", "Failed to connect to server.");
+                            });
+                        }
 
+                        @Override
+                        public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                            runOnUiThread(() -> {
+                                lottieAnimationView.setVisibility(View.GONE);
+                                lottieAnimationView.cancelAnimation();
+                            });
+                            if (response.isSuccessful()) {
+                                ResponseBody body = response.body();
+                                if (body != null) {
+                                    String responseData = body.string();
+                                    //GETTING ERROR HERE AS WRONG RESPONSE .
+                                    Log.i("WRONG RESPONSE :", "Wrong response received from server : " + responseData);
                                     try {
-
-                                        // Parse the JSON response to extract LRNO values
-                                        JSONArray jsonArray = new JSONArray(responseData);
+                                        JSONArray jsonArray1 = new JSONArray(responseData);
                                         ArrayList<String> lrnoList = new ArrayList<>();
-                                        for (int i = 0; i < jsonArray.length(); i++) {
-                                            JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                            String lrno = jsonObject.getString("LRNO").trim();
+                                        for (int i1 = 0; i1 < jsonArray1.length(); i1++) {
+                                            JSONObject jsonObject1 = jsonArray1.getJSONObject(i1);
+                                            String lrno = jsonObject1.getString("LRNO").trim();
                                             lrnoList.add(lrno);
                                         }
 
-                                        // Convert ArrayList to array
                                         String[] lrnoArray = new String[lrnoList.size()];
                                         lrnoArray = lrnoList.toArray(lrnoArray);
                                         Log.e("lrnoArray Only : ", Arrays.toString(lrnoArray));
@@ -413,23 +421,26 @@ public class MainActivity6 extends AppCompatActivity {
                                         startActivity(intent);
 
                                     } catch (JSONException e) {
-                                        showAlert("Response Error", "Wrong response received from server");
-                                        e.printStackTrace();
+                                        runOnUiThread(() -> showAlert("Response Error", "Wrong response received from server"));
                                     }
                                 } else {
-                                    showAlert("Response Error", "Unsuccessful response: " + response);
+                                    runOnUiThread(() -> showAlert("Empty Response Error", "Empty response received from server"));
                                 }
+                            } else {
+                                runOnUiThread(() -> showAlert("Response Error", "Unsuccessful response: " + response));
                             }
-                        });
-                    }
+                        }
+                    });
                 });
 
                 row.addView(updateButton);
 
                 tableLayout.addView(row);
             } catch (JSONException e) {
-                e.printStackTrace();
-                Log.e("tableCreation Excep: ", String.valueOf(e));
+                runOnUiThread(() -> {
+                    showAlert("Table Error", "Table Creation error");
+                    Log.e("TableCreation Excep: ", String.valueOf(e));
+                });
             }
         }
     }
@@ -450,13 +461,34 @@ public class MainActivity6 extends AppCompatActivity {
     }
 
     private void showAlert(String title, String message) {
-        Drawable alertIcon = ContextCompat.getDrawable(MainActivity6.this, android.R.drawable.ic_delete);
-        if (alertIcon != null) {
-            alertIcon = DrawableCompat.wrap(alertIcon);
-            DrawableCompat.setTint(alertIcon, Color.RED);
-        }
+        // Load the original image
+        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.declined);
 
-        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(alertIcon).show();
+        // Scale the image to the desired size
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+
+        // Create a Drawable from the scaled Bitmap
+        Drawable alertIcon = new BitmapDrawable(getResources(), scaledBitmap);
+
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> {
+            dialog.dismiss();
+            finish();
+        }).setIcon(alertIcon).setCancelable(false).show();
+    }
+
+    private void showWarning(String title, String message) {
+        // Load the original image
+        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.caution);
+
+        // Scale the image to the desired size
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+
+        // Create a Drawable from the scaled Bitmap
+        Drawable warningIcon = new BitmapDrawable(getResources(), scaledBitmap);
+
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> {
+            dialog.dismiss();
+        }).setIcon(warningIcon).setCancelable(false).show();
     }
 
 }
