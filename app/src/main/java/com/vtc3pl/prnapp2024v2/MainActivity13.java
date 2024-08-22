@@ -688,8 +688,15 @@ public class MainActivity13 extends AppCompatActivity {
                     ResponseBody body = response.body();
                     if (body != null) {
                         String responseBody = body.string();
+                        Log.i("responseBody", responseBody);
                         try {
                             JSONObject jsonResponse = new JSONObject(responseBody);
+
+                            if (jsonResponse.has("error")) {
+                                String errorMessage = jsonResponse.getString("error");
+                                runOnUiThread(() -> showAlert("Server Error", errorMessage));
+                                return;
+                            }
 
                             JSONArray prvArray = jsonResponse.getJSONArray("prv");
                             if (prvArray.length() > 0) {
@@ -721,7 +728,6 @@ public class MainActivity13 extends AppCompatActivity {
                             });
 
                         } catch (JSONException e) {
-                            e.printStackTrace();
                             runOnUiThread(() -> {
                                 showAlert("Wrong Response Error", "Wrong response received from server.");
                             });

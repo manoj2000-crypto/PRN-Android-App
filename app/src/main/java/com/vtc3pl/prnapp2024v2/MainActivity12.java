@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.InputFilter;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -35,6 +36,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class MainActivity12 extends AppCompatActivity {
 
@@ -86,7 +88,7 @@ public class MainActivity12 extends AppCompatActivity {
             if (!prnId.isEmpty()) {
                 fetchData(prnId);
             } else {
-                showAlert("Empty Field", "PRN Number is empty.");
+                showWarning("Empty Field", "PRN Number is empty.");
             }
         });
 
@@ -97,7 +99,7 @@ public class MainActivity12 extends AppCompatActivity {
             if (!prnId.isEmpty() && !reason.isEmpty()) {
                 cancelPRN(prnId, reason);
             } else {
-                showAlert("Empty Fields", "PRN Number or reason is empty.");
+                showWarning("Empty Fields", "PRN Number or reason is empty.");
             }
         });
 
@@ -183,31 +185,54 @@ public class MainActivity12 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                runOnUiThread(() -> showAlert("Network Error", "Network request failed."));
+                runOnUiThread(() -> showAlert("Network Error", "Network request failed. Please check your internet connection and try again."));
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    runOnUiThread(() -> {
-                        if (isActive) { // Check if activity is still active
-                            Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
-                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
-                            Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        String responseBody = body.string();
+                        Log.e("Response CreatePRN:", responseBody);
+                        try {
+                            JSONObject jsonResponse = new JSONObject(responseBody);
+                            String status = jsonResponse.getString("status");
+                            runOnUiThread(() -> {
+                                if (status.equals("success")) {
+                                    if (isActive) { // Check if activity is still active
+                                        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
+                                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+                                        Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-                            final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity12.this).setTitle("Success").setMessage("PRN successfully canceled.").setPositiveButton("OK", (dialog, which) -> {
-                                dialog.dismiss();
-                                clearUIComponents();
-                            }).setIcon(successIcon).create();
+                                        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity12.this).setTitle("Success").setMessage("PRN successfully canceled.").setPositiveButton("OK", (dialog, which) -> {
+                                            dialog.dismiss();
+                                            clearUIComponents();
+                                        }).setIcon(successIcon).create();
 
-                            alertDialog.setOnDismissListener(dialog -> {
-                                dialog.dismiss();
-                                clearUIComponents();
+                                        alertDialog.setOnDismissListener(dialog -> {
+                                            dialog.dismiss();
+                                            clearUIComponents();
+                                        });
+
+                                        alertDialog.show();
+                                    }
+                                } else {
+                                    String message = null;
+                                    try {
+                                        message = jsonResponse.getString("message");
+                                    } catch (JSONException e) {
+                                        runOnUiThread(() -> showAlert("Parsing Error", "An error occurred while parsing the server response."));
+                                    }
+                                    showAlert("Server Error", message);
+                                }
                             });
-
-                            alertDialog.show();
+                        } catch (JSONException e) {
+                            runOnUiThread(() -> showAlert("Parsing Error", "An error occurred while parsing the server response."));
                         }
-                    });
+                    } else {
+                        runOnUiThread(() -> showAlert("Empty Response Error", "Empty response received from server"));
+                    }
                 } else {
                     runOnUiThread(() -> showAlert("Server Error", "Server returned an error."));
                 }
@@ -235,7 +260,23 @@ public class MainActivity12 extends AppCompatActivity {
         // Create a Drawable from the scaled Bitmap
         Drawable alertIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(alertIcon).show();
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> {
+            dialog.dismiss();
+            finish();
+        }).setIcon(alertIcon).setCancelable(false).show();
+    }
+
+    private void showWarning(String title, String message) {
+        // Load the original image
+        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.caution);
+
+        // Scale the image to the desired size
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+
+        // Create a Drawable from the scaled Bitmap
+        Drawable warningIcon = new BitmapDrawable(getResources(), scaledBitmap);
+
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(warningIcon).setCancelable(false).show();
     }
 
 }

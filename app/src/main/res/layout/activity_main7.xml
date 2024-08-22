@@ -40,254 +40,257 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/horizontalScrollView" />
 
-    <TextView
-        android:id="@+id/loadingUnloadingTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+    <ScrollView
+        android:id="@+id/scrollViewActivitySeven"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:layout_marginTop="16dp"
-        android:text="@string/select_one_option"
-        android:textStyle="bold"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/getDataButton" />
-
-    <RadioGroup
-        android:id="@+id/radioGroupOptions"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="2dp"
-        android:layout_marginTop="16dp"
-        android:orientation="horizontal"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/loadingUnloadingTextView"
-        app:layout_constraintStart_toEndOf="@id/loadingUnloadingTextView"
-        app:layout_constraintTop_toTopOf="@id/loadingUnloadingTextView">
-
-        <RadioButton
-            android:id="@+id/radioButtonUnLoading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/unloading"
-            android:textStyle="bold" />
-
-        <RadioButton
-            android:id="@+id/radioButtonWithoutUnLoading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="@string/without_unloading"
-            android:textStyle="bold" />
-
-    </RadioGroup>
-
-    <TextView
-        android:id="@+id/hamaliVendorNameTextViewActivitySeven"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/hamali_vendor_name"
-        android:textStyle="bold"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/radioGroupOptions" />
-
-    <Spinner
-        android:id="@+id/hamaliVendorNameSpinnerActivitySeven"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="16dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/hamaliVendorNameTextViewActivitySeven"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/hamaliVendorNameTextViewActivitySeven"
-        app:layout_constraintTop_toTopOf="@id/hamaliVendorNameTextViewActivitySeven" />
-
-    <TextView
-        android:id="@+id/hamaliTypeTextViewActivitySeven"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
-        android:text="@string/hamali_type"
-        android:textStyle="bold"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/hamaliVendorNameTextViewActivitySeven" />
-
-    <Spinner
-        android:id="@+id/hamaliTypeSpinnerActivitySeven"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="16dp"
-        android:entries="@array/hamali_type_options"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/hamaliTypeTextViewActivitySeven"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/hamaliTypeTextViewActivitySeven"
-        app:layout_constraintTop_toTopOf="@id/hamaliTypeTextViewActivitySeven" />
-
-    <TextView
-        android:id="@+id/hamaliAmountTextViewActivitySeven"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
-        android:text="@string/hamali_amount"
-        android:textStyle="bold"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/hamaliTypeTextViewActivitySeven" />
-
-    <EditText
-        android:id="@+id/hamaliAmountEditTextActivitySeven"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="16dp"
-        android:ems="10"
-        android:hint="Enter Hamali Amount"
-        android:inputType="numberDecimal"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/hamaliAmountTextViewActivitySeven"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/hamaliAmountTextViewActivitySeven"
-        app:layout_constraintTop_toTopOf="@id/hamaliAmountTextViewActivitySeven"
-        tools:ignore="HardcodedText,TextFields" />
-
-    <TextView
-        android:id="@+id/deductionAmountTextViewActivitySeven"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
-        android:text="@string/deduction_amount"
-        android:textStyle="bold"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/hamaliAmountTextViewActivitySeven" />
-
-    <EditText
-        android:id="@+id/deductionAmountEditTextActivitySeven"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="16dp"
-        android:ems="10"
-        android:hint="Enter Deduction Amount"
-        android:inputType="numberDecimal"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/deductionAmountTextViewActivitySeven"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/deductionAmountTextViewActivitySeven"
-        app:layout_constraintTop_toTopOf="@id/deductionAmountTextViewActivitySeven"
-        tools:ignore="HardcodedText,TextFields" />
-
-    <TextView
-        android:id="@+id/amountPaidToHVendorTextViewActivitySeven"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="36dp"
-        android:text="@string/amount_paid_to_hvendor"
-        android:textStyle="bold"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/deductionAmountTextViewActivitySeven" />
-
-    <EditText
-        android:id="@+id/amountPaidToHVendorEditTextActivitySeven"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="16dp"
-        android:ems="10"
-        android:hint="Enter Amount Paid"
-        android:inputType="numberDecimal"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/amountPaidToHVendorTextViewActivitySeven"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@id/amountPaidToHVendorTextViewActivitySeven"
-        app:layout_constraintTop_toTopOf="@id/amountPaidToHVendorTextViewActivitySeven"
-        app:layout_constraintVertical_bias="0.73"
-        tools:ignore="HardcodedText,TextFields" />
-
-    <TextView
-        android:id="@+id/freightTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
-        android:text="@string/freight"
-        android:textStyle="bold"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/amountPaidToHVendorTextViewActivitySeven" />
-
-    <EditText
-        android:id="@+id/freightEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="16dp"
-        android:ems="10"
-        android:hint="Enter Freight Amount"
-        android:inputType="numberDecimal"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/freightTextView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@id/freightTextView"
-        app:layout_constraintTop_toTopOf="@id/freightTextView"
-        app:layout_constraintVertical_bias="0.73"
-        tools:ignore="HardcodedText,TextFields" />
-
-    <TextView
-        android:id="@+id/godownKeeperNameTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/godown_keeper_name"
-        android:textStyle="bold"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/submitButtonArrivalPRN"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/freightTextView" />
-    />
-
-    <EditText
-        android:id="@+id/godownKeeperNameEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="16dp"
-        android:ems="10"
-        android:hint="Godown Keeper Name"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/godownKeeperNameTextView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@id/godownKeeperNameTextView"
-        app:layout_constraintTop_toTopOf="@id/godownKeeperNameTextView"
-        app:layout_constraintVertical_bias="0.73"
-        tools:ignore="HardcodedText,TextFields" />
-
-    <Button
-        android:id="@+id/submitButtonArrivalPRN"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/submit"
+        android:fillViewport="true"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/godownKeeperNameTextView" />
+        app:layout_constraintTop_toBottomOf="@id/getDataButton">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/CalculationFieldsConstraintLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/loadingUnloadingTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/select_one_option"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <RadioGroup
+                android:id="@+id/radioGroupOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="@id/loadingUnloadingTextView"
+                app:layout_constraintStart_toEndOf="@id/loadingUnloadingTextView"
+                app:layout_constraintTop_toTopOf="@id/loadingUnloadingTextView">
+
+                <RadioButton
+                    android:id="@+id/radioButtonUnLoading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/unloading"
+                    android:textStyle="bold" />
+
+                <RadioButton
+                    android:id="@+id/radioButtonWithoutUnLoading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/without_unloading"
+                    android:textStyle="bold" />
+
+            </RadioGroup>
+
+            <TextView
+                android:id="@+id/hamaliVendorNameTextViewActivitySeven"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/hamali_vendor_name"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/radioGroupOptions" />
+
+            <Spinner
+                android:id="@+id/hamaliVendorNameSpinnerActivitySeven"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintBottom_toBottomOf="@id/hamaliVendorNameTextViewActivitySeven"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/hamaliVendorNameTextViewActivitySeven"
+                app:layout_constraintTop_toTopOf="@id/hamaliVendorNameTextViewActivitySeven" />
+
+            <TextView
+                android:id="@+id/hamaliTypeTextViewActivitySeven"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="24dp"
+                android:text="@string/hamali_type"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/hamaliVendorNameTextViewActivitySeven" />
+
+            <Spinner
+                android:id="@+id/hamaliTypeSpinnerActivitySeven"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="16dp"
+                android:entries="@array/hamali_type_options"
+                app:layout_constraintBottom_toBottomOf="@id/hamaliTypeTextViewActivitySeven"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/hamaliTypeTextViewActivitySeven"
+                app:layout_constraintTop_toTopOf="@id/hamaliTypeTextViewActivitySeven" />
+
+            <TextView
+                android:id="@+id/hamaliAmountTextViewActivitySeven"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="24dp"
+                android:text="@string/hamali_amount"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/hamaliTypeTextViewActivitySeven" />
+
+            <EditText
+                android:id="@+id/hamaliAmountEditTextActivitySeven"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="16dp"
+                android:ems="10"
+                android:hint="Enter Hamali Amount"
+                android:inputType="numberDecimal"
+                app:layout_constraintBottom_toBottomOf="@id/hamaliAmountTextViewActivitySeven"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/hamaliAmountTextViewActivitySeven"
+                app:layout_constraintTop_toTopOf="@id/hamaliAmountTextViewActivitySeven"
+                tools:ignore="HardcodedText,TextFields" />
+
+            <TextView
+                android:id="@+id/deductionAmountTextViewActivitySeven"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="32dp"
+                android:text="@string/deduction_amount"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/hamaliAmountTextViewActivitySeven" />
+
+            <EditText
+                android:id="@+id/deductionAmountEditTextActivitySeven"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="16dp"
+                android:ems="10"
+                android:hint="Enter Deduction Amount"
+                android:inputType="numberDecimal"
+                app:layout_constraintBottom_toBottomOf="@id/deductionAmountTextViewActivitySeven"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/deductionAmountTextViewActivitySeven"
+                app:layout_constraintTop_toTopOf="@id/deductionAmountTextViewActivitySeven"
+                tools:ignore="HardcodedText,TextFields" />
+
+            <TextView
+                android:id="@+id/amountPaidToHVendorTextViewActivitySeven"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="36dp"
+                android:text="@string/amount_paid_to_hvendor"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/deductionAmountTextViewActivitySeven" />
+
+            <EditText
+                android:id="@+id/amountPaidToHVendorEditTextActivitySeven"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="16dp"
+                android:ems="10"
+                android:hint="Enter Amount Paid"
+                android:inputType="numberDecimal"
+                app:layout_constraintBottom_toBottomOf="@id/amountPaidToHVendorTextViewActivitySeven"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toEndOf="@id/amountPaidToHVendorTextViewActivitySeven"
+                app:layout_constraintTop_toTopOf="@id/amountPaidToHVendorTextViewActivitySeven"
+                app:layout_constraintVertical_bias="0.73"
+                tools:ignore="HardcodedText,TextFields" />
+
+            <TextView
+                android:id="@+id/freightTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="32dp"
+                android:text="@string/freight"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/amountPaidToHVendorTextViewActivitySeven" />
+
+            <EditText
+                android:id="@+id/freightEditText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="16dp"
+                android:ems="10"
+                android:hint="Enter Freight Amount"
+                android:inputType="numberDecimal"
+                app:layout_constraintBottom_toBottomOf="@id/freightTextView"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toEndOf="@id/freightTextView"
+                app:layout_constraintTop_toTopOf="@id/freightTextView"
+                app:layout_constraintVertical_bias="0.73"
+                tools:ignore="HardcodedText,TextFields" />
+
+            <TextView
+                android:id="@+id/godownKeeperNameTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/godown_keeper_name"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@id/submitButtonArrivalPRN"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/freightTextView" />
+            />
+
+            <EditText
+                android:id="@+id/godownKeeperNameEditText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="16dp"
+                android:ems="10"
+                android:hint="Godown Keeper Name"
+                app:layout_constraintBottom_toBottomOf="@id/godownKeeperNameTextView"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/godownKeeperNameTextView"
+                app:layout_constraintTop_toTopOf="@id/godownKeeperNameTextView"
+                tools:ignore="HardcodedText,TextFields" />
+
+            <Button
+                android:id="@+id/submitButtonArrivalPRN"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/submit"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/godownKeeperNameTextView" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
 
     <!--    <TextView-->
     <!--        android:id="@+id/fuelVendorNameTextView"-->
@@ -367,6 +370,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center">
+
+        <!-- Semi-transparent overlay to block clicks _ COLOR IS GREY-->
+        <View
+            android:id="@+id/blockingView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#80000000"
+            android:visibility="gone" />
 
         <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/lottieAnimationView"

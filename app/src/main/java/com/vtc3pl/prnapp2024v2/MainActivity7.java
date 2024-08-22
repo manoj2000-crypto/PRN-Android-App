@@ -24,6 +24,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -81,6 +82,9 @@ public class MainActivity7 extends AppCompatActivity {
 
     private LottieAnimationView lottieAnimationView;
 
+    private ScrollView scrollViewActivitySeven;
+    private View blockingView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -135,10 +139,9 @@ public class MainActivity7 extends AppCompatActivity {
         godownKeeperNameEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
 
         lottieAnimationView = findViewById(R.id.lottieAnimationView);
+        scrollViewActivitySeven = findViewById(R.id.scrollViewActivitySeven);
 
         fetchHvendors();
-//        Log.d("onCreate fetch Weight", "fetchWeightsFromServer() called after fetchvendor");
-//        fetchWeightsFromServer();
 
         hamaliVendorNameSpinnerActivitySeven.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -164,7 +167,6 @@ public class MainActivity7 extends AppCompatActivity {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                // Do nothing if nothing is selected
             }
         });
 
@@ -176,7 +178,6 @@ public class MainActivity7 extends AppCompatActivity {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                // Do nothing if nothing is selected
             }
         });
         Log.i("response : ", response);
@@ -197,6 +198,7 @@ public class MainActivity7 extends AppCompatActivity {
         });
 
         submitButtonArrivalPRN.setOnClickListener(v -> {
+            blockingView.setVisibility(View.VISIBLE);
             lottieAnimationView.setVisibility(View.VISIBLE);
             lottieAnimationView.playAnimation();
 
@@ -210,23 +212,7 @@ public class MainActivity7 extends AppCompatActivity {
             boolean allReasonsFilled = extractDataToJson();
             if (allReasonsFilled) {
                 disableComponents();
-                loadingUnloadingTextView.setVisibility(View.VISIBLE);
-                radioGroupOptions.setVisibility(View.VISIBLE);
-                hamaliVendorNameTextViewActivitySeven.setVisibility(View.VISIBLE);
-                hamaliVendorNameSpinnerActivitySeven.setVisibility(View.VISIBLE);
-                hamaliTypeTextViewActivitySeven.setVisibility(View.VISIBLE);
-                hamaliTypeSpinnerActivitySeven.setVisibility(View.VISIBLE);
-                hamaliAmountTextViewActivitySeven.setVisibility(View.VISIBLE);
-                hamaliAmountEditTextActivitySeven.setVisibility(View.VISIBLE);
-                deductionAmountTextViewActivitySeven.setVisibility(View.VISIBLE);
-                deductionAmountEditTextActivitySeven.setVisibility(View.VISIBLE);
-                amountPaidToHVendorTextViewActivitySeven.setVisibility(View.VISIBLE);
-                amountPaidToHVendorEditTextActivitySeven.setVisibility(View.VISIBLE);
-                freightTextView.setVisibility(View.VISIBLE);
-                freightEditText.setVisibility(View.VISIBLE);
-                godownKeeperNameTextView.setVisibility(View.VISIBLE);
-                godownKeeperNameEditText.setVisibility(View.VISIBLE);
-                submitButtonArrivalPRN.setVisibility(View.VISIBLE);
+                scrollViewActivitySeven.setVisibility(View.VISIBLE);
                 getDataButton.setEnabled(false);
                 submitButtonArrivalPRN.setEnabled(false);
             }
@@ -283,7 +269,7 @@ public class MainActivity7 extends AppCompatActivity {
                             hamaliVendorNameSpinnerActivitySeven.setAdapter(adapter);
                         });
                     } else {
-                        runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Response body is null (fetch vendors)", Toast.LENGTH_SHORT).show());
+                        runOnUiThread(() -> showAlert("Response Error", "Response body is null for hamali vendors)"));
                     }
                 } else {
                     onFailure(call, new IOException("Unexpected response code " + response));
@@ -292,91 +278,26 @@ public class MainActivity7 extends AppCompatActivity {
 
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Failed to fetch Hamali Vendors", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> showAlert("Error", "Failed to fetch Hamali Vendors"));
             }
         });
     }
 
-//    private void fetchWeightsFromServer() {
-//        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
-//
-//        // URL for fetching weights
-//        String url = "https://vtc3pl.com/hamali_bag_box_weight_prn_app_arrival.php";
-//
-//        Request request = new Request.Builder().url(url).build();
-//
-//        client.newCall(request).enqueue(new Callback() {
-//            @Override
-//            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-//                e.printStackTrace();
-//                runOnUiThread(() -> {
-//                    Toast.makeText(MainActivity7.this, "Failed to fetch weights from server", Toast.LENGTH_SHORT).show();
-//                });
-//            }
-//
-//            @Override
-//            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-//                if (response.isSuccessful()) {
-//                    ResponseBody body = response.body();
-//                    if (body != null) {
-//                        String responseBody = body.string();
-//                        Log.e("Response : ", responseBody);
-//                        // Parse the JSON response
-//                        try {
-//                            JSONArray jsonArray = new JSONArray(responseBody);
-//                            double totalBoxWeight = 0, totalBoxQty = 0, totalBagWeight = 0, totalBagQty = 0;
-//                            for (int i = 0; i < jsonArray.length(); i++) {
-//                                JSONObject jsonObject = jsonArray.getJSONObject(i);
-//                                String lrNumber = jsonObject.getString("LRNO").trim();
-//                                if (lrNumbersSet.contains(lrNumber)) {
-//                                    totalBoxWeight += jsonObject.getDouble("TotalWeightBox");
-//                                    totalBagWeight += jsonObject.getDouble("TotalWeightBag");
-//                                    totalBoxQty += jsonObject.getDouble("TotalBoxQty");
-//                                    totalBagQty += jsonObject.getDouble("TotalBagQty");
-//                                }
-//                            }
-//
-//                            totalBoxWeightFromAllLRNO = totalBoxWeight;
-//                            totalBagWeightFromAllLRNO = totalBagWeight;
-//                            totalBoxQtyFromAllLRNO = totalBoxQty;
-//                            totalBagQtyFromAllLRNO = totalBagQty;
-//
-//                            runOnUiThread(() -> {
-//                                Log.d("totalBoxWeight : ", String.valueOf(totalBoxWeightFromAllLRNO));
-//                                Log.d("totalBagWeight : ", String.valueOf(totalBagWeightFromAllLRNO));
-//                                Log.d("totalBoxQty : ", String.valueOf(totalBoxQtyFromAllLRNO));
-//                                Log.d("totalBagQty : ", String.valueOf(totalBagQtyFromAllLRNO));
-//                            });
-//
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                            runOnUiThread(() -> {
-//                                Toast.makeText(MainActivity7.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
-//                            });
-//                        }
-//                    } else {
-//                        runOnUiThread(() -> {
-//                            Toast.makeText(MainActivity7.this, "Response body is null(Box Qty and Bag Weight)", Toast.LENGTH_SHORT).show();
-//                        });
-//                    }
-//                } else {
-//                    onFailure(call, new IOException("Unexpected response code " + response));
-//                }
-//            }
-//        });
-//    }
-
     private void calculateHamali() {
         Log.d("calculateHamali() :", "Method is invoked");
 
-        if (hamaliVendorNameSpinnerActivitySeven.getSelectedItem() == null || hamaliTypeSpinnerActivitySeven.getSelectedItem() == null) {
-            // One or both spinners are not selected, return without calculating hamali
+        if (hamaliVendorNameSpinnerActivitySeven.getSelectedItem() == null || hamaliTypeSpinnerActivitySeven.getSelectedItem() == null)
             return;
-        }
 
         selectedHamaliVendor = hamaliVendorNameSpinnerActivitySeven.getSelectedItem().toString();
 
         selectedHamaliType = hamaliTypeSpinnerActivitySeven.getSelectedItem().toString();
+
+        runOnUiThread(() -> {
+            blockingView.setVisibility(View.VISIBLE);
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+        });
 
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
@@ -389,11 +310,21 @@ public class MainActivity7 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Failed to fetch hamali rates", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                    showAlert("Error", "Failed to fetch hamali rates");
+                });
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
                 if (response.isSuccessful()) {
                     ResponseBody body = response.body();
                     if (body != null) {
@@ -423,7 +354,7 @@ public class MainActivity7 extends AppCompatActivity {
                                     return;
                                 }
                             } else {
-                                runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Unknown hamali type", Toast.LENGTH_SHORT).show());
+                                runOnUiThread(() -> showAlert("Hamali Type Error", "Unknown hamali type"));
                                 return;
                             }
 
@@ -444,8 +375,6 @@ public class MainActivity7 extends AppCompatActivity {
                                 hamaliAmountEditTextActivitySeven.setEnabled(false);
                             });
 
-                            // Assuming you have deductionAmountEditText and amountPaidToHVendorEditText declared and initialized
-                            // Assuming these variables are declared globally
                             deductionAmountEditTextActivitySeven.setOnKeyListener((v, keyCode, event) -> {
                                 if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
                                     deductionAmount = Double.parseDouble(deductionAmountEditTextActivitySeven.getText().toString());
@@ -502,16 +431,13 @@ public class MainActivity7 extends AppCompatActivity {
                             });
 
                         } catch (JSONException e) {
-                            runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show());
+                            runOnUiThread(() -> showAlert("JSON Error", "Error parsing JSON response"));
                         }
                     } else {
-                        runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Response body is empty (Hamali rates)", Toast.LENGTH_SHORT).show());
+                        runOnUiThread(() -> showAlert("Response Error", "Response body is empty (Hamali rates)"));
                     }
                 } else {
-                    runOnUiThread(() -> {
-                        // Handle server error
-                        Toast.makeText(MainActivity7.this, "Server error: " + response.code(), Toast.LENGTH_SHORT).show();
-                    });
+                    runOnUiThread(() -> showAlert("Server Error", "Server error: " + response.code()));
                 }
             }
         });
@@ -581,8 +507,6 @@ public class MainActivity7 extends AppCompatActivity {
                 } else {
                     pkgsNoTextView = createTextView(jsonObject.getString("PkgsNo"));
                 }
-//                TextView pkgsNoTextView = createTextView(jsonObject.getString("PkgsNo"));
-//                pkgsNoTextView.setTag("pkgsNo");
 
                 EditText differentQtyEditText = new EditText(MainActivity7.this);
                 differentQtyEditText.setTag("differentQty");
@@ -614,7 +538,6 @@ public class MainActivity7 extends AppCompatActivity {
                 } else {
                     totalBagQtyEditText.setText(jsonObject.getString("TotalBagQty"));
                 }
-//                totalBagQtyEditText.setText(jsonObject.getString("TotalBagQty"));
                 totalBagQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
                 totalBagQtyEditText.setEnabled(false);
 
@@ -626,7 +549,6 @@ public class MainActivity7 extends AppCompatActivity {
                 } else {
                     totalBoxQtyEditText.setText(jsonObject.getString("TotalBoxQty"));
                 }
-//                totalBoxQtyEditText.setText(jsonObject.getString("TotalBoxQty"));
                 totalBoxQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
                 totalBoxQtyEditText.setEnabled(false);
 
@@ -776,6 +698,7 @@ public class MainActivity7 extends AppCompatActivity {
 
     private void sendJsonToServer(JSONArray jsonArray) {
         runOnUiThread(() -> {
+            blockingView.setVisibility(View.VISIBLE);
             lottieAnimationView.setVisibility(View.VISIBLE);
             lottieAnimationView.playAnimation();
         });
@@ -791,8 +714,9 @@ public class MainActivity7 extends AppCompatActivity {
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 runOnUiThread(() -> {
                     lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
                     lottieAnimationView.cancelAnimation();
-                    Toast.makeText(MainActivity7.this, "Request failed", Toast.LENGTH_SHORT).show();
+                    showAlert("Network Error", "Please check your internet.");
                 });
             }
 
@@ -800,6 +724,7 @@ public class MainActivity7 extends AppCompatActivity {
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 runOnUiThread(() -> {
                     lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
                     lottieAnimationView.cancelAnimation();
                 });
 
@@ -830,11 +755,11 @@ public class MainActivity7 extends AppCompatActivity {
                             });
 
                         } catch (JSONException e) {
-                            runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show());
+                            runOnUiThread(() -> showAlert("JSON Error", "Error parsing JSON response"));
                         }
                     }
                 } else {
-                    runOnUiThread(() -> Toast.makeText(MainActivity7.this, "Server error", Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> showAlert("Server Error", "Server error: " + response.code()));
                 }
             }
         });
@@ -865,390 +790,6 @@ public class MainActivity7 extends AppCompatActivity {
             reasonEditText.setEnabled(false);
         }
     }
-
-//    private void sendJsonToServer(JSONObject json, TableRow row, EditText previousReceivedQtyEditText, EditText differentQtyEditText) {
-//
-//        // Show the Lottie animation
-//        lottieAnimationView.setVisibility(View.VISIBLE);
-//        lottieAnimationView.playAnimation();
-//
-//        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
-//
-//        RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json; charset=utf-8"));
-//        Request request = new Request.Builder().url("https://vtc3pl.com/fetch_lrno_details_prn_arrival_prn_app.php").post(body).build();
-//
-//        client.newCall(request).enqueue(new Callback() {
-//            @Override
-//            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        lottieAnimationView.setVisibility(View.GONE);
-//                        lottieAnimationView.cancelAnimation();
-//                    }
-//                });
-//                e.printStackTrace();
-//            }
-//
-//            @Override
-//            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-//                if (response.isSuccessful()) {
-//                    String responseBody = response.body().string();
-//                    Log.d("ServerResponse", responseBody);
-//
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            lottieAnimationView.setVisibility(View.GONE);
-//                            lottieAnimationView.cancelAnimation();
-//                            try {
-//                                JSONObject responseJson = new JSONObject(responseBody);
-//                                Log.d("Inside server() ", "OK");
-//                                Log.d("checkAndAddEditText ", "Calling method checkAndAddEditText() ");
-//                                checkAndAddEditText(responseJson, row, previousReceivedQtyEditText, differentQtyEditText);
-//                            } catch (JSONException e) {
-//                                lottieAnimationView.setVisibility(View.GONE);
-//                                lottieAnimationView.cancelAnimation();
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    });
-//                } else {
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            lottieAnimationView.setVisibility(View.GONE);
-//                            lottieAnimationView.cancelAnimation();
-//                            Log.e("ServerResponse", "Request failed: " + response.code());
-//                        }
-//                    });
-//                }
-//            }
-//        });
-//    }
-
-//    private void checkAndAddEditText(JSONObject responseJson, TableRow row, EditText previousReceivedQtyEditText, EditText differentQtyEditText) {
-//        try {
-////            Log.d("LRNO: " , "LRNO IN checkAndAddEditText : " + responseJson);
-//            JSONObject bags = responseJson.getJSONObject("BAGS");
-//            JSONObject box = responseJson.getJSONObject("BOX");
-//
-//            int bagsReceivedQty = bags.getInt("receivedQty");
-//            int boxReceivedQty = box.getInt("receivedQty");
-//            int bagsReceivedWeight = bags.getInt("receivedWeight");
-//            int boxReceivedWeight = box.getInt("receivedWeight");
-//
-//            // Get LRNO from responseJson
-//            String lrNo = responseJson.getString("LRNO");
-//
-//            if (bagsReceivedQty > 0 && boxReceivedQty > 0) {
-//
-//                //responseJson = {"LRNO":"PNA0000925705","BAGS":{"receivedWeight":74,"receivedQty":17},"BOX":{"receivedWeight":225,"receivedQty":25}}
-//                //Here we have to subtract values from variables from response values
-//
-//                // Subtract values from global variables
-//                totalBagWeightFromAllLRNO -= bagsReceivedWeight;//bags.getInt("receivedWeight");
-//                totalBagQtyFromAllLRNO -= bagsReceivedQty;
-//
-//                totalBoxWeightFromAllLRNO -= boxReceivedWeight;//box.getInt("receivedWeight");
-//                totalBoxQtyFromAllLRNO -= boxReceivedQty;
-//
-//                //Storing this value if user accidentally clicks on the checkbox and if he didn't change the value
-//                uncheckedBagReceivedWeight = bagsReceivedWeight;
-//                uncheckedBagReceivedQty = bagsReceivedQty;
-//                uncheckedBoxReceivedWeight = boxReceivedWeight;
-//                uncheckedBoxReceivedQty = boxReceivedQty;
-//
-//                // Log the updated global variables
-//                Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
-//                Log.d("Global Variables", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
-//                Log.d("Global Variables", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
-//                Log.d("Global Variables", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
-//
-//                int previousReceivedQtyEditTextForDiff = Integer.parseInt(previousReceivedQtyEditText.getText().toString().trim());
-//                // Hide the previous EditText
-//                previousReceivedQtyEditText.setVisibility(View.GONE);
-//
-//                LinearLayout receivedQtyLayout = new LinearLayout(MainActivity7.this);
-//                receivedQtyLayout.setOrientation(LinearLayout.HORIZONTAL);
-//                receivedQtyLayout.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-//
-//                TextView bagsLabel = new TextView(MainActivity7.this);
-//                bagsLabel.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-//                bagsLabel.setText("BAGS:");
-//
-//                EditText bagsReceivedQtyEditText = new EditText(MainActivity7.this);
-//                bagsReceivedQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-//                bagsReceivedQtyEditText.setText(String.valueOf(bagsReceivedQty));
-//                bagsReceivedQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
-//                bagsReceivedQtyEditText.setHint("BAGS");
-//
-//                TextView boxLabel = new TextView(MainActivity7.this);
-//                boxLabel.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-//                boxLabel.setText("BOX:");
-//
-//                EditText boxReceivedQtyEditText = new EditText(MainActivity7.this);
-//                boxReceivedQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-//                boxReceivedQtyEditText.setText(String.valueOf(boxReceivedQty));
-//                boxReceivedQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
-//                boxReceivedQtyEditText.setHint("BOX");
-//
-//                bagsReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
-//                    @Override
-//                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//                    }
-//
-//                    @Override
-//                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-//                    }
-//
-//                    @Override
-//                    public void afterTextChanged(Editable s) {
-//                        try {
-//
-////                          int pkgsNo = previousReceivedQtyEditTextForDiff;
-//                            int receivedQtyBagsForDiff = Integer.parseInt(s.toString().trim());
-//                            int receivedQtyBoxForDiff = Integer.parseInt(boxReceivedQtyEditText.getText().toString().trim());
-//                            int differenceQty = (previousReceivedQtyEditTextForDiff - (receivedQtyBagsForDiff + receivedQtyBoxForDiff));
-//                            differentQtyEditText.setText(String.valueOf(differenceQty));
-//
-//                            JSONObject updateJson = new JSONObject();
-//                            updateJson.put("LRNO", lrNo);
-//                            updateJson.put("BAGS", s.toString());
-//                            updateJson.put("BOX", boxReceivedQtyEditText.getText().toString());
-//                            sendUpdatedValueToServer(updateJson);
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                });
-//
-//                boxReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
-//                    @Override
-//                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//                    }
-//
-//                    @Override
-//                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-//                    }
-//
-//                    @Override
-//                    public void afterTextChanged(Editable s) {
-//                        try {
-//
-//                            int receivedQtyBoxForDiff = Integer.parseInt(s.toString().trim());
-//                            int receivedQtyBagsForDiff = Integer.parseInt(bagsReceivedQtyEditText.getText().toString().trim());
-//                            int differenceQty = (previousReceivedQtyEditTextForDiff - (receivedQtyBagsForDiff + receivedQtyBoxForDiff));
-//                            differentQtyEditText.setText(String.valueOf(differenceQty));
-//
-//                            JSONObject updateJson = new JSONObject();
-//                            updateJson.put("LRNO", lrNo);
-//                            updateJson.put("BOX", s.toString());
-//                            updateJson.put("BAGS", bagsReceivedQtyEditText.getText().toString());
-//                            sendUpdatedValueToServer(updateJson);
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                });
-//
-//                receivedQtyLayout.addView(bagsLabel);
-//                receivedQtyLayout.addView(bagsReceivedQtyEditText);
-//                receivedQtyLayout.addView(boxLabel);
-//                receivedQtyLayout.addView(boxReceivedQtyEditText);
-//
-//                // Add new EditTexts in place of the previous one
-//                int receivedQtyIndex = row.indexOfChild(previousReceivedQtyEditText);
-//                if (receivedQtyIndex != -1) {
-//                    row.removeViewAt(receivedQtyIndex);
-//                    row.addView(receivedQtyLayout, receivedQtyIndex);
-//                }
-//            } else if (bagsReceivedQty > 0 && boxReceivedQty == 0) {
-//                // Subtract values from global variables
-//                totalBagWeightFromAllLRNO -= bagsReceivedWeight;
-//                totalBagQtyFromAllLRNO -= bagsReceivedQty;
-//
-//                //Storing this value if user accidentally clicks on the checkbox and if he didn't change the value
-//                uncheckedBagReceivedWeight = bagsReceivedWeight;
-//                uncheckedBagReceivedQty = bagsReceivedQty;
-//                uncheckedBoxReceivedWeight = 0;
-//                uncheckedBoxReceivedQty = 0;
-//
-//                // Log the updated global variables
-//                Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
-//                Log.d("Global Variables", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
-//
-//                // Add TextWatcher to the existing previousReceivedQtyEditText
-//                previousReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
-//                    @Override
-//                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//                    }
-//
-//                    @Override
-//                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-//                    }
-//
-//                    @Override
-//                    public void afterTextChanged(Editable s) {
-//                        try {
-//                            JSONObject updateJson = new JSONObject();
-//                            updateJson.put("LRNO", lrNo);
-//                            updateJson.put("BAGS", s.toString());
-//                            sendUpdatedValueToServer(updateJson);
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                });
-//            } else if (bagsReceivedQty == 0 && boxReceivedQty > 0) {
-//                // Subtract values from global variables
-//                totalBoxWeightFromAllLRNO -= boxReceivedWeight;
-//                totalBoxQtyFromAllLRNO -= boxReceivedQty;
-//
-//                //Storing this value if user accidentally clicks on the checkbox and if he didn't change the value
-//                uncheckedBagReceivedWeight = 0;
-//                uncheckedBagReceivedQty = 0;
-//                uncheckedBoxReceivedWeight = boxReceivedWeight;
-//                uncheckedBoxReceivedQty = boxReceivedQty;
-//
-//                // Log the updated global variables
-//                Log.d("Global Variables", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
-//                Log.d("Global Variables", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
-//
-//                // Add TextWatcher to the existing previousReceivedQtyEditText
-//                previousReceivedQtyEditText.addTextChangedListener(new TextWatcher() {
-//                    @Override
-//                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//                    }
-//
-//                    @Override
-//                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-//                    }
-//
-//                    @Override
-//                    public void afterTextChanged(Editable s) {
-//                        try {
-//                            JSONObject updateJson = new JSONObject();
-//                            updateJson.put("LRNO", lrNo);
-//                            updateJson.put("BOX", s.toString());
-//                            sendUpdatedValueToServer(updateJson);
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                });
-//            }
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-//    private void sendUpdatedValueToServer(JSONObject json) {
-//        //ON SUBMIT THE THE SELECTED HAMALI VENDOR IS GETTING SUBMMITED AS "PLEASE SELECT HAMALI"
-//        Log.d("JSON RESPONSE : ", "sendUpdatedValueToServer JSON response after change value in BAGS OR BOX Value: " + json);
-//
-//        lottieAnimationView.setVisibility(View.VISIBLE);
-//        lottieAnimationView.playAnimation();
-//
-//        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
-//
-//        RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json; charset=utf-8"));
-//        Request request = new Request.Builder().url("https://vtc3pl.com/fetch_lrno_details_for_single_lrno_prn_arrival_prn_app.php").post(body).build();
-//
-//        client.newCall(request).enqueue(new Callback() {
-//            @Override
-//            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        lottieAnimationView.setVisibility(View.GONE);
-//                        lottieAnimationView.cancelAnimation();
-//                    }
-//                });
-//                e.printStackTrace();
-//            }
-//
-//            @Override
-//            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-//                if (response.isSuccessful()) {
-//                    String responseBody = response.body().string();
-//                    Log.d("ServerResponse", responseBody);
-//
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            lottieAnimationView.setVisibility(View.GONE);
-//                            lottieAnimationView.cancelAnimation();
-//
-//
-//                            try {
-//                                JSONObject responseJson = new JSONObject(responseBody);
-//
-//                                // Extract BAGS and BOX data
-//                                JSONObject bags = responseJson.getJSONObject("BAGS");
-//                                JSONObject box = responseJson.getJSONObject("BOX");
-//
-//                                int bagsReceivedWeight = bags.getInt("receivedWeight");
-//                                int bagsReceivedQty = bags.getInt("receivedQty");
-//
-//                                int boxReceivedWeight = box.getInt("receivedWeight");
-//                                int boxReceivedQty = box.getInt("receivedQty");
-//
-//                                int receivedQty = responseJson.optInt("ReceivedQty", 0);
-//
-//                                // Subtract the previous values
-//                                totalBagWeightFromAllLRNO -= previousBagReceivedWeight;
-//                                totalBagQtyFromAllLRNO -= previousBagReceivedQty;
-//
-//                                totalBoxWeightFromAllLRNO -= previousBoxReceivedWeight;
-//                                totalBoxQtyFromAllLRNO -= previousBoxReceivedQty;
-//
-//                                totalBoxQtyFromAllLRNO -= previousReceivedQty;
-//
-//                                // Add the new values
-//                                totalBagWeightFromAllLRNO += bagsReceivedWeight;
-//                                totalBagQtyFromAllLRNO += bagsReceivedQty;
-//
-//                                totalBoxWeightFromAllLRNO += boxReceivedWeight;
-//                                totalBoxQtyFromAllLRNO += boxReceivedQty;
-//
-//                                totalBoxQtyFromAllLRNO += receivedQty;
-//
-//                                // Update the previous values
-//                                previousBagReceivedWeight = bagsReceivedWeight;
-//                                previousBagReceivedQty = bagsReceivedQty;
-//                                previousBoxReceivedWeight = boxReceivedWeight;
-//                                previousBoxReceivedQty = boxReceivedQty;
-//                                previousReceivedQty = receivedQty;
-//
-//                                // Log the updated global variables
-//                                Log.d("Global Variables", "totalBagWeightFromAllLRNO: " + totalBagWeightFromAllLRNO);
-//                                Log.d("Global Variables", "totalBagQtyFromAllLRNO: " + totalBagQtyFromAllLRNO);
-//                                Log.d("Global Variables", "totalBoxWeightFromAllLRNO: " + totalBoxWeightFromAllLRNO);
-//                                Log.d("Global Variables", "totalBoxQtyFromAllLRNO: " + totalBoxQtyFromAllLRNO);
-//
-//                            } catch (JSONException e) {
-//                                lottieAnimationView.setVisibility(View.GONE);
-//                                lottieAnimationView.cancelAnimation();
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    });
-//                } else {
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            lottieAnimationView.setVisibility(View.GONE);
-//                            lottieAnimationView.cancelAnimation();
-//
-//                            Log.e("ServerResponse", "Request failed: " + response.code());
-//                        }
-//                    });
-//
-//                }
-//            }
-//        });
-//    }
 
     private TextView createHeaderTextView(String text) {
         TextView textView = new TextView(MainActivity7.this);
@@ -1303,6 +844,7 @@ public class MainActivity7 extends AppCompatActivity {
             } catch (JSONException e) {
                 runOnUiThread(() -> {
                     lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
                     lottieAnimationView.cancelAnimation();
                     showAlert("JSON Error", "Unable to insert data into the table.");
                 });
@@ -1316,6 +858,7 @@ public class MainActivity7 extends AppCompatActivity {
         if (selectedItem == null || selectedItem.toString().equals("Please Select Vendor")) {
             runOnUiThread(() -> {
                 lottieAnimationView.setVisibility(View.GONE);
+                blockingView.setVisibility(View.GONE);
                 lottieAnimationView.cancelAnimation();
                 showWarning("Unselected Field Warning", "Please select hamali vendor name.");
             });
@@ -1340,6 +883,7 @@ public class MainActivity7 extends AppCompatActivity {
         if (radioGroupOptions.getCheckedRadioButtonId() == -1) {
             runOnUiThread(() -> {
                 lottieAnimationView.setVisibility(View.GONE);
+                blockingView.setVisibility(View.GONE);
                 lottieAnimationView.cancelAnimation();
                 showWarning("Unselected Radio Button Warning", "Please select any one radio button.");
             });
@@ -1350,6 +894,7 @@ public class MainActivity7 extends AppCompatActivity {
 
             runOnUiThread(() -> {
                 lottieAnimationView.setVisibility(View.GONE);
+                blockingView.setVisibility(View.GONE);
                 lottieAnimationView.cancelAnimation();
                 showWarning("Unselected Radio Button Warning", "Please select any one radio button.");
             });
@@ -1360,6 +905,7 @@ public class MainActivity7 extends AppCompatActivity {
 
             runOnUiThread(() -> {
                 lottieAnimationView.setVisibility(View.GONE);
+                blockingView.setVisibility(View.GONE);
                 lottieAnimationView.cancelAnimation();
 
                 showWarning("Empty Field Warning", "Please enter freight amount.");
@@ -1375,6 +921,7 @@ public class MainActivity7 extends AppCompatActivity {
 
             runOnUiThread(() -> {
                 lottieAnimationView.setVisibility(View.GONE);
+                blockingView.setVisibility(View.GONE);
                 lottieAnimationView.cancelAnimation();
 
                 showWarning("Empty Field Warning", "Please enter godown keeper name.");
@@ -1389,6 +936,7 @@ public class MainActivity7 extends AppCompatActivity {
 
             runOnUiThread(() -> {
                 lottieAnimationView.setVisibility(View.GONE);
+                blockingView.setVisibility(View.GONE);
                 lottieAnimationView.cancelAnimation();
                 showWarning("Unselected Field Warning", "Please select hamali vendor name.");
             });
@@ -1399,6 +947,7 @@ public class MainActivity7 extends AppCompatActivity {
 
             runOnUiThread(() -> {
                 lottieAnimationView.setVisibility(View.GONE);
+                blockingView.setVisibility(View.GONE);
                 lottieAnimationView.cancelAnimation();
                 showWarning("Empty Field Warning", "Amount is empty.");
             });
@@ -1432,6 +981,7 @@ public class MainActivity7 extends AppCompatActivity {
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 runOnUiThread(() -> {
                     lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
                     lottieAnimationView.cancelAnimation();
                     showAlert("Connection Failed Error", "Failed to connect to server");
                 });
@@ -1441,6 +991,7 @@ public class MainActivity7 extends AppCompatActivity {
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 runOnUiThread(() -> {
                     lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
                     lottieAnimationView.cancelAnimation();
                 });
 
