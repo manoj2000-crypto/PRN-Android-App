@@ -70,13 +70,13 @@ public class MainActivity7 extends AppCompatActivity {
     private String selectedRadioButton = "", prnId = "", depo = "", username = "", response = "", year = "";
     private String[] lrnoArray;
     private Spinner hamaliVendorNameSpinnerActivitySeven, hamaliTypeSpinnerActivitySeven;
-    private EditText hamaliAmountEditTextActivitySeven, deductionAmountEditTextActivitySeven, amountPaidToHVendorEditTextActivitySeven, freightEditText, godownKeeperNameEditText;
+    private EditText hamaliAmountEditTextActivitySeven, deductionAmountEditTextActivitySeven, amountPaidToHVendorEditTextActivitySeven, freightEditText, godownKeeperNameEditText, lrnoEditText;
     private RadioGroup radioGroupOptions;
     private RadioButton radioButtonUnLoading, radioButtonWithoutUnLoading;
     private String selectedHamaliVendor = "", selectedHamaliType = "";
     private double amountPaidToHVendor, deductionAmount;
     private TableLayout tableLayoutActivitySeven;
-    private Button submitButtonArrivalPRN, getDataButton;
+    private Button submitButtonArrivalPRN, getDataButton, excessButton, damageButton, actionButton;
 
     private TextView loadingUnloadingTextView, hamaliVendorNameTextViewActivitySeven, hamaliTypeTextViewActivitySeven, hamaliAmountTextViewActivitySeven, deductionAmountTextViewActivitySeven, amountPaidToHVendorTextViewActivitySeven, freightTextView, godownKeeperNameTextView;
 
@@ -84,6 +84,8 @@ public class MainActivity7 extends AppCompatActivity {
 
     private ScrollView scrollViewActivitySeven;
     private View blockingView;
+
+    private LinearLayout inputLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +98,7 @@ public class MainActivity7 extends AppCompatActivity {
         depo = getIntent().getStringExtra("depo");
         username = getIntent().getStringExtra("username");
         response = getIntent().getStringExtra("response");
+        Log.i("response ","OnCreate : " + response);
         lrnoArray = getIntent().getStringArrayExtra("lrnoArray");
         year = getIntent().getStringExtra("year");
 
@@ -140,6 +143,14 @@ public class MainActivity7 extends AppCompatActivity {
 
         lottieAnimationView = findViewById(R.id.lottieAnimationView);
         scrollViewActivitySeven = findViewById(R.id.scrollViewActivitySeven);
+        blockingView = findViewById(R.id.blockingView);
+
+        excessButton = findViewById(R.id.excessButton);
+        damageButton = findViewById(R.id.damageButton);
+        inputLayout = findViewById(R.id.inputLayout);
+        actionButton = findViewById(R.id.actionButton);
+        lrnoEditText = findViewById(R.id.lrnoEditText);
+        lrnoEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
 
         fetchHvendors();
 
@@ -218,11 +229,84 @@ public class MainActivity7 extends AppCompatActivity {
             }
         });
 
+        excessButton.setOnClickListener(v -> {
+            inputLayout.setVisibility(View.VISIBLE);
+            actionButton.setText(R.string.add_excess_lr);
+        });
+
+        damageButton.setOnClickListener(v -> {
+            inputLayout.setVisibility(View.VISIBLE);
+            actionButton.setText(R.string.add_damage_lr);
+        });
+
+        actionButton.setOnClickListener(v -> {
+            String lrno = lrnoEditText.getText().toString().trim();
+            String bagQty = ((EditText) findViewById(R.id.bagQtyEditText)).getText().toString().trim();
+            String boxQty = ((EditText) findViewById(R.id.boxQtyEditText)).getText().toString().trim();
+
+            if (lrno.isEmpty() || bagQty.isEmpty() || boxQty.isEmpty()) {
+                showWarning("Empty Field Warning", "Please fill in all the fields.");
+                return;
+            }
+
+            if (actionButton.getText().toString().equals("Add Excess LR")) {
+                addExcessLR(lrno, bagQty, boxQty);
+                Log.i("Excess", "LR : " + lrno + " BAG : " + bagQty + " BOX : " + boxQty);
+            } else {
+                addDamageLR(lrno, bagQty, boxQty);
+                Log.i("Damage", "LR : " + lrno + " BAG : " + bagQty + " BOX : " + boxQty);
+            }
+        });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
+        });
+    }
+
+    private void addExcessLR(String lrno, String bagQty, String boxQty) {
+        sendLRDataToServer("excess", lrno, bagQty, boxQty);
+    }
+
+    private void addDamageLR(String lrno, String bagQty, String boxQty) {
+        sendLRDataToServer("damage", lrno, bagQty, boxQty);
+    }
+
+    private void sendLRDataToServer(String type, String lrno, String bagQty, String boxQty) {
+        OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
+
+        // Create JSON object with the data
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("type", type);
+            jsonObject.put("lrno", lrno);
+            jsonObject.put("bagQty", bagQty);
+            jsonObject.put("boxQty", boxQty);
+        } catch (JSONException e) {
+            showAlert("JSON Error ", "Data error.");
+        }
+
+        // Create request body with JSON data
+        RequestBody requestBody = RequestBody.create(jsonObject.toString(), MediaType.parse("application/json; charset=utf-8"));
+
+        Request request = new Request.Builder().url("https://vtc3pl.com/fetchExcessOrDamageLR.php").post(requestBody).build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                showAlert("Network Error", "Failed to send data to server");
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    Log.i("Server Response", responseBody);
+                } else {
+                    showAlert("Server Error", "Unexpected response code: " + response.code());
+                }
+            }
         });
     }
 

@@ -40,6 +40,125 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/horizontalScrollView" />
 
+    <LinearLayout
+        android:id="@+id/LayoutForTwoButtons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/getDataButton">
+
+        <Button
+            android:id="@+id/excessButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/excess" />
+
+        <Button
+            android:id="@+id/damageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="@string/damage" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/inputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/LayoutForTwoButtons">
+
+        <!-- LRNO -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_weight="1"
+                android:text="@string/lr_no"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/lrnoEditText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="2"
+                android:hint="@string/enter_lr_no"
+                android:inputType="text" />
+        </LinearLayout>
+
+        <!-- BAG QTY -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_weight="1"
+                android:text="@string/bag_qty"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/bagQtyEditText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="2"
+                android:hint="@string/enter_bag_qty"
+                android:inputType="number" />
+        </LinearLayout>
+
+        <!-- BOX QTY -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_weight="1"
+                android:text="@string/box_qty"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/boxQtyEditText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="2"
+                android:hint="@string/enter_box_qty"
+                android:inputType="number" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/actionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/add_lr" />
+    </LinearLayout>
+
     <ScrollView
         android:id="@+id/scrollViewActivitySeven"
         android:layout_width="match_parent"
@@ -50,7 +169,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/getDataButton">
+        app:layout_constraintTop_toBottomOf="@id/inputLayout">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/CalculationFieldsConstraintLayout"

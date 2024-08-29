@@ -74,5 +74,14 @@
     <string name="edit_prn">Edit PRN</string>
     <string name="enter_prn_number">Enter PRN Number</string>
     <string name="ok">OK</string>
+    <string name="excess">Excess</string>
+    <string name="damage">Damage</string>
+    <string name="bag_qty">Bag Qty</string>
+    <string name="enter_bag_qty">Enter BAG Qty</string>
+    <string name="box_qty">Box Qty</string>
+    <string name="enter_box_qty">Enter Box Qty</string>
+    <string name="add_lr">Add LR</string>
+    <string name="add_excess_lr">Add Excess LR</string>
+    <string name="add_damage_lr">Add Damage LR</string>
 
 </resources>
