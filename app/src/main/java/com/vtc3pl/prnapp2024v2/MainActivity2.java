@@ -309,6 +309,7 @@ public class MainActivity2 extends AppCompatActivity {
                     ResponseBody body = response.body();
                     if (body != null) {
                         String responseBody = body.string();
+                        Log.i("responseBody : Auto ", responseBody);
                         if (responseBody.equals("0")) {
                             runOnUiThread(() -> showWarning("Warning", "This LR Number not available for PRN"));
                         } else if (responseBody.equals(lrNumber)) {
@@ -379,6 +380,7 @@ public class MainActivity2 extends AppCompatActivity {
                     ResponseBody body = response.body();
                     if (body != null) {
                         String responseBody = body.string();
+                        Log.i("Hamali: ", responseBody);
                         // Parse the JSON response
                         List<String> hVendors = new ArrayList<>();
                         try {
@@ -457,6 +459,7 @@ public class MainActivity2 extends AppCompatActivity {
                     ResponseBody body = response.body();
                     if (body != null) {
                         String responseBody = body.string();
+                        Log.i("fetchWeightsFromServer", responseBody);
                         // Parse the JSON response
                         try {
                             JSONArray jsonArray = new JSONArray(responseBody);

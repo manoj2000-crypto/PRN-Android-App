@@ -22,8 +22,6 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TableLayout;
@@ -71,8 +69,8 @@ public class MainActivity7 extends AppCompatActivity {
     private String[] lrnoArray;
     private Spinner hamaliVendorNameSpinnerActivitySeven, hamaliTypeSpinnerActivitySeven;
     private EditText hamaliAmountEditTextActivitySeven, deductionAmountEditTextActivitySeven, amountPaidToHVendorEditTextActivitySeven, freightEditText, godownKeeperNameEditText, lrnoEditText;
-    private RadioGroup radioGroupOptions;
-    private RadioButton radioButtonUnLoading, radioButtonWithoutUnLoading;
+    //    private RadioGroup radioGroupOptions;
+//    private RadioButton radioButtonUnLoading, radioButtonWithoutUnLoading;
     private String selectedHamaliVendor = "", selectedHamaliType = "";
     private double amountPaidToHVendor, deductionAmount;
     private TableLayout tableLayoutActivitySeven;
@@ -85,7 +83,7 @@ public class MainActivity7 extends AppCompatActivity {
     private ScrollView scrollViewActivitySeven;
     private View blockingView;
 
-    private LinearLayout inputLayout;
+    private LinearLayout inputLayout, LayoutForTwoButtons;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +96,7 @@ public class MainActivity7 extends AppCompatActivity {
         depo = getIntent().getStringExtra("depo");
         username = getIntent().getStringExtra("username");
         response = getIntent().getStringExtra("response");
-        Log.i("response ","OnCreate : " + response);
+        Log.i("response ", "OnCreate : " + response);
         lrnoArray = getIntent().getStringArrayExtra("lrnoArray");
         year = getIntent().getStringExtra("year");
 
@@ -152,6 +150,8 @@ public class MainActivity7 extends AppCompatActivity {
         lrnoEditText = findViewById(R.id.lrnoEditText);
         lrnoEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
 
+        LayoutForTwoButtons = findViewById(R.id.LayoutForTwoButtons);
+
         fetchHvendors();
 
         hamaliVendorNameSpinnerActivitySeven.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -194,19 +194,19 @@ public class MainActivity7 extends AppCompatActivity {
         Log.i("response : ", response);
         displayDataInTable(response);
 
-        radioGroupOptions = findViewById(R.id.radioGroupOptions);
-        radioButtonWithoutUnLoading = findViewById(R.id.radioButtonWithoutUnLoading);
-        radioButtonUnLoading = findViewById(R.id.radioButtonUnLoading);
-
-        radioGroupOptions.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == radioButtonWithoutUnLoading.getId()) {
-                selectedRadioButton = "WithoutUnLoading";
-                Log.d("If RadioButton Value:", selectedRadioButton + " , checkId = " + checkedId);
-            } else if (checkedId == radioButtonUnLoading.getId()) {
-                selectedRadioButton = "UnLoading";
-                Log.d("else RadioButton Value:", selectedRadioButton + " , checkId = " + checkedId);
-            }
-        });
+//        radioGroupOptions = findViewById(R.id.radioGroupOptions);
+//        radioButtonWithoutUnLoading = findViewById(R.id.radioButtonWithoutUnLoading);
+//        radioButtonUnLoading = findViewById(R.id.radioButtonUnLoading);
+//
+//        radioGroupOptions.setOnCheckedChangeListener((group, checkedId) -> {
+//            if (checkedId == radioButtonWithoutUnLoading.getId()) {
+//                selectedRadioButton = "WithoutUnLoading";
+//                Log.d("If RadioButton Value:", selectedRadioButton + " , checkId = " + checkedId);
+//            } else if (checkedId == radioButtonUnLoading.getId()) {
+//                selectedRadioButton = "UnLoading";
+//                Log.d("else RadioButton Value:", selectedRadioButton + " , checkId = " + checkedId);
+//            }
+//        });
 
         submitButtonArrivalPRN.setOnClickListener(v -> {
             blockingView.setVisibility(View.VISIBLE);
@@ -226,6 +226,8 @@ public class MainActivity7 extends AppCompatActivity {
                 scrollViewActivitySeven.setVisibility(View.VISIBLE);
                 getDataButton.setEnabled(false);
                 submitButtonArrivalPRN.setEnabled(false);
+                LayoutForTwoButtons.setVisibility(View.GONE);
+                inputLayout.setVisibility(View.GONE);
             }
         });
 
@@ -244,8 +246,15 @@ public class MainActivity7 extends AppCompatActivity {
             String bagQty = ((EditText) findViewById(R.id.bagQtyEditText)).getText().toString().trim();
             String boxQty = ((EditText) findViewById(R.id.boxQtyEditText)).getText().toString().trim();
 
-            if (lrno.isEmpty() || bagQty.isEmpty() || boxQty.isEmpty()) {
-                showWarning("Empty Field Warning", "Please fill in all the fields.");
+            if (bagQty.isEmpty()) {
+                bagQty = "0";
+            }
+            if (boxQty.isEmpty()) {
+                boxQty = "0";
+            }
+
+            if (lrno.isEmpty()) {
+                showWarning("Empty Field Warning", "Please enter the LR Number.");
                 return;
             }
 
@@ -274,6 +283,11 @@ public class MainActivity7 extends AppCompatActivity {
     }
 
     private void sendLRDataToServer(String type, String lrno, String bagQty, String boxQty) {
+        runOnUiThread(() -> {
+            blockingView.setVisibility(View.VISIBLE);
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+        });
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         // Create JSON object with the data
@@ -287,7 +301,6 @@ public class MainActivity7 extends AppCompatActivity {
             showAlert("JSON Error ", "Data error.");
         }
 
-        // Create request body with JSON data
         RequestBody requestBody = RequestBody.create(jsonObject.toString(), MediaType.parse("application/json; charset=utf-8"));
 
         Request request = new Request.Builder().url("https://vtc3pl.com/fetchExcessOrDamageLR.php").post(requestBody).build();
@@ -295,20 +308,219 @@ public class MainActivity7 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                showAlert("Network Error", "Failed to send data to server");
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                    showAlert("Network Error", "Failed to send data to server");
+                });
             }
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
+
                 if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-                    Log.i("Server Response", responseBody);
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        String responseBody = body.string();
+                        Log.i("Server Response", responseBody);
+                        runOnUiThread(() -> {
+                            try {
+                                JSONObject jsonResponse = new JSONObject(responseBody);
+
+                                if (jsonResponse.getBoolean("success")) {
+                                    JSONObject data = jsonResponse.getJSONObject("data");
+
+                                    String lrno = data.getString("LRNO");
+                                    String lrDate = data.getString("LRDate");
+                                    String toPlace = data.getString("ToPlace");
+                                    String pkgsNo = String.valueOf(data.getInt("PkgsNo"));
+                                    String prnShortQty = String.valueOf(data.getInt("PRNShortQty"));
+
+                                    addRowToTable(lrno, lrDate, toPlace, pkgsNo, prnShortQty, bagQty, boxQty);
+
+                                } else {
+                                    showWarning("Warning ", jsonResponse.getString("message"));
+                                }
+
+                            } catch (JSONException e) {
+                                showAlert("JSON Error", "Failed to parse server response.");
+                            }
+                        });
+                    } else {
+                        runOnUiThread(() -> showAlert("Empty Response", "Empty response is received from server"));
+                    }
                 } else {
                     showAlert("Server Error", "Unexpected response code: " + response.code());
                 }
             }
+
         });
     }
+
+    private void addRowToTable(String lrno, String lrDate, String toPlace, String pkgsNo, String prnShortQty, String bagQty, String boxQty) {
+
+        for (int i = 0; i < tableLayoutActivitySeven.getChildCount(); i++) {
+            TableRow existingRow = (TableRow) tableLayoutActivitySeven.getChildAt(i);
+            TextView lrNoTextView = existingRow.findViewWithTag("lrNo");
+            if (lrNoTextView != null && lrNoTextView.getText().toString().equals(lrno)) {
+                showWarning("Duplicate LRNO", "The LRNO already exists.");
+                return; // Prevent duplicate entry
+            }
+        }
+
+        TableRow row = new TableRow(MainActivity7.this);
+        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT);
+        row.setLayoutParams(layoutParams);
+
+        // Create a CheckBox for the row
+        CheckBox rowCheckBox = new CheckBox(MainActivity7.this);
+        rowCheckBox.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+
+        // Create TextViews for each column
+        TextView lrNoTextView = createTextView(lrno);
+        lrNoTextView.setTag("lrNo");
+
+        TextView lrDateTextView = createTextView(lrDate);
+        lrDateTextView.setTag("lrDate");
+
+        TextView toPlaceTextView = createTextView(toPlace);
+        toPlaceTextView.setTag("toPlace");
+
+        TextView pkgsNoTextView;
+
+        if (!prnShortQty.equals("0")) {
+            pkgsNoTextView = createTextView(prnShortQty);
+        } else {
+            pkgsNoTextView = createTextView(pkgsNo);
+        }
+        pkgsNoTextView.setTag("pkgsNo");
+
+        EditText differentQtyEditText = new EditText(MainActivity7.this);
+        differentQtyEditText.setTag("differentQty");
+        differentQtyEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+        differentQtyEditText.setEnabled(false);
+
+        if (!prnShortQty.equals("0")) {
+            differentQtyEditText.setText(prnShortQty);
+        } else {
+            differentQtyEditText.setText("0");
+        }
+
+        EditText reasonEditText = new EditText(MainActivity7.this);
+        reasonEditText.setTag("reason");
+        reasonEditText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+        if (!prnShortQty.equals("0")) {
+            reasonEditText.setText(R.string.mismatch);
+        } else {
+            reasonEditText.setText(R.string.ok);
+        }
+        reasonEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+        reasonEditText.setEnabled(false);
+
+        // Creating new TextViews and EditTexts for TotalBagQty and TotalBoxQty
+        TextView totalBagQtyTextView = createTextView("Bag ");
+        EditText totalBagQtyEditText = new EditText(MainActivity7.this);
+        totalBagQtyEditText.setTag("totalBagQty");
+        if (!prnShortQty.equals("0")) {
+            totalBagQtyEditText.setText("0");
+        } else {
+            totalBagQtyEditText.setText(bagQty);
+        }
+        totalBagQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+        totalBagQtyEditText.setEnabled(false);
+
+        TextView totalBoxQtyTextView = createTextView("Box ");
+        EditText totalBoxQtyEditText = new EditText(MainActivity7.this);
+        totalBoxQtyEditText.setTag("totalBoxQty");
+        if (!prnShortQty.equals("0")) {
+            totalBoxQtyEditText.setText("0");
+        } else {
+            totalBoxQtyEditText.setText(boxQty);
+        }
+        totalBoxQtyEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+        totalBoxQtyEditText.setEnabled(false);
+
+        int bagQtyInt = Integer.parseInt(bagQty);
+        int boxQtyInt = Integer.parseInt(boxQty);
+        int pkgsNoInt = Integer.parseInt(pkgsNo);
+
+        // Calculate the sum of bagQty and boxQty
+        int totalQty = bagQtyInt + boxQtyInt;
+
+        // Check if the total matches pkgsNo
+        if (totalQty == pkgsNoInt) {
+            differentQtyEditText.setText("0");
+        } else {
+            int calculatedDiff = pkgsNoInt - totalQty;
+            differentQtyEditText.setText(String.valueOf(calculatedDiff));
+            reasonEditText.setText(R.string.mismatch);
+        }
+
+        totalBagQtyEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                calculateDifferentQty(pkgsNoTextView, totalBagQtyEditText, totalBoxQtyEditText, differentQtyEditText, reasonEditText);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        totalBoxQtyEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                calculateDifferentQty(pkgsNoTextView, totalBagQtyEditText, totalBoxQtyEditText, differentQtyEditText, reasonEditText);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        // Creating a LinearLayout to hold TotalBagQty and TotalBoxQty views
+        LinearLayout extraInfoLayout = new LinearLayout(MainActivity7.this);
+        extraInfoLayout.setOrientation(LinearLayout.HORIZONTAL);
+        extraInfoLayout.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+        extraInfoLayout.addView(totalBagQtyTextView);
+        extraInfoLayout.addView(totalBagQtyEditText);
+        extraInfoLayout.addView(totalBoxQtyTextView);
+        extraInfoLayout.addView(totalBoxQtyEditText);
+
+        row.addView(rowCheckBox);
+        row.addView(lrNoTextView);
+        row.addView(lrDateTextView);
+        row.addView(toPlaceTextView);
+        row.addView(pkgsNoTextView);
+        row.addView(extraInfoLayout);
+        row.addView(differentQtyEditText);
+        row.addView(reasonEditText);
+
+        tableLayoutActivitySeven.addView(row);
+
+        // Set the OnClickListener for the CheckBox
+        rowCheckBox.setOnClickListener(v -> {
+            boolean isChecked = ((CheckBox) v).isChecked();
+            totalBagQtyEditText.setEnabled(isChecked);
+            totalBoxQtyEditText.setEnabled(isChecked);
+            reasonEditText.setEnabled(isChecked);
+        });
+    }
+
 
     private void fetchHvendors() {
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
@@ -591,6 +803,7 @@ public class MainActivity7 extends AppCompatActivity {
                 } else {
                     pkgsNoTextView = createTextView(jsonObject.getString("PkgsNo"));
                 }
+                pkgsNoTextView.setTag("pkgsNo");
 
                 EditText differentQtyEditText = new EditText(MainActivity7.this);
                 differentQtyEditText.setTag("differentQty");
@@ -710,7 +923,7 @@ public class MainActivity7 extends AppCompatActivity {
             differentQtyEditText.setText(String.valueOf(differentQty));
 
             // Set reason based on differentQty
-            String reason = (differentQty == 0) ? "OK" : "MISSMATCH";
+            String reason = (differentQty == 0) ? String.valueOf(R.string.ok) : String.valueOf(R.string.mismatch);
             reasonEditText.setText(reason);
 
         } catch (NumberFormatException e) {
@@ -964,26 +1177,26 @@ public class MainActivity7 extends AppCompatActivity {
         String godownKeeperName = godownKeeperNameEditText.getText().toString().trim();
         Log.d("godownKeeperName", godownKeeperName);
 
-        if (radioGroupOptions.getCheckedRadioButtonId() == -1) {
-            runOnUiThread(() -> {
-                lottieAnimationView.setVisibility(View.GONE);
-                blockingView.setVisibility(View.GONE);
-                lottieAnimationView.cancelAnimation();
-                showWarning("Unselected Radio Button Warning", "Please select any one radio button.");
-            });
-            return;
-        }
+//        if (radioGroupOptions.getCheckedRadioButtonId() == -1) {
+//            runOnUiThread(() -> {
+//                lottieAnimationView.setVisibility(View.GONE);
+//                blockingView.setVisibility(View.GONE);
+//                lottieAnimationView.cancelAnimation();
+//                showWarning("Unselected Radio Button Warning", "Please select any one radio button.");
+//            });
+//            return;
+//        }
 
-        if (selectedRadioButton == null || selectedRadioButton.isEmpty()) {
-
-            runOnUiThread(() -> {
-                lottieAnimationView.setVisibility(View.GONE);
-                blockingView.setVisibility(View.GONE);
-                lottieAnimationView.cancelAnimation();
-                showWarning("Unselected Radio Button Warning", "Please select any one radio button.");
-            });
-            return;
-        }
+//        if (selectedRadioButton == null || selectedRadioButton.isEmpty()) {
+//
+//            runOnUiThread(() -> {
+//                lottieAnimationView.setVisibility(View.GONE);
+//                blockingView.setVisibility(View.GONE);
+//                lottieAnimationView.cancelAnimation();
+//                showWarning("Unselected Radio Button Warning", "Please select any one radio button.");
+//            });
+//            return;
+//        }
 
         if (freightAmount.isEmpty()) {
 
@@ -1054,7 +1267,7 @@ public class MainActivity7 extends AppCompatActivity {
         formBuilder.add("finalHamliAmount", amountPaidToHVendor);
         formBuilder.add("selectedHamaliType", hamaliType);
         formBuilder.add("deductionAmount", deductionAmount);
-        formBuilder.add("selectedRadioButton", selectedRadioButton);
+//        formBuilder.add("selectedRadioButton", selectedRadioButton);
         formBuilder.add("rowDataList", rowDataList.toString());
         formBuilder.add("PRN", prnId);
 
@@ -1125,7 +1338,7 @@ public class MainActivity7 extends AppCompatActivity {
     }
 
     private void clearUIComponents() {
-        radioGroupOptions.clearCheck();
+//        radioGroupOptions.clearCheck();
         freightEditText.setText("");
         godownKeeperNameEditText.setText("");
         tableLayoutActivitySeven.removeAllViews();

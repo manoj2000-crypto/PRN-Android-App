@@ -86,5 +86,6 @@
     <string name="select_all">Select All</string>
     <string name="sr_no">Sr No</string>
     <string name="lr_no_header">Lr No</string>
+    <string name="mismatch">MISMATCH</string>
 
 </resources>
