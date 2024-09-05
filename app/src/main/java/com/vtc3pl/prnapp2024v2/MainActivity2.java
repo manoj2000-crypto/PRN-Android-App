@@ -5,12 +5,10 @@ import android.Manifest;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -19,7 +17,6 @@ import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseArray;
-import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -42,10 +39,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
-import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.barcode.Barcode;
@@ -91,6 +88,8 @@ public class MainActivity2 extends AppCompatActivity {
     private String selectedHamaliVendor = "";
     private String selectedHamaliType = "";
     private double amountPaidToHVendor, deductionAmount;
+    private LottieAnimationView lottieAnimationView;
+    private View blockingView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,6 +122,9 @@ public class MainActivity2 extends AppCompatActivity {
 
         amountPaidToHVendorEditText = findViewById(R.id.amountPaidToHVendorEditText);
         amountPaidToHVendorEditText.setEnabled(false);
+
+        lottieAnimationView = findViewById(R.id.lottieAnimationView);
+        blockingView = findViewById(R.id.blockingView);
 
         Button addButton = findViewById(R.id.addButton);
         addButton.setOnClickListener(v -> addRowToTable());
@@ -160,7 +162,7 @@ public class MainActivity2 extends AppCompatActivity {
                     try {
                         cameraSource.start(cameraView.getHolder());
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        showAlert("Camera Error", "Failed to start the camera. Please try again.");
                     }
                 } else {
                     ActivityCompat.requestPermissions(MainActivity2.this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST_CODE);
@@ -173,7 +175,11 @@ public class MainActivity2 extends AppCompatActivity {
 
             @Override
             public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
-                cameraSource.stop();
+                try {
+                    cameraSource.stop();
+                } catch (Exception e) {
+                    showWarning("Camera Warning", "Failed to stop the camera properly.");
+                }
             }
         });
 
@@ -262,6 +268,13 @@ public class MainActivity2 extends AppCompatActivity {
     }
 
     private void checkLRNumberOnServer(String lrNumber) {
+
+        runOnUiThread(() -> {
+            blockingView.setVisibility(View.VISIBLE);
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+        });
+
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         FormBody.Builder formBuilder = new FormBody.Builder();
@@ -275,30 +288,35 @@ public class MainActivity2 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                e.printStackTrace();
                 runOnUiThread(() -> {
-                    showAlert("Connection Failed", "Failed to connect to server");
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                    showAlert("Connection Failed ", "Failed to connect to server");
                 });
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
+
                 if (response.isSuccessful()) {
                     ResponseBody body = response.body();
                     if (body != null) {
                         String responseBody = body.string();
                         if (responseBody.equals("0")) {
-                            runOnUiThread(() -> {
-                                showWarning("Warning", "This LR Number not available for PRN");
-                            });
+                            runOnUiThread(() -> showWarning("Warning", "This LR Number not available for PRN"));
                         } else if (responseBody.equals(lrNumber)) {
                             Log.d("LR NUMBER : ", String.valueOf(response));
                             runOnUiThread(() -> addLRNumberToTable(lrNumber));
                         }
                     } else {
-                        runOnUiThread(() -> {
-                            showAlert("Empty Response", "Empty response is received from server");
-                        });
+                        runOnUiThread(() -> showAlert("Empty Response", "Empty response is received from server"));
                     }
                 } else {
                     runOnUiThread(() -> {
@@ -373,12 +391,10 @@ public class MainActivity2 extends AppCompatActivity {
                                     hVendors.add(hVendor);
                                 }
                             } else {
-                                runOnUiThread(() -> {
-                                    showAlert("Error", "hamali vendors not found.");
-                                });
+                                runOnUiThread(() -> showAlert("Error", "hamali vendors not found."));
                             }
                         } catch (JSONException e) {
-                            e.printStackTrace();
+                            runOnUiThread(() -> showAlert("Wrong Response Error", "Wrong response received from server."));
                         }
 
                         // Update the spinner UI on the main thread
@@ -388,9 +404,7 @@ public class MainActivity2 extends AppCompatActivity {
                             hamaliVendorNameSpinner.setAdapter(adapter); // Use hamaliVendorNameSpinner instead of goDownSpinner
                         });
                     } else {
-                        runOnUiThread(() -> {
-                            showAlert("Empty Response Error", "Empty response received from server for vendors.");
-                        });
+                        runOnUiThread(() -> showAlert("Empty Response Error", "Empty response received from server for vendors."));
                     }
                 } else {
                     onFailure(call, new IOException("Unexpected response code " + response));
@@ -399,15 +413,19 @@ public class MainActivity2 extends AppCompatActivity {
 
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                e.printStackTrace();
-                runOnUiThread(() -> {
-                    showAlert("Connection Failed", "Failed to fetch Hamali Vendors");
-                });
+                runOnUiThread(() -> showAlert("Connection Failed", "Failed to fetch Hamali Vendors"));
             }
         });
     }
 
     private void fetchWeightsFromServer() {
+
+        runOnUiThread(() -> {
+            blockingView.setVisibility(View.VISIBLE);
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+        });
+
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         // URL for fetching weights
@@ -418,14 +436,23 @@ public class MainActivity2 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                e.printStackTrace();
                 runOnUiThread(() -> {
-                    showAlert("Connection Failed Error", "Failed to fetch Box Quantity and Box Weight from server");
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                    showAlert("Connection Failed Error", "Failed to fetch Box Quantity and Bag Weight from server");
                 });
             }
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
+
                 if (response.isSuccessful()) {
                     ResponseBody body = response.body();
                     if (body != null) {
@@ -467,15 +494,10 @@ public class MainActivity2 extends AppCompatActivity {
                                 Log.d("totalBagQty : ", String.valueOf(totalBagQtyFromAllLRNO));
                             });
                         } catch (JSONException e) {
-                            e.printStackTrace();
-                            runOnUiThread(() -> {
-                                showAlert("Wrong Response Error", "Wrong response received from server.");
-                            });
+                            runOnUiThread(() -> showAlert("Wrong Response Error", "Wrong response received from server."));
                         }
                     } else {
-                        runOnUiThread(() -> {
-                            showAlert("Empty Response Error", "Response body is null for(Box Qty and Bag Weight) received.");
-                        });
+                        runOnUiThread(() -> showAlert("Empty Response Error", "Response body is null for(Box Qty and Bag Weight) received."));
                     }
                 } else {
                     onFailure(call, new IOException("Unexpected response code " + response));
@@ -496,6 +518,12 @@ public class MainActivity2 extends AppCompatActivity {
 
         selectedHamaliType = hamaliTypeSpinner.getSelectedItem().toString();
 
+        runOnUiThread(() -> {
+            blockingView.setVisibility(View.VISIBLE);
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+        });
+
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         FormBody.Builder formBuilder = new FormBody.Builder();
@@ -509,14 +537,23 @@ public class MainActivity2 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                e.printStackTrace();
                 runOnUiThread(() -> {
-                    showAlert("Connection Failed Error", "Failed to fetch hamali rates from server");
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                    showAlert("Connection Failed ", "Failed to fetch hamali rates from server");
                 });
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
+
                 if (response.isSuccessful()) {
                     ResponseBody body = response.body();
                     if (body != null) {
@@ -546,9 +583,7 @@ public class MainActivity2 extends AppCompatActivity {
                                     return;
                                 }
                             } else {
-                                runOnUiThread(() -> {
-                                    showAlert("Unknown hamali Type Error", "Unknown hamali type selected.");
-                                });
+                                runOnUiThread(() -> showAlert("Unknown hamali Type Error", "Unknown hamali type selected."));
                                 return;
                             }
 
@@ -627,20 +662,13 @@ public class MainActivity2 extends AppCompatActivity {
                             });
 
                         } catch (JSONException e) {
-                            e.printStackTrace();
-                            runOnUiThread(() -> {
-                                showAlert("Response Error", "Wrong response received.");
-                            });
+                            runOnUiThread(() -> showAlert("Response Error", "Wrong response received."));
                         }
                     } else {
-                        runOnUiThread(() -> {
-                            showAlert("Empty Response Error", "Response body is empty for hamali rates.");
-                        });
+                        runOnUiThread(() -> showAlert("Empty Response Error", "Response body is empty for hamali rates."));
                     }
                 } else {
-                    runOnUiThread(() -> {
-                        showAlert("Server Error", "Server error: " + response.code());
-                    });
+                    runOnUiThread(() -> showAlert("Server Error", "Server error: " + response.code()));
                 }
             }
         });
@@ -709,6 +737,12 @@ public class MainActivity2 extends AppCompatActivity {
         }
         String arrayListOfLR = jsonArray.toString();
 
+        runOnUiThread(() -> {
+            blockingView.setVisibility(View.VISIBLE);
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+        });
+
         // Make HTTP request
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
         FormBody.Builder formBuilder = new FormBody.Builder();
@@ -730,77 +764,67 @@ public class MainActivity2 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                e.printStackTrace();
                 Log.e("MainActivity2(submit)", "Failed to connect to server", e);
                 runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
                     showAlert("Connection Failed Error", "Failed to connect to server");
                 });
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
+
                 if (response.isSuccessful()) {
                     ResponseBody body = response.body();
                     if (body != null) {
                         String responseBody = body.string();
                         Log.e("Response CreatePRN:", responseBody);
-                        runOnUiThread(() -> {
-//                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity2.this);
-//                            builder.setTitle("Success").setMessage(responseBody).setPositiveButton("OK", (dialog, which) -> {
-//                                dialog.dismiss();
-//                                clearUIComponents();
-//                            }).setNeutralButton("Copy", (dialog, which) -> {
-//                                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-//                                ClipData clip = ClipData.newPlainText("Response", responseBody);
-//                                clipboard.setPrimaryClip(clip);
-//                                Toast.makeText(MainActivity2.this, "Response copied to clipboard", Toast.LENGTH_SHORT).show();
-//                                clearUIComponents();
-//                            }).setIcon(android.R.drawable.checkbox_on_background).show();
 
-                            // Load the original image
-                            Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
+                        if (responseBody.startsWith("fail")) {
+                            runOnUiThread(() -> showAlert("Transaction Failed ", responseBody));
+                        } else {
+                            runOnUiThread(() -> {
+                                // Load the original image
+                                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
 
-                            // Scale the image to the desired size
-                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+                                // Scale the image to the desired size
+                                Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
 
-                            // Create a Drawable from the scaled Bitmap
-                            Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
+                                // Create a Drawable from the scaled Bitmap
+                                Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-                            final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity2.this)
-                                    .setTitle("Success")
-                                    .setMessage(responseBody)
-                                    .setPositiveButton("OK", (dialog, which) -> {
-                                        dialog.dismiss();
-                                        clearUIComponents();
-                                    }).setNeutralButton("Copy", (dialog, which) -> {
-                                        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                                        ClipData clip = ClipData.newPlainText("Response", responseBody);
-                                        clipboard.setPrimaryClip(clip);
-                                        Toast.makeText(MainActivity2.this, "Response copied to clipboard", Toast.LENGTH_SHORT).show();
-                                        clearUIComponents();
-                                    })
-                                    .setIcon(successIcon)
-                                    .create();
-                            alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                @Override
-                                public void onDismiss(DialogInterface dialog) {
+                                final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity2.this).setTitle("Success").setMessage(responseBody).setPositiveButton("OK", (dialog, which) -> {
                                     dialog.dismiss();
                                     clearUIComponents();
-                                }
-                            });
+                                }).setNeutralButton("Copy", (dialog, which) -> {
+                                    ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                                    ClipData clip = ClipData.newPlainText("Response", responseBody);
+                                    clipboard.setPrimaryClip(clip);
+                                    Toast.makeText(MainActivity2.this, "Response copied to clipboard", Toast.LENGTH_SHORT).show();
+                                    clearUIComponents();
+                                }).setIcon(successIcon).create();
+                                alertDialog.setOnDismissListener(dialog -> {
+                                    dialog.dismiss();
+                                    clearUIComponents();
+                                });
 
-                            alertDialog.show();
-                        });
+                                alertDialog.show();
+                            });
+                        }
                     } else {
                         Log.e("Response CreatePRN:", "Empty response body");
-                        runOnUiThread(() -> {
-                            showAlert("Empty Response Error", "Empty response received from server");
-                        });
+                        runOnUiThread(() -> showAlert("Empty Response Error", "Empty response received from server"));
                     }
                 } else {
-                    runOnUiThread(() -> {
-                        showAlert("Server Error", "Server error: " + response.code());
-                    });
+                    runOnUiThread(() -> showAlert("Server Error", "Server error: " + response.code()));
                 }
             }
         });
@@ -827,11 +851,12 @@ public class MainActivity2 extends AppCompatActivity {
         if (requestCode == CAMERA_PERMISSION_REQUEST_CODE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             try {
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                    showWarning("Permission Warning", "Camera permission is granted, but check failed unexpectedly.");
                     return;
                 }
                 cameraSource.start(cameraView.getHolder());
             } catch (IOException e) {
-                e.printStackTrace();
+                showAlert("Camera Error", "Failed to start the camera. Please try again.");
             }
         } else {
             showAlert("Permission Denied Error", "Please give camera permission to scan the LR Number.");
@@ -856,7 +881,10 @@ public class MainActivity2 extends AppCompatActivity {
         // Create a Drawable from the scaled Bitmap
         Drawable alertIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(alertIcon).show();
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> {
+            dialog.dismiss();
+            finish();
+        }).setIcon(alertIcon).setCancelable(false).show();
     }
 
     private void showWarning(String title, String message) {
@@ -869,6 +897,6 @@ public class MainActivity2 extends AppCompatActivity {
         // Create a Drawable from the scaled Bitmap
         Drawable warningIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(warningIcon).show();
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(warningIcon).setCancelable(false).show();
     }
 }

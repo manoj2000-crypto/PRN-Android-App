@@ -5,17 +5,14 @@ import android.app.DatePickerDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextUtils;
@@ -28,8 +25,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TableLayout;
@@ -41,11 +36,11 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
-import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.airbnb.lottie.LottieAnimationView;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -73,11 +68,6 @@ import okhttp3.ResponseBody;
 
 public class MainActivity3 extends AppCompatActivity {
 
-//    final double[] totalBoxWeight = {0};
-//    final double[] totalBoxQty = {0};
-//    final double[] totalBagWeight = {0};
-//    final double[] totalBagQty = {0};
-
     private final Handler handler = new Handler();
     private double totalBoxWeightFromAllLRNO = 0, totalBoxQtyFromAllLRNO = 0, totalBagWeightFromAllLRNO = 0, totalBagQtyFromAllLRNO = 0;
     private TextView showUserNameTextViewActivityThree;
@@ -104,6 +94,9 @@ public class MainActivity3 extends AppCompatActivity {
 
     private Handler handlerSecond = new Handler();
     private Runnable updateSpinnerRunnable;
+
+    private LottieAnimationView lottieAnimationView;
+    private View blockingView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,6 +139,9 @@ public class MainActivity3 extends AppCompatActivity {
         hamaliVendorNameSpinnerActivityThree = findViewById(R.id.hamaliVendorNameSpinnerActivityThree);
         hamaliTypeSpinnerActivityThree = findViewById(R.id.hamaliTypeSpinnerActivityThree);
 
+        lottieAnimationView = findViewById(R.id.lottieAnimationView);
+        blockingView = findViewById(R.id.blockingView);
+
         fromCalendar = Calendar.getInstance();
         toCalendar = Calendar.getInstance();
 
@@ -162,24 +158,18 @@ public class MainActivity3 extends AppCompatActivity {
             }
         }
 
-        fromDateSetListener = new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                fromCalendar.set(Calendar.YEAR, year);
-                fromCalendar.set(Calendar.MONTH, month);
-                fromCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                updateFromDate();
-            }
+        fromDateSetListener = (view, year, month, dayOfMonth) -> {
+            fromCalendar.set(Calendar.YEAR, year);
+            fromCalendar.set(Calendar.MONTH, month);
+            fromCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            updateFromDate();
         };
 
-        toDateSetListener = new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                toCalendar.set(Calendar.YEAR, year);
-                toCalendar.set(Calendar.MONTH, month);
-                toCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                updateToDate();
-            }
+        toDateSetListener = (view, year, month, dayOfMonth) -> {
+            toCalendar.set(Calendar.YEAR, year);
+            toCalendar.set(Calendar.MONTH, month);
+            toCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            updateToDate();
         };
 
         contractPartiesList = new ArrayList<>();
@@ -205,12 +195,9 @@ public class MainActivity3 extends AppCompatActivity {
                 if (!isSpinnerSelected) { // Only fetch if not a spinner selection
                     String searchText = s.toString().trim();
                     if (!searchText.isEmpty()) {
-                        updateSpinnerRunnable = new Runnable() {
-                            @Override
-                            public void run() {
-                                // Call the method to update the contract party list
-                                fetchContractParties(searchText);
-                            }
+                        updateSpinnerRunnable = () -> {
+                            // Call the method to update the contract party list
+                            fetchContractParties(searchText);
                         };
                         // Post the update with a slight delay to debounce
                         handlerSecond.postDelayed(updateSpinnerRunnable, 300);
@@ -343,29 +330,11 @@ public class MainActivity3 extends AppCompatActivity {
         editTextToDateActivityThree.setText(android.text.format.DateFormat.format(dateFormat, toCalendar));
     }
 
-//    private void fetchContractPartiesWithDelay(String input) {
-//        if (runnable != null) {
-//            handler.removeCallbacks(runnable);
-//        }
-//        runnable = new Runnable() {
-//            @Override
-//            public void run() {
-//                fetchContractParties(input);
-//            }
-//        };
-//        handler.postDelayed(runnable, 500); // Delay of 500 milliseconds
-//    }
-
     private void fetchVehicleNumbersWithDelay(String input) {
         if (runnable != null) {
             handler.removeCallbacks(runnable);
         }
-        runnable = new Runnable() {
-            @Override
-            public void run() {
-                fetchVehicleNumbers(input);
-            }
-        };
+        runnable = () -> fetchVehicleNumbers(input);
         handler.postDelayed(runnable, 500); // Delay of 500 milliseconds
     }
 
@@ -379,10 +348,7 @@ public class MainActivity3 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                e.printStackTrace();
-                runOnUiThread(() -> {
-                    Toast.makeText(MainActivity3.this, "Failed to fetch contract parties", Toast.LENGTH_SHORT).show();
-                });
+                runOnUiThread(() -> Toast.makeText(MainActivity3.this, "Failed to fetch contract parties", Toast.LENGTH_SHORT).show());
 //                if (e instanceof SocketTimeoutException) {
 //                    Log.e("SocketTimeoutException", "Read timed out");
 //                }
@@ -411,46 +377,17 @@ public class MainActivity3 extends AppCompatActivity {
                                 contractPartySpinner.setAdapter(adapter);
                             });
                         } catch (JSONException e) {
-                            e.printStackTrace();
-                            runOnUiThread(() -> {
-                                Toast.makeText(MainActivity3.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
-                            });
+                            runOnUiThread(() -> showAlert("JSON Error ", "Error parsing JSON response"));
                         }
                     } else {
-                        Log.e("Response Error", "Response body is null");
-                        runOnUiThread(() -> {
-                            Toast.makeText(MainActivity3.this, "Empty response body", Toast.LENGTH_SHORT).show();
-                        });
+                        runOnUiThread(() -> showAlert("Empty Response ", "Empty response body"));
                     }
                 } else {
-                    runOnUiThread(() -> {
-                        Toast.makeText(MainActivity3.this, "Server error: " + response.code(), Toast.LENGTH_SHORT).show();
-                    });
+                    runOnUiThread(() -> showAlert("Server Error ", "Server error: " + response.code()));
                 }
             }
         });
     }
-
-//    private void handleResponse(String responseData) {
-//        try {
-//            JSONArray jsonArray = new JSONArray(responseData);
-//            Log.d("JSON handleResponse()", String.valueOf(jsonArray));
-//            contractPartiesList.clear();
-////            List<String> tempContractPartiesList = new ArrayList<>();
-//
-//            for (int i = 0; i < jsonArray.length(); i++) {
-//                JSONObject jsonObject = jsonArray.getJSONObject(i);
-//                String contractParty = jsonObject.getString("CustCode") + " : " + jsonObject.getString("CustName") + " : " + jsonObject.getString("IndType");
-//                contractPartiesList.add(contractParty);
-////                tempContractPartiesList.add(contractParty);
-//            }
-////            contractPartiesList.addAll(tempContractPartiesList);
-//            spinnerAdapter.notifyDataSetChanged();
-//        } catch (JSONException e) {
-//            Log.e("JSONEsception", String.valueOf(e));
-//            e.printStackTrace();
-//        }
-//    }
 
     private void fetchVehicleNumbers(String input) {
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
@@ -465,9 +402,9 @@ public class MainActivity3 extends AppCompatActivity {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 if (e instanceof SocketTimeoutException) {
-                    Log.e("SocketTimeoutException", "Read timed out");
+                    showAlert("Socket Timeout Error ", "Read timed out");
                 } else {
-                    e.printStackTrace();
+                    showAlert("Connection Failed ", "Failed to connect to server");
                 }
             }
 
@@ -478,12 +415,7 @@ public class MainActivity3 extends AppCompatActivity {
                     if (body != null) {
                         final String responseData = body.string();
                         Log.d("OnResponse", responseData);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                handleResponseForVehicleNumbers(responseData);
-                            }
-                        });
+                        runOnUiThread(() -> handleResponseForVehicleNumbers(responseData));
                     } else {
                         Log.e("Response Error", "Response body is null");
                     }
@@ -505,7 +437,7 @@ public class MainActivity3 extends AppCompatActivity {
             }
             vehicleNumberSpinnerAdapter.notifyDataSetChanged();
         } catch (JSONException e) {
-            e.printStackTrace();
+            runOnUiThread(() -> showAlert("Response Error", "Error on vehicle number response."));
         }
     }
 
@@ -544,6 +476,12 @@ public class MainActivity3 extends AppCompatActivity {
             return;
         }
 
+        runOnUiThread(() -> {
+            blockingView.setVisibility(View.VISIBLE);
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+        });
+
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         // Construct the POST request body
@@ -556,51 +494,56 @@ public class MainActivity3 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                e.printStackTrace();
-                if (e instanceof SocketTimeoutException) {
-                    // Handle socket timeout exception
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(MainActivity3.this, "Request Timed Out. Please try again later.", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                    showAlert("Connection Failed", "Failed to connect to server");
+                });
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
+
                 if (response.isSuccessful()) {
-                    // Handle successful response
-                    String responseData = response.body().string();
-                    Log.d("Reponse For LR :", responseData);
-                    if (responseData.equals("[0]")) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(MainActivity3.this, "LRNO not found.", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                    ResponseBody body = response.body();
+                    if (body != null) {
+                        String responseData = body.string();
+                        Log.d("Reponse For LR :", responseData);
+                        if (responseData.equals("[0]")) {
+                            runOnUiThread(() -> showWarning("LR Not Found Warning ", "This LR is not available."));
+                        } else {
+                            handleLRNOResponse(responseData);
+                        }
                     } else {
-                        // Handle LRNO response
-                        handleLRNOResponse(responseData);
+                        runOnUiThread(() -> showAlert("Empty Response", "Empty response is received from server"));
                     }
                 } else {
-                    // Handle unsuccessful response
-                    Log.e("Response Error", "Unsuccessful response");
+                    runOnUiThread(() -> showAlert("Response Error ", "Unsuccessful response " + response.code()));
                 }
             }
         });
     }
 
     private void fetchWeightsFromServer() {
+
+        runOnUiThread(() -> {
+            blockingView.setVisibility(View.VISIBLE);
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+        });
+
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         //When getting the LR if status is 11 then do the calculation after missmatch for that perticuler LR
         // URL for fetching weights
         String url = "https://vtc3pl.com/hamali_bag_box_weight_prn_app.php";
 
-        // Construct the POST request body
         RequestBody formBody = new FormBody.Builder().add("depo", depo).build();
 
         Request request = new Request.Builder().url(url).post(formBody).build();
@@ -608,20 +551,28 @@ public class MainActivity3 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                e.printStackTrace();
                 runOnUiThread(() -> {
-                    Toast.makeText(MainActivity3.this, "Failed to fetch weights from server", Toast.LENGTH_SHORT).show();
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                    showAlert("Connection Failed ", "Failed to fetch weights from server");
                 });
             }
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
+
                 if (response.isSuccessful()) {
                     ResponseBody body = response.body();
                     if (body != null) {
                         String responseBody = body.string();
                         Log.d("Response Str(BagAndBox)", responseBody);
-                        // Parse the JSON response
                         try {
                             JSONArray jsonArray = new JSONArray(responseBody);
                             double totalBoxWeight = 0;
@@ -657,15 +608,10 @@ public class MainActivity3 extends AppCompatActivity {
                                 Log.d("totalBagQty : ", String.valueOf(totalBagQtyFromAllLRNO));
                             });
                         } catch (JSONException e) {
-                            e.printStackTrace();
-                            runOnUiThread(() -> {
-                                Toast.makeText(MainActivity3.this, "Error parsing JSON response", Toast.LENGTH_SHORT).show();
-                            });
+                            runOnUiThread(() -> showAlert("Wrong Response Error ", "Error parsing JSON response"));
                         }
                     } else {
-                        runOnUiThread(() -> {
-                            Toast.makeText(MainActivity3.this, "Response body is null(Box Qty and Bag Weight)", Toast.LENGTH_SHORT).show();
-                        });
+                        runOnUiThread(() -> showAlert("Empty Response Error ", "Response body is null(Box Qty and Bag Weight)"));
                     }
                 } else {
                     onFailure(call, new IOException("Unexpected response code " + response));
@@ -676,107 +622,99 @@ public class MainActivity3 extends AppCompatActivity {
 
     private void handleLRNOResponse(String responseData) {
         Log.d("handleLRNOResponse() : ", responseData);
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    JSONArray jsonArray = new JSONArray(responseData);
-                    TableLayout tableLayout = findViewById(R.id.tableLayout);
+        runOnUiThread(() -> {
+            try {
+                JSONArray jsonArray = new JSONArray(responseData);
+                TableLayout tableLayout = findViewById(R.id.tableLayout);
 
-                    // Remove all existing rows to refresh the table
-                    tableLayout.removeAllViews();
+                // Remove all existing rows to refresh the table
+                tableLayout.removeAllViews();
 
-                    // Add headers row
-                    TableRow headersRow = new TableRow(MainActivity3.this);
+                // Add headers row
+                TableRow headersRow = new TableRow(MainActivity3.this);
 
-                    TextView srNoHeader = new TextView(MainActivity3.this);
-                    srNoHeader.setText("Sr No");
-                    srNoHeader.setPadding(8, 8, 8, 8);
-                    srNoHeader.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                    srNoHeader.setTypeface(null, Typeface.BOLD);
-                    headersRow.addView(srNoHeader);
+                TextView srNoHeader = new TextView(MainActivity3.this);
+                srNoHeader.setText(R.string.sr_no);
+                srNoHeader.setPadding(8, 8, 8, 8);
+                srNoHeader.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                srNoHeader.setTypeface(null, Typeface.BOLD);
+                headersRow.addView(srNoHeader);
 
-                    TextView lrNoHeader = new TextView(MainActivity3.this);
-                    lrNoHeader.setText("Lr No");
-                    lrNoHeader.setPadding(8, 8, 8, 8);
-                    lrNoHeader.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                    lrNoHeader.setTypeface(null, Typeface.BOLD);
-                    headersRow.addView(lrNoHeader);
+                TextView lrNoHeader = new TextView(MainActivity3.this);
+                lrNoHeader.setText(R.string.lr_no_header);
+                lrNoHeader.setPadding(8, 8, 8, 8);
+                lrNoHeader.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                lrNoHeader.setTypeface(null, Typeface.BOLD);
+                headersRow.addView(lrNoHeader);
 
-                    // Create CheckBox for "Select All"
-                    CheckBox selectAllCheckBox = new CheckBox(MainActivity3.this);
-                    selectAllCheckBox.setText("Select All");
-                    selectAllCheckBox.setPadding(8, 8, 8, 8);
-                    selectAllCheckBox.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                    selectAllCheckBox.setTypeface(null, Typeface.BOLD);
-                    selectAllCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                        @Override
-                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                            // Toggle selection of all checkboxes in the table
-                            for (int i = 1; i < tableLayout.getChildCount(); i++) {
-                                View view = tableLayout.getChildAt(i);
-                                if (view instanceof TableRow) {
-                                    TableRow row = (TableRow) view;
-                                    CheckBox checkBox = (CheckBox) row.getChildAt(2);
-                                    checkBox.setChecked(isChecked);
-                                }
-                            }
+                // Create CheckBox for "Select All"
+                CheckBox selectAllCheckBox = new CheckBox(MainActivity3.this);
+                selectAllCheckBox.setText(R.string.select_all);
+                selectAllCheckBox.setPadding(8, 8, 8, 8);
+                selectAllCheckBox.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                selectAllCheckBox.setTypeface(null, Typeface.BOLD);
+                selectAllCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    // Toggle selection of all checkboxes in the table
+                    for (int i = 1; i < tableLayout.getChildCount(); i++) {
+                        View view = tableLayout.getChildAt(i);
+                        if (view instanceof TableRow) {
+                            TableRow row = (TableRow) view;
+                            CheckBox checkBox = (CheckBox) row.getChildAt(2);
+                            checkBox.setChecked(isChecked);
                         }
-                    });
-                    headersRow.addView(selectAllCheckBox);
-
-                    tableLayout.addView(headersRow);
-
-                    // Iterate through the JSON array and add rows to the table
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        String lrNo = jsonArray.getString(i);
-
-                        // Create a new TableRow
-                        TableRow newRow = new TableRow(MainActivity3.this);
-
-                        // Create TextViews for SrNo and LRNO
-                        TextView srNoTextView = new TextView(MainActivity3.this);
-                        srNoTextView.setText(String.valueOf(i + 1)); // SrNo starts from 1
-                        srNoTextView.setPadding(8, 8, 8, 8);
-                        srNoTextView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                        newRow.addView(srNoTextView);
-
-                        TextView lrNoTextView = new TextView(MainActivity3.this);
-                        lrNoTextView.setText(lrNo);
-                        lrNoTextView.setPadding(8, 8, 8, 8);
-                        lrNoTextView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                        newRow.addView(lrNoTextView);
-
-                        // Create CheckBox for selection
-                        CheckBox selectCheckBox = new CheckBox(MainActivity3.this);
-                        selectCheckBox.setTag(lrNo); // Set LRNO as tag
-                        selectCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                            @Override
-                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                                String lrNo = (String) buttonView.getTag();
-                                if (isChecked) {
-                                    selectedLRNOs.add(lrNo);
-                                    Log.d("LRNO Added : ", selectedLRNOs.toString());
-                                } else {
-                                    // Remove LRNO from the selectedLRNOs collection
-                                    selectedLRNOs.remove(lrNo);
-                                    Log.d("LRNO Remove : ", selectedLRNOs.toString());
-
-                                    totalBoxQtyFromAllLRNO -= totalBoxQtyFromAllLRNO;
-                                    totalBagWeightFromAllLRNO -= totalBagWeightFromAllLRNO;
-                                }
-                                fetchWeightsFromServer();
-                                calculateHamali();
-                            }
-                        });
-                        newRow.addView(selectCheckBox);
-
-                        // Add the new row to the TableLayout
-                        tableLayout.addView(newRow);
                     }
-                } catch (JSONException e) {
-                    Log.e("JSON Exception : ", String.valueOf(e));
+                });
+                headersRow.addView(selectAllCheckBox);
+
+                tableLayout.addView(headersRow);
+
+                // Iterate through the JSON array and add rows to the table
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    String lrNo = jsonArray.getString(i);
+
+                    // Create a new TableRow
+                    TableRow newRow = new TableRow(MainActivity3.this);
+
+                    // Create TextViews for SrNo and LRNO
+                    TextView srNoTextView = new TextView(MainActivity3.this);
+                    srNoTextView.setText(String.valueOf(i + 1)); // SrNo starts from 1
+                    srNoTextView.setPadding(8, 8, 8, 8);
+                    srNoTextView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                    newRow.addView(srNoTextView);
+
+                    TextView lrNoTextView = new TextView(MainActivity3.this);
+                    lrNoTextView.setText(lrNo);
+                    lrNoTextView.setPadding(8, 8, 8, 8);
+                    lrNoTextView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                    newRow.addView(lrNoTextView);
+
+                    // Create CheckBox for selection
+                    CheckBox selectCheckBox = new CheckBox(MainActivity3.this);
+                    selectCheckBox.setTag(lrNo); // Set LRNO as tag
+                    selectCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                        String lrNo1 = (String) buttonView.getTag();
+                        if (isChecked) {
+                            selectedLRNOs.add(lrNo1);
+                            Log.d("LRNO Added : ", selectedLRNOs.toString());
+                        } else {
+                            // Remove LRNO from the selectedLRNOs collection
+                            selectedLRNOs.remove(lrNo1);
+                            Log.d("LRNO Remove : ", selectedLRNOs.toString());
+
+                            totalBoxQtyFromAllLRNO -= totalBoxQtyFromAllLRNO;
+                            totalBagWeightFromAllLRNO -= totalBagWeightFromAllLRNO;
+                        }
+                        fetchWeightsFromServer();
+                        calculateHamali();
+                    });
+                    newRow.addView(selectCheckBox);
+
+                    // Add the new row to the TableLayout
+                    tableLayout.addView(newRow);
                 }
+            } catch (JSONException e) {
+                Log.e("JSON Exception : ", String.valueOf(e));
+                showAlert("JSON Error ", "Error parsing JSON response");
             }
         });
     }
@@ -799,7 +737,6 @@ public class MainActivity3 extends AppCompatActivity {
                     ResponseBody body = response.body();
                     if (body != null) {
                         String responseBody = body.string();
-                        // Parse the JSON response
                         List<String> hVendors = new ArrayList<>();
                         try {
                             JSONArray jsonArray = new JSONArray(responseBody);
@@ -811,12 +748,10 @@ public class MainActivity3 extends AppCompatActivity {
                                     hVendors.add(hVendor);
                                 }
                             } else {
-                                runOnUiThread(() -> {
-                                    Toast.makeText(MainActivity3.this, "No hamali vendors found", Toast.LENGTH_SHORT).show();
-                                });
+                                runOnUiThread(() -> showAlert("Error", "hamali vendors not found."));
                             }
                         } catch (JSONException e) {
-                            e.printStackTrace();
+                            runOnUiThread(() -> showAlert("Wrong Response Error", "Wrong response received from server."));
                         }
 
                         // Update the spinner UI on the main thread
@@ -826,9 +761,7 @@ public class MainActivity3 extends AppCompatActivity {
                             hamaliVendorNameSpinnerActivityThree.setAdapter(adapter); // Use hamaliVendorNameSpinner instead of goDownSpinner
                         });
                     } else {
-                        runOnUiThread(() -> {
-                            Toast.makeText(MainActivity3.this, "Response body is null (fetch vendors)", Toast.LENGTH_SHORT).show();
-                        });
+                        runOnUiThread(() -> showAlert("Empty Response Error", "Empty response received from server for vendors."));
                     }
                 } else {
                     onFailure(call, new IOException("Unexpected response code " + response));
@@ -837,10 +770,7 @@ public class MainActivity3 extends AppCompatActivity {
 
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                e.printStackTrace();
-                runOnUiThread(() -> {
-                    showAlert("Connection Failed", "Failed to fetch hamali Vendors");
-                });
+                runOnUiThread(() -> showAlert("Connection Failed", "Failed to fetch Hamali Vendors"));
             }
         });
     }
@@ -857,6 +787,12 @@ public class MainActivity3 extends AppCompatActivity {
 
         selectedHamaliType = hamaliTypeSpinnerActivityThree.getSelectedItem().toString();
 
+        runOnUiThread(() -> {
+            blockingView.setVisibility(View.VISIBLE);
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+        });
+
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
 
         FormBody.Builder formBuilder = new FormBody.Builder();
@@ -868,14 +804,23 @@ public class MainActivity3 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                e.printStackTrace();
                 runOnUiThread(() -> {
-                    showAlert("Connection Failed", "Failed to fetch hamali rates");
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                    showAlert("Connection Failed ", "Failed to fetch hamali rates from server");
                 });
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
+
                 if (response.isSuccessful()) {
                     ResponseBody body = response.body();
                     if (body != null) {
@@ -905,9 +850,7 @@ public class MainActivity3 extends AppCompatActivity {
                                     return;
                                 }
                             } else {
-                                runOnUiThread(() -> {
-                                    Toast.makeText(MainActivity3.this, "Unknown hamali type", Toast.LENGTH_SHORT).show();
-                                });
+                                runOnUiThread(() -> showAlert("Unknown hamali Type Error", "Unknown hamali type selected."));
                                 return;
                             }
 
@@ -986,20 +929,13 @@ public class MainActivity3 extends AppCompatActivity {
                             });
 
                         } catch (JSONException e) {
-                            e.printStackTrace();
-                            runOnUiThread(() -> {
-                                showAlert("Parsing Response Error", "Wrong response receive from server");
-                            });
+                            runOnUiThread(() -> showAlert("Parsing Response Error", "Wrong response receive from server"));
                         }
                     } else {
-                        runOnUiThread(() -> {
-                            showAlert("Hamali amount Error", "Hamali rates received empty");
-                        });
+                        runOnUiThread(() -> showAlert("Hamali amount Error", "Hamali rates received empty"));
                     }
                 } else {
-                    runOnUiThread(() -> {
-                        showAlert("Server Error", "Server error: " + response.code());
-                    });
+                    runOnUiThread(() -> showAlert("Server Error", "Server error: " + response.code()));
                 }
             }
         });
@@ -1089,6 +1025,12 @@ public class MainActivity3 extends AppCompatActivity {
         }
         String arrayListOfLR = jsonArray.toString();
 
+        runOnUiThread(() -> {
+            blockingView.setVisibility(View.VISIBLE);
+            lottieAnimationView.setVisibility(View.VISIBLE);
+            lottieAnimationView.playAnimation();
+        });
+
         // Make HTTP request
         OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build();
         FormBody.Builder formBuilder = new FormBody.Builder();
@@ -1111,76 +1053,64 @@ public class MainActivity3 extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                e.printStackTrace();
                 runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
                     showAlert("Connection Failed", "Failed to connect to server");
                 });
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+
+                runOnUiThread(() -> {
+                    lottieAnimationView.setVisibility(View.GONE);
+                    blockingView.setVisibility(View.GONE);
+                    lottieAnimationView.cancelAnimation();
+                });
+
                 if (response.isSuccessful()) {
                     ResponseBody body = response.body();
                     if (body != null) {
                         String responseBody = body.string();
                         Log.e("Response CreatePRN:", responseBody);
-                        // Process the response here
-                        runOnUiThread(() -> {
-//                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity3.this);
-//                            builder.setTitle("Success").setMessage(responseBody).setPositiveButton("OK", (dialog, which) -> {
-//                                dialog.dismiss();
-//                                clearUIComponents();
-//                            }).setNeutralButton("Copy", (dialog, which) -> {
-//                                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-//                                ClipData clip = ClipData.newPlainText("Response", responseBody);
-//                                clipboard.setPrimaryClip(clip);
-//                                Toast.makeText(MainActivity3.this, "Response copied to clipboard", Toast.LENGTH_SHORT).show();
-//                                clearUIComponents();
-//                            }).setIcon(android.R.drawable.checkbox_on_background).show();
 
-                            // Load the original image
-                            Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
+                        if (responseBody.startsWith("fail")) {
+                            runOnUiThread(() -> showAlert("Transaction Failed ", responseBody));
+                        } else {
+                            runOnUiThread(() -> {
+                                // Load the original image
+                                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.success);
 
-                            // Scale the image to the desired size
-                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
+                                // Scale the image to the desired size
+                                Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 32, 32, true);
 
-                            // Create a Drawable from the scaled Bitmap
-                            Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
+                                // Create a Drawable from the scaled Bitmap
+                                Drawable successIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-                            final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity3.this)
-                                    .setTitle("Success")
-                                    .setMessage(responseBody)
-                                    .setPositiveButton("OK", (dialog, which) -> {
-                                        dialog.dismiss();
-                                        clearUIComponents();
-                                    }).setNeutralButton("Copy", (dialog, which) -> {
-                                        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                                        ClipData clip = ClipData.newPlainText("Response", responseBody);
-                                        clipboard.setPrimaryClip(clip);
-                                        Toast.makeText(MainActivity3.this, "Response copied to clipboard", Toast.LENGTH_SHORT).show();
-                                        clearUIComponents();
-                                    })
-                                    .setIcon(successIcon)
-                                    .create();
-                            alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                @Override
-                                public void onDismiss(DialogInterface dialog) {
+                                final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity3.this).setTitle("Success").setMessage(responseBody).setPositiveButton("OK", (dialog, which) -> {
                                     dialog.dismiss();
                                     clearUIComponents();
-                                }
+                                }).setNeutralButton("Copy", (dialog, which) -> {
+                                    ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                                    ClipData clip = ClipData.newPlainText("Response", responseBody);
+                                    clipboard.setPrimaryClip(clip);
+                                    Toast.makeText(MainActivity3.this, "Response copied to clipboard", Toast.LENGTH_SHORT).show();
+                                    clearUIComponents();
+                                }).setIcon(successIcon).create();
+                                alertDialog.setOnDismissListener(dialog -> {
+                                    dialog.dismiss();
+                                    clearUIComponents();
+                                });
+                                alertDialog.show();
                             });
-
-                            alertDialog.show();
-                        });
+                        }
                     } else {
-                        runOnUiThread(() -> {
-                            showAlert("Response Error", "Empty response from server");
-                        });
+                        runOnUiThread(() -> showAlert("Response Error", "Empty response from server"));
                     }
                 } else {
-                    runOnUiThread(() -> {
-                        showAlert("Server Error", "Server error: " + response.code());
-                    });
+                    runOnUiThread(() -> showAlert("Server Error", "Server error: " + response.code()));
                 }
             }
         });
@@ -1196,12 +1126,10 @@ public class MainActivity3 extends AppCompatActivity {
         // Create a Drawable from the scaled Bitmap
         Drawable alertIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                .setIcon(alertIcon)
-                .show();
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> {
+            dialog.dismiss();
+            finish();
+        }).setIcon(alertIcon).setCancelable(false).show();
     }
 
     private void showWarning(String title, String message) {
@@ -1214,11 +1142,6 @@ public class MainActivity3 extends AppCompatActivity {
         // Create a Drawable from the scaled Bitmap
         Drawable warningIcon = new BitmapDrawable(getResources(), scaledBitmap);
 
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                .setIcon(warningIcon)
-                .show();
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).setIcon(warningIcon).setCancelable(false).show();
     }
 }

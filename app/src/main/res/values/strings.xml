@@ -83,5 +83,8 @@
     <string name="add_lr">Add LR</string>
     <string name="add_excess_lr">Add Excess LR</string>
     <string name="add_damage_lr">Add Damage LR</string>
+    <string name="select_all">Select All</string>
+    <string name="sr_no">Sr No</string>
+    <string name="lr_no_header">Lr No</string>
 
 </resources>
