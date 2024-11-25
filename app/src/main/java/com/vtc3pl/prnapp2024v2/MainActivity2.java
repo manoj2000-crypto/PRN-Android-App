@@ -14,10 +14,15 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.text.InputType;
+import android.text.Spanned;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.ActionMode;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -104,7 +109,76 @@ public class MainActivity2 extends AppCompatActivity {
         lrEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
 
         vehicleNumberEditText = findViewById(R.id.vehicleNumberEditText);
-        vehicleNumberEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+        // Set InputType to show the keyboard properly
+        vehicleNumberEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
+
+//        vehicleNumberEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+
+        // Set InputFilter to allow only A-Z and 0-9
+        vehicleNumberEditText.setFilters(new InputFilter[]{
+                new InputFilter.AllCaps(), // Convert to uppercase automatically
+                new InputFilter() {
+                    @Override
+                    public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+                        for (int i = start; i < end; i++) {
+                            char character = source.charAt(i);
+                            if (!((character >= 'A' && character <= 'Z') || (character >= '0' && character <= '9'))) {
+                                return ""; // Reject non-alphanumeric characters
+                            }
+                        }
+                        return null; // Accept valid input
+                    }
+                }
+        });
+
+        // Disable Copy-Paste
+        vehicleNumberEditText.setCustomSelectionActionModeCallback(new ActionMode.Callback() {
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                return false; // Prevent the action mode from being created
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                return false; // Prevent the action mode from being prepared
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                return false; // Prevent action mode items from being clicked
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                // Do nothing
+            }
+        });
+
+        vehicleNumberEditText.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                return true; // Disable long press
+            }
+        });
+
+        vehicleNumberEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) { // When the focus is lost
+                    String inputText = vehicleNumberEditText.getText().toString();
+                    if (inputText.length() < 9) {
+                        showWarning("Validation Error", "Please enter complete Vehicle Number");
+                        vehicleNumberEditText.requestFocus();
+                        showKeyboard(vehicleNumberEditText);
+                    } else if (inputText.length() > 10) {
+                        showWarning("Validation Error", "Please enter no more than 10 characters for the Vehicle Number");
+                        vehicleNumberEditText.requestFocus();
+                        showKeyboard(vehicleNumberEditText);
+                    }
+                }
+            }
+        });
+
 
         goDownSpinner = findViewById(R.id.goDownSpinner);
         hamaliVendorNameSpinner = findViewById(R.id.hamaliVendorNameSpinner);
@@ -247,6 +321,14 @@ public class MainActivity2 extends AppCompatActivity {
             return insets;
         });
     }
+
+    private void showKeyboard(View view) {
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+        }
+    }
+
 
     private void addRowToTable() {
         String lrNumber = lrEditText.getText().toString().trim();
