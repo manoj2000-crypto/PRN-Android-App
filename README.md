@@ -59,16 +59,19 @@ Robust Create, Read, Update, and Delete operations integrated with live report g
 ![App Logo](app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.webp)
 
 ### 🔐 Login Screen
-<img src="https://github.com/user-attachments/assets/4eff509a-5b0d-4972-9721-0c37e6eed597" width="300"/>
+<img src="https://github.com/user-attachments/assets/4eff509a-5b0d-4972-9721-0c37e6eed597" width="300" alt="Login screen with authentication interface" />
 
 ### 🏠 Home Screen
-<img src="https://github.com/user-attachments/assets/8ca459c0-f157-48e2-8d98-12f1574d052e" width="300"/>
+<img src="https://github.com/user-attachments/assets/8ca459c0-f157-48e2-8d98-12f1574d052e" width="300" alt="Main home screen with navigation options" />
 
 ### 📦 Create PRN Flow
-<img src="https://github.com/user-attachments/assets/c39483e4-25bc-4c6f-bc1d-5a0830aa1197" width="300"/>
+<img src="https://github.com/user-attachments/assets/c39483e4-25bc-4c6f-bc1d-5a0830aa1197" width="300" alt="Create PRN workflow interface" />
 
 ### 📷 Auto Scan PRN
-<img src="https://github.com/user-attachments/assets/b09ff086-325a-4aa8-90da-2e80fabec9c8" width="300"/>
+<img src="https://github.com/user-attachments/assets/b09ff086-325a-4aa8-90da-2e80fabec9c8" width="300" alt="Auto scan PRN using barcode or QR" />
+
+### 🎞️ Custom Animation
+<img src="https://github.com/user-attachments/assets/1d4d71d7-d2e1-47f5-a9d3-898a2b50cffd" width="300" alt="Custom Animation" />
 
 ---
 
@@ -94,5 +97,5 @@ git clone https://github.com/manoj2000-crypto/PRN-Android-App.git
 
 ## 📬 Contact
 
-**Author**: Manoj  
-**GitHub**: [PRN Android App](https://github.com/manoj2000-crypto/PRN-Android-App)
+**Author**: Manoj Kale 
+**LinkedIn**: [LinkedIn Profile](https://www.linkedin.com/in/manojkalemk/)
