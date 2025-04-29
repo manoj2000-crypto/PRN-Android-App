@@ -59,16 +59,16 @@ Robust Create, Read, Update, and Delete operations integrated with live report g
 ![App Logo](app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.webp)
 
 ### 🔐 Login Screen
-![Login Screen](https://github.com/user-attachments/assets/4eff509a-5b0d-4972-9721-0c37e6eed597)
+<img src="https://github.com/user-attachments/assets/4eff509a-5b0d-4972-9721-0c37e6eed597" width="300"/>
 
 ### 🏠 Home Screen
-![Home Screen](https://github.com/user-attachments/assets/8ca459c0-f157-48e2-8d98-12f1574d052e)
+<img src="https://github.com/user-attachments/assets/8ca459c0-f157-48e2-8d98-12f1574d052e" width="300"/>
 
 ### 📦 Create PRN Flow
-![Create PRN](https://github.com/user-attachments/assets/c39483e4-25bc-4c6f-bc1d-5a0830aa1197)
+<img src="https://github.com/user-attachments/assets/c39483e4-25bc-4c6f-bc1d-5a0830aa1197" width="300"/>
 
 ### 📷 Auto Scan PRN
-![Auto Scan PRN](https://github.com/user-attachments/assets/b09ff086-325a-4aa8-90da-2e80fabec9c8)
+<img src="https://github.com/user-attachments/assets/b09ff086-325a-4aa8-90da-2e80fabec9c8" width="300"/>
 
 ---
 
