@@ -1,4 +1,4 @@
-# 📦 PRN Android App
+# 📦 PRN (Pickup Request Note) Android App
 
 Welcome to the **PRN Android App**, a fully-featured logistics application designed for secure PRN (Package Receipt Note) management. This project is built **100% in Java** with a clean architecture and custom animations to deliver a smooth and professional user experience.
 
@@ -54,10 +54,21 @@ Robust Create, Read, Update, and Delete operations integrated with live report g
 ---
 
 ## 📱 Screenshots
-WILL BE ADDED LATER ...
-<!-- You can insert screenshots here once available -->
-<!-- ![Login Screen](screenshots/login.png) -->
-<!-- ![Home Screen](screenshots/home.png) -->
+
+### 🖼️ App Logo
+![App Logo](app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.webp)
+
+### 🔐 Login Screen
+![Login Screen](https://github.com/user-attachments/assets/4eff509a-5b0d-4972-9721-0c37e6eed597)
+
+### 🏠 Home Screen
+![Home Screen](https://github.com/user-attachments/assets/8ca459c0-f157-48e2-8d98-12f1574d052e)
+
+### 📦 Create PRN Flow
+![Create PRN](https://github.com/user-attachments/assets/c39483e4-25bc-4c6f-bc1d-5a0830aa1197)
+
+### 📷 Auto Scan PRN
+![Auto Scan PRN](https://github.com/user-attachments/assets/b09ff086-325a-4aa8-90da-2e80fabec9c8)
 
 ---
 
