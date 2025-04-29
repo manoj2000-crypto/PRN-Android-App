@@ -97,5 +97,5 @@ git clone https://github.com/manoj2000-crypto/PRN-Android-App.git
 
 ## 📬 Contact
 
-**Author**: Manoj Kale 
+**Author**: Manoj Kale   
 **LinkedIn**: [LinkedIn Profile](https://www.linkedin.com/in/manojkalemk/)
